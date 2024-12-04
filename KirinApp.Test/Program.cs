@@ -17,7 +17,7 @@ class Program
             AppType = WebAppType.RawString,
             BlazorComponent = typeof(App),
             Url = "https://ops.zink.asia:28238/",
-            Content = "<span style='color:red'>你好</span>",
+            Content = "<span style='color:red'>这个是字符串</span>",
             Icon = "logo.ico"
         };
         var kirinApp = new KirinApp(winConfig);
