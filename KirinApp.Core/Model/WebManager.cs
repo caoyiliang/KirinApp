@@ -55,7 +55,11 @@ internal class WebManager : WebViewManager
             while (true)
             {
                 var message = await reader.ReadAsync();
-                await dispatcher.InvokeAsync(() => window.SendWebMessage(message));
+                await dispatcher.InvokeAsync(() =>
+                {
+                    var msg = message;
+                    window.SendWebMessage(message);
+                });
             }
         }
         catch (Exception)

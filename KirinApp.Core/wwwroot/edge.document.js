@@ -3,6 +3,8 @@ window.external = {
         window.chrome.webview.postMessage(message);
     },
     receiveMessage: callback => {
-        window.chrome.webview.addEventListener('message', e => callback(e.data));
+        window.chrome.webview.addEventListener('message', e => {
+            callback(e.data)
+        });
     },
 };

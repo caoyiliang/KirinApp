@@ -66,4 +66,6 @@ internal static class Win32Api
     internal static extern void ReleaseDC(IntPtr hWnd, IntPtr hDC);
     [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
     internal static extern bool SetProcessDPIAware();
+    [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
+    internal static extern bool PostMessage(IntPtr handle, uint Msg, IntPtr wParam, IntPtr lParam);
 }

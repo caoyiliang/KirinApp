@@ -21,10 +21,15 @@ class Program
         var kirinApp = new KirinApp(winConfig);
         kirinApp.Loaded += async (_, _) =>
         {
-            kirinApp.OpenDevTool();
             var js = "1+2";
-            var res = await kirinApp.ExecuteJavaScript(js);
+            await kirinApp.ExecuteJavaScript(js);
         };
+
+        Task.Run(() =>
+        {
+            Thread.Sleep(2000);
+            kirinApp.OpenDevTool();
+        });
         kirinApp.Run();
     }
 }

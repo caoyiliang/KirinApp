@@ -108,13 +108,13 @@ internal abstract class IWindow
     {
         switch (message)
         {
-            case WindowMessage.WM_SIZE:
+            case WindowMessage.SIZE:
                 {
                     var size = GetClientSize();
                     SizeChangeEvent?.Invoke(this, new SizeChangeEventArgs() { Width = size.Width(), Height = size.Height() });
                     break;
                 }
-            case WindowMessage.WM_CLOSE:
+            case WindowMessage.CLOSE:
                 {
                     Handle = IntPtr.Zero;
                     Environment.Exit(0);
@@ -285,6 +285,7 @@ internal abstract class IWindow
     /// </summary>
     /// <param name="js"></param>
     /// <returns></returns>
-    public abstract Task<string> ExecuteJavaScript(string js);
+    public abstract Task ExecuteJavaScript(string js);
+    public abstract Task<string> ExecuteJavaScriptWithResult(string js);
     #endregion
 }

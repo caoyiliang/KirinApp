@@ -100,7 +100,7 @@ internal class MainWIndow : IWindow
     {
         switch (message)
         {
-            case WindowMessage.WM_PAINT:
+            case WindowMessage.PAINT:
                 {
                     IntPtr hDC = Win32Api.GetDC(hwnd);
                     Win32Api.GetClientRect(hwnd, out Rect rect);
@@ -109,6 +109,15 @@ internal class MainWIndow : IWindow
                     Win32Api.FillRect(hDC, ref rect, brush);
                     Win32Api.ReleaseDC(hwnd, hDC);
                     break;
+                }
+            case WindowMessage.DIY_FUN:
+                {
+                    if (wParam != IntPtr.Zero)
+                    {
+                        Action action = (Action)Marshal.GetDelegateForFunctionPointer(wParam, typeof(Action));
+                        action.Invoke();
+                    }
+                    return IntPtr.Zero;
                 }
         }
         return base.WndProc(hwnd, message, wParam, lParam);
@@ -217,13 +226,23 @@ internal class MainWIndow : IWindow
     public override async Task InvokeAsync(Func<Task> workItem)
     {
         if (CheckAccess()) await workItem();
-        else await Task.Run(workItem);
+        else
+        {
+            IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(workItem);
+            Action action = (Action)Marshal.GetDelegateForFunctionPointer(actionPtr, typeof(Action));
+            action.Invoke();
+        }
     }
 
     public override async Task InvokeAsync(Action workItem)
     {
         await Task.Delay(1);
         if (CheckAccess()) workItem();
+        else
+        {
+            IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(workItem);
+            Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
+        }
     }
 
     protected override async Task InitWebControl()
@@ -303,7 +322,25 @@ internal class MainWIndow : IWindow
         }
     }
 
-    public override async Task<string> ExecuteJavaScript(string js)
+    public override async Task ExecuteJavaScript(string js)
+    {
+        if (CheckAccess())
+        {
+            if (CoreWebCon?.CoreWebView2 == null) throw new Exception("请在加载完成事件中或确保页面已经加载后调用");
+            await CoreWebCon.CoreWebView2.ExecuteScriptAsync(js);
+        }
+        else
+        {
+
+            IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(() =>
+            {
+                CoreWebCon!.CoreWebView2.ExecuteScriptAsync(js);
+            });
+            Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
+        }
+    }
+
+    public override async Task<string> ExecuteJavaScriptWithResult(string js)
     {
         if (CheckAccess())
         {
@@ -323,7 +360,11 @@ internal class MainWIndow : IWindow
             if (CoreWebCon?.CoreWebView2 == null) throw new Exception("请在加载完成事件中或确保页面已经加载后调用");
             CoreWebCon!.CoreWebView2.OpenDevToolsWindow();
         }
-        else throw new Exception("请勿异步方法下调用或请确保在主线程调用");
+        else
+        {
+            IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(()=>CoreWebCon!.CoreWebView2.OpenDevToolsWindow());
+            Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
+        }
     }
 
     public override void SendWebMessage(string message)

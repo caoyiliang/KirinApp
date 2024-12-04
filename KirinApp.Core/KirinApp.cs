@@ -69,7 +69,8 @@ public class KirinApp
         serviceCollection.AddSingleton(provider);
     }
 
-    public async Task<string> ExecuteJavaScript(string js) => await Window.ExecuteJavaScript(js);
+    public async Task ExecuteJavaScript(string js) => await Window.ExecuteJavaScript(js);
+    public async Task<string> ExecuteJavaScriptWithResult(string js) => await Window.ExecuteJavaScriptWithResult(js);
 
     public void OpenDevTool() => Window.OpenDevTool();
 }
