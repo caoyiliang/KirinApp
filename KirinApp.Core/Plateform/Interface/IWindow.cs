@@ -296,7 +296,7 @@ internal abstract class IWindow
     /// </summary>
     /// <param name="js"></param>
     /// <returns></returns>
-    public abstract Task ExecuteJavaScript(string js);
-    public abstract Task<string> ExecuteJavaScriptWithResult(string js);
+    public abstract void ExecuteJavaScript(string js);
+    public abstract string ExecuteJavaScriptWithResult(string js);
     #endregion
 }

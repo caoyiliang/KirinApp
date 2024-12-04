@@ -14,25 +14,13 @@ class Program
             AppName = "Test",
             Height = 1200,
             Width = 1600,
-            AppType = WebAppType.Blazor,
+            AppType = WebAppType.RawString,
             BlazorComponent = typeof(App),
+            Url = "https://ops.zink.asia:28238/",
+            Content = "<span style='color:red'>你好</span>",
             Icon = "logo.ico"
         };
         var kirinApp = new KirinApp(winConfig);
-        kirinApp.Loaded += async (_, _) =>
-        {
-            var js = "1+2";
-            await kirinApp.ExecuteJavaScript(js);
-        };
-        kirinApp.OnClose += (s, e) =>
-        {
-            return null;
-        };
-        Task.Run(() =>
-        {
-            Thread.Sleep(2000);
-            kirinApp.OpenDevTool();
-        });
         kirinApp.Run();
     }
 }

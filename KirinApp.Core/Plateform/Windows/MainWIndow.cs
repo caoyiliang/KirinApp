@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using static System.Collections.Specialized.BitVector32;
 using static System.Net.Mime.MediaTypeNames;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace KirinAppCore.Plateform.Windows;
 
@@ -295,11 +296,22 @@ internal class MainWIndow : IWindow
                     CoreWebView2WebResourceContext.All);
                 CoreWebCon.CoreWebView2.WebResourceRequested += (s, e) =>
                 {
-                    var response = webViewManager.OnResourceRequested(schemeConfig, e.Request.Uri.ToString());
-                    if (response.Content != null)
+                    if (Config.AppType == WebAppType.RawString)
                     {
-                        e.Response = CoreWebEnv.CreateWebResourceResponse(response.Content, 200, "OK",
-                            $"Content-Type:{response.Type}");
+                        var contentType = "text/html";
+                        string pattern = @"<(\w+)([^>]*?)>(.*?)<\/\1>|<(\w+)([^>]*?)/>";
+                        if (!Regex.IsMatch(Config.Content ?? "", pattern, RegexOptions.Singleline))
+                            contentType = "text/plain";
+                        byte[] byteArray = Encoding.UTF8.GetBytes(Config.Content ?? "");
+                        MemoryStream ms = new(byteArray);
+                        e.Response = CoreWebEnv.CreateWebResourceResponse(ms, 200, "OK", $"Content-Type:{contentType}; charset=utf-8");
+                    }
+                    else
+                    {
+                        var response = webViewManager.OnResourceRequested(schemeConfig, e.Request.Uri.ToString());
+                        if (response.Content != null)
+                            e.Response = CoreWebEnv.CreateWebResourceResponse(response.Content, 200, "OK",
+                                $"Content-Type:{response.Type}; charset=utf-8");
                     }
                 };
 
@@ -310,7 +322,7 @@ internal class MainWIndow : IWindow
 
                 webViewManager.Navigate("/");
             }
-            else
+            if (Config.AppType == WebAppType.Http)
             {
                 CoreWebCon.CoreWebView2.Navigate(Config.Url);
             }
@@ -322,49 +334,53 @@ internal class MainWIndow : IWindow
         }
     }
 
-    public override async Task ExecuteJavaScript(string js)
+    public override void ExecuteJavaScript(string js)
     {
-        if (CheckAccess())
+        Task.Run(() =>
         {
-            if (CoreWebCon?.CoreWebView2 == null) throw new Exception("请在加载完成事件中或确保页面已经加载后调用");
-            await CoreWebCon.CoreWebView2.ExecuteScriptAsync(js);
-        }
-        else
-        {
-
+            while (CoreWebCon == null)
+                Thread.Sleep(10);
+            Thread.Sleep(10);
             IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(() =>
             {
-                CoreWebCon!.CoreWebView2.ExecuteScriptAsync(js);
+                _ = CoreWebCon.CoreWebView2.ExecuteScriptAsync(js).Result;
             });
             Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
-        }
+        });
     }
 
-    public override async Task<string> ExecuteJavaScriptWithResult(string js)
+    public override string ExecuteJavaScriptWithResult(string js)
     {
-        if (CheckAccess())
+        var tcs = new TaskCompletionSource<string>();
+        Task.Run(() =>
         {
-            if (CoreWebCon?.CoreWebView2 == null) throw new Exception("请在加载完成事件中或确保页面已经加载后调用");
-            return await CoreWebCon.CoreWebView2.ExecuteScriptAsync(js);
-        }
-        else
-        {
-            throw new Exception("请勿异步方法下调用或请确保在主线程调用");
-        }
+            while (CoreWebCon == null)
+                Task.Delay(10);
+            Task.Delay(10);
+            // 创建指向结果的委托
+            IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(new Action(async () =>
+            {
+                string res = await CoreWebCon.CoreWebView2.ExecuteScriptAsync(js);
+                tcs.SetResult(res); // 设置结果
+            }));
+
+            // 发送消息
+            Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
+        });
+        // 等待结果
+        return tcs.Task.Result; // 返回结果
     }
 
     public override void OpenDevTool()
     {
-        if (CheckAccess())
+        Task.Run(() =>
         {
-            if (CoreWebCon?.CoreWebView2 == null) throw new Exception("请在加载完成事件中或确保页面已经加载后调用");
-            CoreWebCon!.CoreWebView2.OpenDevToolsWindow();
-        }
-        else
-        {
-            IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(()=>CoreWebCon!.CoreWebView2.OpenDevToolsWindow());
+            while (CoreWebCon == null)
+                Thread.Sleep(10);
+            Thread.Sleep(10);
+            IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(() => CoreWebCon!.CoreWebView2.OpenDevToolsWindow());
             Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
-        }
+        });
     }
 
     public override void SendWebMessage(string message)

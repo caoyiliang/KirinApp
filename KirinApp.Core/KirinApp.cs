@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -16,16 +17,27 @@ namespace KirinAppCore;
 
 public class KirinApp
 {
+    private WinConfig Config = new();
+    internal IWindow Window { get; private set; }
+
+    protected ServiceProvider ServiceProvide { get; private set; }
+    IServiceCollection serviceCollection = new ServiceCollection();
+
     public event EventHandler<EventArgs>? OnCreate;
     public event EventHandler<EventArgs>? Created;
     public event EventHandler<EventArgs>? OnLoad;
     public event EventHandler<EventArgs>? Loaded;
     public event NetClosingDelegate? OnClose;
     public delegate bool? NetClosingDelegate(object sender, EventArgs e);
-    internal IWindow Window { get; private set; }
-    protected ServiceProvider ServiceProvide { get; private set; }
-    private WinConfig Config = new();
-    IServiceCollection serviceCollection = new ServiceCollection();
+    public KirinApp()
+    {
+        InitPlateform();
+        RegistResource();
+        ServiceProvide = serviceCollection.BuildServiceProvider();
+        Window = ServiceProvide.GetRequiredService<IWindow>();
+
+        EventRegister();
+    }
     public KirinApp(WinConfig winConfig)
     {
         Config = winConfig;
@@ -33,8 +45,12 @@ public class KirinApp
         RegistResource();
         ServiceProvide = serviceCollection.BuildServiceProvider();
         Window = ServiceProvide.GetRequiredService<IWindow>();
-        Window.Init(ServiceProvide, Config);
 
+        EventRegister();
+    }
+
+    private void EventRegister()
+    {
         Window.OnCreate += (s, e) => OnCreate?.Invoke(s, e);
         Window.Created += (s, e) => Created?.Invoke(s, e);
         Window.OnLoad += (s, e) => OnLoad?.Invoke(s, e);
@@ -44,6 +60,7 @@ public class KirinApp
 
     public void Run()
     {
+        Window.Init(ServiceProvide, Config);
         Window.Show();
         Window.MessageLoop();
     }
@@ -73,7 +90,35 @@ public class KirinApp
         serviceCollection.AddSingleton(provider);
     }
 
-    public async Task ExecuteJavaScript(string js) => await Window.ExecuteJavaScript(js);
-    public async Task<string> ExecuteJavaScriptWithResult(string js) => await Window.ExecuteJavaScriptWithResult(js);
+    #region 通过方法修改Config的属性
+    public KirinApp SetSize(int width, int height)
+    {
+        Config.Height = height;
+        Config.Width = width;
+        return this;
+    }
+
+    public KirinApp SetSize(Size size)
+    {
+        Config.Size = size;
+        return this;
+    }
+
+    public KirinApp UseDebug()
+    {
+        Config.Debug = true;
+        return this;
+    }
+
+    public KirinApp UseSystemTary()
+    {
+        Config.UseSystemTray = true;
+        return this;
+    }
+
+    #endregion
+
+    public void ExecuteJavaScript(string js) => Window.ExecuteJavaScript(js);
+    public string ExecuteJavaScriptWithResult(string js) => Window.ExecuteJavaScriptWithResult(js);
     public void OpenDevTool() => Window.OpenDevTool();
 }

@@ -25,12 +25,12 @@ public class WinConfig
     /// <summary>
     /// 高度
     /// </summary>
-    public int Height { get; set; }
+    public int Height { get; set; } = 600;
 
     /// <summary>
     /// 宽度
     /// </summary>
-    public int Width { get; set; }
+    public int Width { get; set; } = 800;
 
     /// <summary>
     /// 尺寸（优先）
@@ -50,7 +50,7 @@ public class WinConfig
     /// <summary>
     /// 类型
     /// </summary>
-    public WebAppType AppType { get; set; }
+    public WebAppType AppType { get; set; } = WebAppType.RawString;
 
     /// <summary>
     /// 距离屏幕左边宽度
@@ -76,6 +76,11 @@ public class WinConfig
     /// url
     /// </summary>
     public string? Url { get; set; }
+
+    /// <summary>
+    /// 内容
+    /// </summary>
+    public string? Content { get; set; }
 
     /// <summary>
     /// 最小尺寸（优先）
@@ -116,6 +121,11 @@ public class WinConfig
     /// blazor选择器
     /// </summary>
     public string BlazorSelector { get; set; } = "#app";
+
+    /// <summary>
+    /// 启用系统托盘
+    /// </summary>
+    public bool UseSystemTray { get; set; } = false;
 }
 
 /// <summary>

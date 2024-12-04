@@ -22,6 +22,7 @@ public enum WindowState
 /// </summary>
 public enum WebAppType
 {
+    RawString,
     Blazor,
     Static,
     Http,
