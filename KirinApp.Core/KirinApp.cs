@@ -20,6 +20,8 @@ public class KirinApp
     public event EventHandler<EventArgs>? Created;
     public event EventHandler<EventArgs>? OnLoad;
     public event EventHandler<EventArgs>? Loaded;
+    public event NetClosingDelegate? OnClose;
+    public delegate bool? NetClosingDelegate(object sender, EventArgs e);
     internal IWindow Window { get; private set; }
     protected ServiceProvider ServiceProvide { get; private set; }
     private WinConfig Config = new();
@@ -27,13 +29,17 @@ public class KirinApp
     public KirinApp(WinConfig winConfig)
     {
         Config = winConfig;
-        ServiceProvide = InitPlateform();
+        InitPlateform();
+        RegistResource();
+        ServiceProvide = serviceCollection.BuildServiceProvider();
         Window = ServiceProvide.GetRequiredService<IWindow>();
         Window.Init(ServiceProvide, Config);
+
         Window.OnCreate += (s, e) => OnCreate?.Invoke(s, e);
         Window.Created += (s, e) => Created?.Invoke(s, e);
         Window.OnLoad += (s, e) => OnLoad?.Invoke(s, e);
         Window.Loaded += (s, e) => Loaded?.Invoke(s, e);
+        Window.OnClose += (s, e) => OnClose?.Invoke(s, e);
     }
 
     public void Run()
@@ -42,7 +48,7 @@ public class KirinApp
         Window.MessageLoop();
     }
 
-    private ServiceProvider InitPlateform()
+    private void InitPlateform()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -57,8 +63,6 @@ public class KirinApp
             serviceCollection.AddSingleton<JSComponentConfigurationStore>();
             serviceCollection.AddBlazorWebView();
         }
-        RegistResource();
-        return serviceCollection.BuildServiceProvider();
     }
 
     private void RegistResource()
@@ -71,6 +75,5 @@ public class KirinApp
 
     public async Task ExecuteJavaScript(string js) => await Window.ExecuteJavaScript(js);
     public async Task<string> ExecuteJavaScriptWithResult(string js) => await Window.ExecuteJavaScriptWithResult(js);
-
     public void OpenDevTool() => Window.OpenDevTool();
 }

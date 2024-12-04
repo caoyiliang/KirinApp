@@ -24,7 +24,10 @@ class Program
             var js = "1+2";
             await kirinApp.ExecuteJavaScript(js);
         };
-
+        kirinApp.OnClose += (s, e) =>
+        {
+            return null;
+        };
         Task.Run(() =>
         {
             Thread.Sleep(2000);

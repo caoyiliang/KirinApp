@@ -98,6 +98,12 @@ internal abstract class IWindow
     /// 页面加载完成
     /// </summary>
     public virtual event EventHandler<EventArgs>? Loaded;
+
+    /// <summary>
+    /// 关闭委托
+    /// </summary>
+    public virtual event NetClosingDelegate? OnClose;
+    public delegate bool? NetClosingDelegate(object sender, EventArgs e);
     #endregion
 
     #region 窗体方法
@@ -116,9 +122,14 @@ internal abstract class IWindow
                 }
             case WindowMessage.CLOSE:
                 {
-                    Handle = IntPtr.Zero;
-                    Environment.Exit(0);
-                    return IntPtr.Zero;
+                    var res = OnClose?.Invoke(this, new());
+                    if (res == null || res.Value)
+                    {
+                        Handle = IntPtr.Zero;
+                        Environment.Exit(0);
+                        return IntPtr.Zero;
+                    }
+                    else return IntPtr.Zero;
                 }
         }
         return Win32Api.DefWindowProcW(hwnd, message, wParam, lParam);
