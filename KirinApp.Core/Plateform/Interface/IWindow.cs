@@ -152,7 +152,6 @@ internal abstract class IWindow
         SetScreenInfo();
         Create();
         InitWebControl();
-        SystemTary();
         SizeChangeEvent += (s, e) => SizeChange(Handle, e.Width, e.Height);
     }
 
