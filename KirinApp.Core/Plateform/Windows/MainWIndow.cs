@@ -505,52 +505,5 @@ internal class MainWIndow : IWindow
     {
         CoreWebCon!.CoreWebView2.PostWebMessageAsString(message);
     }
-
-    public override void SystemTary()
-    {
-        if (!Config.UseSystemTray) return;
-        IntPtr ico = IntPtr.Zero;
-        if (!string.IsNullOrWhiteSpace(Config.Icon))
-        {
-            var icon = new Icon(Config.Icon);
-            if (icon != null)
-                ico = icon.Handle;
-        }
-        NotifyIconData nid = new NotifyIconData
-        {
-            cbSize = (uint)Marshal.SizeOf(typeof(NotifyIconData)),
-            hWnd = Handle,
-            uID = 1,
-            uFlags = (uint)Notify.NIF_ICON,
-            hIcon = SystemIcons.Information.Handle,
-            szTip = Config.AppName,
-            szInfoTitle = Config.AppName,
-            szInfo = Config.AppName,
-            hBalloonIcon = SystemIcons.Information.Handle,
-        };
-
-        var a = Win32Api.Shell_NotifyIcon((uint)Notify.NIM_ADD, ref nid);
-    }
-
-    public override void ShowTaryMsg(string title, string msg)
-    {
-        if (!Config.UseSystemTray) return;
-        NotifyIconData nid = new NotifyIconData
-        {
-            cbSize = (uint)Marshal.SizeOf(typeof(NotifyIconData)),
-            uID = 1,
-            hWnd = Handle,
-            uFlags = (uint)Notify.NIF_INFO | (uint)Notify.NIF_MESSAGE,
-            szInfo = msg,
-            szInfoTitle = title,
-            dwInfoFlags = 1 // 1表示信息气泡
-        };
-
-        var a = Win32Api.Shell_NotifyIcon((uint)Notify.NIM_MODIFY, ref nid);
-        if (a == 0)
-        {
-            int errorCode = Marshal.GetLastWin32Error();
-        }
-    }
     #endregion
 }

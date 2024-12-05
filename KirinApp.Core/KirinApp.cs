@@ -228,6 +228,4 @@ public class KirinApp
     public void ExecuteJavaScript(string js) => Window.ExecuteJavaScript(js);
     public string ExecuteJavaScriptWithResult(string js) => Window.ExecuteJavaScriptWithResult(js);
     public void OpenDevTool() => Window.OpenDevTool();
-
-    public void ShowTaryMsg(string title, string msg) => Window.ShowTaryMsg(title, msg);
 }

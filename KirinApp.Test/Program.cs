@@ -26,8 +26,7 @@ class Program
         {
             Task.Run(() =>
             {
-                Thread.Sleep(1000);
-                kirinApp.ShowTaryMsg("1", "2");
+
             });
         };
         kirinApp.Run();

@@ -240,18 +240,6 @@ internal abstract class IWindow
     /// 获取屏幕信息
     /// </summary>
     public abstract void SetScreenInfo();
-
-    /// <summary>
-    /// 系统托盘任务
-    /// </summary>
-    public virtual void SystemTary() { return; }
-
-    /// <summary>
-    /// 发送气泡通知
-    /// </summary>
-    /// <param name="title">标题</param>
-    /// <param name="msg">消息</param>
-    public virtual void ShowTaryMsg(string title, string msg) { return; }
     #endregion
 
     #region WebVew2方法
