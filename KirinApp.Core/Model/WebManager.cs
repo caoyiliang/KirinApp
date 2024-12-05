@@ -84,10 +84,9 @@ internal class WebManager : WebViewManager
         return base.DisposeAsyncCore();
     }
 
-    #region 给各个平台浏览器 调用
     public void OnMessageReceived(string source, string message)
     {
-        MessageReceived(new Uri(source), message);
+        MessageReceived(new Uri(source), message);    
     }
 
     public (Stream Content, string Type) OnResourceRequested(SchemeConfig config, string url)
@@ -110,5 +109,4 @@ internal class WebManager : WebViewManager
             return (new MemoryStream(Encoding.UTF8.GetBytes("no content " + url)), "text/plain");
         }
     }
-    #endregion
 }

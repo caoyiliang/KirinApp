@@ -4,6 +4,7 @@ using KirinAppCore.Plateform.Windows;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Web.WebView2.Core;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -29,6 +30,19 @@ public class KirinApp
     public event EventHandler<EventArgs>? Loaded;
     public event NetClosingDelegate? OnClose;
     public delegate bool? NetClosingDelegate(object sender, EventArgs e);
+    public event EventHandler<CoreWebView2WebMessageReceivedEventArgs>? WebMessageReceived;
+    public event EventHandler<SizeChangeEventArgs>? SizeChange;
+
+    /// <summary>
+    /// 主显示器
+    /// </summary>
+    public Model.Monitor MainMonitor => Window.MainMonitor;
+
+    /// <summary>
+    /// 所有显示器
+    /// </summary>
+    public List<Model.Monitor> Monitors => Window.Monitors;
+
     public KirinApp()
     {
         InitPlateform();
@@ -56,6 +70,8 @@ public class KirinApp
         Window.OnLoad += (s, e) => OnLoad?.Invoke(s, e);
         Window.Loaded += (s, e) => Loaded?.Invoke(s, e);
         Window.OnClose += (s, e) => OnClose?.Invoke(s, e);
+        Window.WebMessageReceived += (s, e) => WebMessageReceived?.Invoke(s, e);
+        Window.SizeChangeEvent += (s, e) => SizeChange?.Invoke(s, e);
     }
 
     public void Run()
@@ -91,6 +107,16 @@ public class KirinApp
     }
 
     #region 通过方法修改Config的属性
+    public KirinApp SetAppName(string name)
+    {
+        Config.AppName = name;
+        return this;
+    }
+    public KirinApp SetIco(string path)
+    {
+        Config.Icon = path;
+        return this;
+    }
     public KirinApp SetSize(int width, int height)
     {
         Config.Height = height;
@@ -104,9 +130,86 @@ public class KirinApp
         return this;
     }
 
-    public KirinApp UseDebug()
+
+    public KirinApp Chromless(bool b = true)
     {
-        Config.Debug = true;
+        Config.Chromless = b;
+        return this;
+    }
+
+    public KirinApp Debug(bool b = true)
+    {
+        Config.Debug = b;
+        return this;
+    }
+
+    public KirinApp SetAppType(WebAppType appType)
+    {
+        Config.AppType = appType;
+        return this;
+    }
+
+    public KirinApp SetPosition(int left, int top)
+    {
+        Config.Left = left;
+        Config.Top = top;
+        return this;
+    }
+
+    public KirinApp ResizeAble(bool b = true)
+    {
+        Config.ResizeAble = b;
+        return this;
+    }
+
+    public KirinApp Center(bool b = true)
+    {
+        Config.Center = b;
+        return this;
+    }
+
+    public KirinApp SetUrl(string url)
+    {
+        Config.Url = url;
+        return this;
+    }
+
+    public KirinApp SetRawString(string rawString)
+    {
+        Config.RawString = rawString;
+        return this;
+    }
+
+    public KirinApp SetMinSize(int width, int heigth)
+    {
+        Config.MinimumWidth = width;
+        Config.MinimumHeigh = heigth;
+        return this;
+    }
+
+    public KirinApp SetMinSize(Size size)
+    {
+        Config.MinimumSize = size;
+        return this;
+    }
+
+    public KirinApp SetMaxSize(int width, int heigth)
+    {
+        Config.MaximumWidth = width;
+        Config.MaximumHeigh = heigth;
+        return this;
+    }
+
+    public KirinApp SetMaxSize(Size size)
+    {
+        Config.MaximumSize = size;
+        return this;
+    }
+
+    public KirinApp UseBlazor<T>(string selector = "#app")
+    {
+        Config.BlazorSelector = selector;
+        Config.BlazorComponent = typeof(T);
         return this;
     }
 
@@ -118,7 +221,13 @@ public class KirinApp
 
     #endregion
 
+    public (bool selected, DirectoryInfo? dir) OpenDirectory(string initialDir = "") => Window.OpenDirectory(initialDir);
+    public (bool selected, FileInfo? file) OpenFile(string filePath = "") => Window.OpenFile(filePath);
+    public (bool selected, List<FileInfo>? files) OpenFiles(string filePath = "") => Window.OpenFiles(filePath);
+    public MsgResult ShowDialog(string title, string message, MsgBtns btns = MsgBtns.OK) => Window.ShowDialog(title, message, btns);
     public void ExecuteJavaScript(string js) => Window.ExecuteJavaScript(js);
     public string ExecuteJavaScriptWithResult(string js) => Window.ExecuteJavaScriptWithResult(js);
     public void OpenDevTool() => Window.OpenDevTool();
+
+    public void ShowTaryMsg(string title, string msg) => Window.ShowTaryMsg(title, msg);
 }

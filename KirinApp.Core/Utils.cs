@@ -455,4 +455,19 @@ internal static class Utils
         using var reader = new StreamReader(fileProvider.GetFileInfo(path).CreateReadStream());
         return reader.ReadToEnd();
     }
+
+    public static MsgResult ToMsgResult(int result)
+    {
+        switch (result)
+        {
+            case 2:
+                return MsgResult.Cancel;
+            case 6:
+                return MsgResult.Yes;
+            case 7:
+                return MsgResult.No;
+            default:
+                return MsgResult.OK;
+        }
+    }
 }

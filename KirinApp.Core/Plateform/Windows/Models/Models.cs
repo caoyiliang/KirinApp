@@ -48,19 +48,71 @@ internal struct POINT
     public int Y;
 }
 [StructLayout(LayoutKind.Sequential)]
-internal struct MINMAXINFO
-{
-    public POINT ptReserved;
-    public POINT ptMaxSize;
-    public POINT ptMaxPosition;
-    public POINT ptMinTrackSize;
-    public POINT ptMaxTrackSize;
-}
-[StructLayout(LayoutKind.Sequential)]
 internal struct MSG
 {
     public IntPtr hwnd;
     public WindowMessage message;
     public IntPtr wParam;
     public IntPtr lParam;
+}
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+internal struct BrowseInfo
+{
+    public IntPtr hwndOwner;
+    public IntPtr pidlRoot;
+    public IntPtr pszDisplayName;
+    public string lpszTitle;
+    public uint ulFlags;
+    public IntPtr lpfn;
+    public IntPtr lParam;
+    public int iImage;
+}
+
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+internal struct OpenFileDialogParams
+{
+    public int structSize;
+    public IntPtr ownerHandle;
+    public IntPtr instanceHandle;
+    public string filter;
+    public string customFilter;
+    public int filterIndex;
+    public IntPtr file;
+    public int maxFile;
+    public string fileTitle;
+    public int maxFileTitle;
+    public string initialDir;
+    public string title;
+    public int flags;
+    public short fileOffset;
+    public short fileExtension;
+    public string defExt;
+    public IntPtr custData;
+    public IntPtr hook;
+    public string templateName;
+    public IntPtr reservedPtr;
+    public int reservedInt;
+    public int flagsEx;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+public struct  NotifyIconData
+{
+    public uint cbSize;
+    public IntPtr hWnd;
+    public uint uID;
+    public uint uFlags;
+    public IntPtr hIcon;
+    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+    public string szTip;
+    public uint dwState;
+    public uint dwStateMask;
+    public uint uVersion;
+    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+    public string szInfo;
+    public uint uTimeoutOrVersion;
+    public string szInfoTitle;
+    public uint dwInfoFlags;
+    public Guid guidItem;
+    public IntPtr hBalloonIcon;
 }

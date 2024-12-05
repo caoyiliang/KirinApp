@@ -31,7 +31,7 @@ public enum WebAppType
 /// <summary>
 /// 消息框按钮类型
 /// </summary>
-public enum MsbBtns
+public enum MsgBtns
 {
     OK,
     OKCancel,

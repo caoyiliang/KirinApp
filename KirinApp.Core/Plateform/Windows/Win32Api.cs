@@ -68,4 +68,18 @@ internal static class Win32Api
     internal static extern bool SetProcessDPIAware();
     [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
     internal static extern bool PostMessage(IntPtr handle, uint Msg, IntPtr wParam, IntPtr lParam);
+
+    [DllImport(S32, CharSet = CharSet.Unicode, SetLastError = true)]
+    internal static extern IntPtr SHBrowseForFolder(ref BrowseInfo lpbi);
+    [DllImport(S32, SetLastError = true, CharSet = CharSet.Auto)]
+    internal static extern bool SHGetPathFromIDList(IntPtr pidl, IntPtr pszPath);
+
+    [DllImport(C32, CharSet = CharSet.Unicode, SetLastError = true)]
+    internal static extern bool GetOpenFileName(ref OpenFileDialogParams param);
+    [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
+    internal static extern int MessageBox(IntPtr handle, string msg, string title, int options);
+    [DllImport(S32, CharSet = CharSet.Unicode, SetLastError = true)]
+    internal static extern int Shell_NotifyIcon(uint dwMessage, ref NotifyIconData lpdata);
+    [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
+    internal static extern int SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
 }

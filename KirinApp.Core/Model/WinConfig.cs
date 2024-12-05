@@ -80,7 +80,7 @@ public class WinConfig
     /// <summary>
     /// 内容
     /// </summary>
-    public string? Content { get; set; }
+    public string? RawString { get; set; }
 
     /// <summary>
     /// 最小尺寸（优先）

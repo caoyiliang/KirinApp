@@ -19,6 +19,7 @@ using static System.Collections.Specialized.BitVector32;
 using static System.Net.Mime.MediaTypeNames;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Reflection.Metadata;
 
 namespace KirinAppCore.Plateform.Windows;
 
@@ -28,6 +29,7 @@ namespace KirinAppCore.Plateform.Windows;
 internal class MainWIndow : IWindow
 {
     #region 事件
+    public override event EventHandler<CoreWebView2WebMessageReceivedEventArgs>? WebMessageReceived;
     public override event EventHandler<EventArgs>? OnCreate;
     public override event EventHandler<EventArgs>? Created;
     public override event EventHandler<EventArgs>? OnLoad;
@@ -45,9 +47,9 @@ internal class MainWIndow : IWindow
         IntPtr ico = IntPtr.Zero;
         if (!string.IsNullOrWhiteSpace(Config.Icon))
         {
-            var stream = new FileInfo(Config.Icon).OpenRead();
-            if (stream != null)
-                ico = new Bitmap(stream).GetHicon();
+            var icon = new Icon(Config.Icon);
+            if (icon != null)
+                ico = icon.Handle;
         }
         var windClass = new WNDCLASS
         {
@@ -172,29 +174,143 @@ internal class MainWIndow : IWindow
         if (CoreWebCon != null) CoreWebCon.Bounds = new Rectangle(0, 0, width, height);
     }
 
-    public override DirectoryInfo OpenDirectory(string initialDir = "")
+    private void CheckInitialDir(ref string initialDir)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrWhiteSpace(initialDir))
+            initialDir = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
     }
 
-    public override FileInfo OpenFile(string initialDir = "", Dictionary<string, string>? fileTypeFilter = null)
+    private void CheckFileFilter(Dictionary<string, string>? dic)
     {
-        throw new NotImplementedException();
+        if (dic == null || dic.Count == 0)
+            dic = new Dictionary<string, string>() { { "所有文件（*.*)", "*.*" } };
     }
 
-    public override List<FileInfo> OpenFiles(string initialDir = "", Dictionary<string, string>? fileTypeFilter = null)
+    public override (bool selected, DirectoryInfo? dir) OpenDirectory(string initialDir = "")
     {
-        throw new NotImplementedException();
+        CheckInitialDir(ref initialDir);
+        IntPtr pidl = IntPtr.Zero;
+        var @params = new BrowseInfo()
+        {
+            hwndOwner = IntPtr.Zero,
+            pidlRoot = IntPtr.Zero,
+            pszDisplayName = IntPtr.Zero,
+            lpszTitle = "选择目录",
+            ulFlags = 0,
+            lpfn = IntPtr.Zero,
+            lParam = IntPtr.Zero,
+            iImage = 0
+        };
+        try
+        {
+            pidl = Win32Api.SHBrowseForFolder(ref @params);
+            if (pidl != IntPtr.Zero)
+            {
+                IntPtr pszPath = Marshal.AllocHGlobal(2048);
+                if (Win32Api.SHGetPathFromIDList(pidl, pszPath))
+                {
+                    Marshal.FreeHGlobal(pszPath);
+                    var path = Marshal.PtrToStringAuto(pszPath);
+                    if (string.IsNullOrWhiteSpace(path)) throw new DirectoryNotFoundException();
+                    if (!Directory.Exists(path)) throw new DirectoryNotFoundException();
+                    return (true, new DirectoryInfo(path));
+                }
+                return (false, null);
+            }
+            return (false, null);
+        }
+        finally
+        {
+            if (pidl != IntPtr.Zero)
+            {
+                Marshal.FreeCoTaskMem(pidl);
+            }
+        }
     }
 
-    public override MsgResult ShowDialog(string title, string msg, MsbBtns btn = MsbBtns.OK)
+    public override (bool selected, FileInfo? file) OpenFile(string initialDir = "", Dictionary<string, string>? fileTypeFilter = null)
     {
-        throw new NotImplementedException();
+        CheckInitialDir(ref initialDir);
+        CheckFileFilter(fileTypeFilter);
+        var bufferLength = 1024;
+        OpenFileDialogParams @params = new OpenFileDialogParams()
+        {
+            ownerHandle = IntPtr.Zero,
+            instanceHandle = IntPtr.Zero,
+            filter = string.Join("", fileTypeFilter?.Select(s => $"{s.Key}\0{s.Value}\0") ?? new List<string>()),
+            initialDir = initialDir,
+            file = Marshal.StringToBSTR(new String(new char[bufferLength])),
+            maxFile = bufferLength,
+            fileTitle = new string(new char[bufferLength]),
+            title = "打开文件",
+            flags = 0x00000004 | 0x00080000 | 0x00001000 | 0x00000800 | 0x00000008 | 0x00000200
+        };
+        @params.structSize = Marshal.SizeOf(@params);
+        if (Win32Api.GetOpenFileName(ref @params))
+        {
+            string file = Marshal.PtrToStringAuto(@params.file) ?? "";
+            if (string.IsNullOrWhiteSpace(file)) throw new FileNotFoundException();
+            if (!File.Exists(file)) throw new FileNotFoundException();
+            return (true, new FileInfo(file));
+        }
+        return (false, null);
     }
 
-    public override void ShowMsg(string title, string msg)
+    public override (bool selected, List<FileInfo>? files) OpenFiles(string initialDir = "", Dictionary<string, string>? fileTypeFilter = null)
     {
-        throw new NotImplementedException();
+        CheckInitialDir(ref initialDir);
+        CheckFileFilter(fileTypeFilter);
+        var bufferLength = 1024;
+        OpenFileDialogParams @params = new OpenFileDialogParams()
+        {
+            ownerHandle = IntPtr.Zero,
+            instanceHandle = IntPtr.Zero,
+            filter = string.Join("", fileTypeFilter?.Select(s => $"{s.Key}\0{s.Value}\0") ?? new List<string>()),
+            initialDir = initialDir,
+            file = Marshal.StringToBSTR(new String(new char[bufferLength])),
+            maxFile = bufferLength,
+            fileTitle = new string(new char[bufferLength]),
+            title = "打开文件",
+            flags = 0x00000004 | 0x00080000 | 0x00001000 | 0x00000800 | 0x00000008 | 0x00000200
+        };
+        @params.maxFileTitle = @params.fileTitle.Length;
+        @params.structSize = Marshal.SizeOf(@params);
+
+        if (Win32Api.GetOpenFileName(ref @params))
+        {
+            List<FileInfo> files = new List<FileInfo>();
+
+            long pointer = (long)@params.file;
+            string file = Marshal.PtrToStringAuto(@params.file) ?? "";
+
+            var path = "";
+            var index = 0;
+
+            while (file?.Length > 0)
+            {
+                if (index == 0)
+                {
+                    path = file;
+                }
+                else
+                {
+                    files.Add(new FileInfo(System.IO.Path.Combine(path, file)));
+                }
+
+                pointer += file.Length * 2 + 2;
+                @params.file = (IntPtr)pointer;
+                file = Marshal.PtrToStringAuto(@params.file) ?? "";
+                index++;
+            }
+            return (true, files);
+        }
+        return (false, null);
+    }
+
+    public override MsgResult ShowDialog(string title, string msg, MsgBtns btn = MsgBtns.OK)
+    {
+        var handle = Win32Api.GetConsoleWindow();
+        return Utils.ToMsgResult(Win32Api.MessageBox(handle, msg, title, (int)btn | 64));
     }
 
     /// <summary>
@@ -215,6 +331,7 @@ internal class MainWIndow : IWindow
             Height = height,
             Zoom = dpi,
         };
+        Monitors.Add(MainMonitor);
     }
     #endregion
 
@@ -291,6 +408,7 @@ internal class MainWIndow : IWindow
                 CoreWebCon.CoreWebView2.WebMessageReceived += (s, e) =>
                 {
                     webViewManager.OnMessageReceived(e.Source, e.TryGetWebMessageAsString());
+                    WebMessageReceived?.Invoke(s, e);
                 };
                 CoreWebCon.CoreWebView2.AddWebResourceRequestedFilter($"{schemeConfig.AppOrigin}*",
                     CoreWebView2WebResourceContext.All);
@@ -300,9 +418,9 @@ internal class MainWIndow : IWindow
                     {
                         var contentType = "text/html";
                         string pattern = @"<(\w+)([^>]*?)>(.*?)<\/\1>|<(\w+)([^>]*?)/>";
-                        if (!Regex.IsMatch(Config.Content ?? "", pattern, RegexOptions.Singleline))
+                        if (!Regex.IsMatch(Config.RawString ?? "", pattern, RegexOptions.Singleline))
                             contentType = "text/plain";
-                        byte[] byteArray = Encoding.UTF8.GetBytes(Config.Content ?? "");
+                        byte[] byteArray = Encoding.UTF8.GetBytes(Config.RawString ?? "");
                         MemoryStream ms = new(byteArray);
                         e.Response = CoreWebEnv.CreateWebResourceResponse(ms, 200, "OK", $"Content-Type:{contentType}; charset=utf-8");
                     }
@@ -386,6 +504,68 @@ internal class MainWIndow : IWindow
     public override void SendWebMessage(string message)
     {
         CoreWebCon!.CoreWebView2.PostWebMessageAsString(message);
+    }
+
+    public override void SystemTary()
+    {
+        if (!Config.UseSystemTray) return;
+        IntPtr ico = IntPtr.Zero;
+        if (!string.IsNullOrWhiteSpace(Config.Icon))
+        {
+            var icon = new Icon(Config.Icon);
+            if (icon != null)
+                ico = icon.Handle;
+        }
+        NotifyIconData nid = new NotifyIconData
+        {
+            cbSize = (uint)Marshal.SizeOf(typeof(NotifyIconData)),
+            hWnd = Handle,
+            uID = 1,
+            uFlags = (uint)Notify.NIF_ICON,
+            hIcon = SystemIcons.Information.Handle,
+            szTip = Config.AppName,
+            szInfoTitle = Config.AppName,
+            szInfo = Config.AppName,
+            hBalloonIcon = SystemIcons.Information.Handle,
+        };
+
+        var a = Win32Api.Shell_NotifyIcon((uint)Notify.NIM_ADD, ref nid);
+    }
+
+    public override void ShowTaryMsg(string title, string msg)
+    {
+        if (!Config.UseSystemTray) return;
+        NotifyIconData nid = new NotifyIconData
+        {
+            cbSize = (uint)Marshal.SizeOf(typeof(NotifyIconData)),
+            uID = 1,
+            hWnd = Handle,
+            uFlags = (uint)Notify.NIF_INFO | (uint)Notify.NIF_MESSAGE,
+            szInfo = msg,
+            szInfoTitle = title,
+            dwInfoFlags = 1 // 1表示信息气泡
+        };
+
+        var a = Win32Api.Shell_NotifyIcon((uint)Notify.NIM_MODIFY, ref nid);
+        if (a == 0)
+        {
+            int errorCode = Marshal.GetLastWin32Error();
+        }
+    }
+
+    public override void ShowSysMsg(string title, string msg)
+    {
+        try
+        {
+     var a =   Win32Api.SendMessage(Handle, 0x000C, IntPtr.Zero, Marshal.StringToHGlobalUni(msg));
+
+
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
     }
     #endregion
 }

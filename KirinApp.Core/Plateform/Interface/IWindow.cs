@@ -60,19 +60,19 @@ internal abstract class IWindow
     /// <summary>
     /// 主显示器
     /// </summary>
-    public Model.Monitor? MainMonitor { get; protected set; }
+    public Model.Monitor MainMonitor { get; protected set; } = new();
 
     /// <summary>
     /// 显示器
     /// </summary>
-    public List<Model.Monitor>? Monitors { get; protected set; }
+    public List<Model.Monitor> Monitors { get; protected set; } = new();
     #endregion
 
     #region 事件
     /// <summary>
     /// 接收消息事件
     /// </summary>
-    public Action<string>? MessageReceivedHandler;
+    public virtual event EventHandler<CoreWebView2WebMessageReceivedEventArgs>? WebMessageReceived;
 
     /// <summary>
     /// 窗口大小改变事件
@@ -152,6 +152,8 @@ internal abstract class IWindow
         SetScreenInfo();
         Create();
         InitWebControl();
+        SystemTary();
+        ShowSysMsg("123","456");
         SizeChangeEvent += (s, e) => SizeChange(Handle, e.Width, e.Height);
     }
 
@@ -202,7 +204,7 @@ internal abstract class IWindow
     /// <param name="msg">消息</param>
     /// <param name="btn">按钮</param>
     /// <returns></returns>
-    public abstract MsgResult ShowDialog(string title, string msg, MsbBtns btn = MsbBtns.OK);
+    public abstract MsgResult ShowDialog(string title, string msg, MsgBtns btn = MsgBtns.OK);
 
     /// <summary>
     /// 打开文件选择
@@ -210,7 +212,7 @@ internal abstract class IWindow
     /// <param name="initialDir">初始目录</param>
     /// <param name="fileTypeFilter">文件类型过滤</param>
     /// <returns></returns>
-    public abstract FileInfo OpenFile(string initialDir = "", Dictionary<string, string>? fileTypeFilter = null);
+    public abstract (bool selected, FileInfo? file) OpenFile(string initialDir = "", Dictionary<string, string>? fileTypeFilter = null);
 
     /// <summary>
     /// 打开文件选择（多选）
@@ -218,21 +220,14 @@ internal abstract class IWindow
     /// <param name="initialDir">初始目录</param>
     /// <param name="fileTypeFilter">文件类型过滤</param>
     /// <returns></returns>
-    public abstract List<FileInfo> OpenFiles(string initialDir = "", Dictionary<string, string>? fileTypeFilter = null);
+    public abstract (bool selected, List<FileInfo>? files) OpenFiles(string initialDir = "", Dictionary<string, string>? fileTypeFilter = null);
 
     /// <summary>
     /// 打开文件夹
     /// </summary>
     /// <param name="initialDir"></param>
     /// <returns></returns>
-    public abstract DirectoryInfo OpenDirectory(string initialDir = "");
-
-    /// <summary>
-    /// 发送系统通知
-    /// </summary>
-    /// <param name="title">标题</param>
-    /// <param name="msg">消息</param>
-    public abstract void ShowMsg(string title, string msg);
+    public abstract (bool selected, DirectoryInfo? dir) OpenDirectory(string initialDir = "");
 
     /// <summary>
     /// 大小改变，需要修改web控件
@@ -251,6 +246,20 @@ internal abstract class IWindow
     /// 系统托盘任务
     /// </summary>
     public virtual void SystemTary() { return; }
+
+    /// <summary>
+    /// 发送气泡通知
+    /// </summary>
+    /// <param name="title">标题</param>
+    /// <param name="msg">消息</param>
+    public virtual void ShowTaryMsg(string title, string msg) { return; }
+
+    /// <summary>
+    /// 发送系统通知
+    /// </summary>
+    /// <param name="title">标题</param>
+    /// <param name="msg">消息</param>
+    public virtual void ShowSysMsg(string title, string msg) { return; }
     #endregion
 
     #region WebVew2方法

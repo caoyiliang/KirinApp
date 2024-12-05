@@ -1,1 +1,9 @@
 ﻿<h1>这个静态Html</h1>
+<button type="button" onclick="send()">发送</button>
+<script>
+    function send() {
+        console.log(111)
+        console.log(window.external.sendMessage)
+        window.external.sendMessage("你好index");
+    }
+</script>

@@ -14,13 +14,22 @@ class Program
             AppName = "Test",
             Height = 1200,
             Width = 1600,
-            AppType = WebAppType.RawString,
+            AppType = WebAppType.Static,
             BlazorComponent = typeof(App),
-            Url = "https://ops.zink.asia:28238/",
-            Content = "<span style='color:red'>这个是字符串</span>",
-            Icon = "logo.ico"
+            Url = "index.html",
+            RawString = "<span style='color:red'>这个是字符串</span>",
+            Icon = "logo.ico",
+            Debug = true,
         };
-        var kirinApp = new KirinApp(winConfig);
+        var kirinApp = new KirinApp(winConfig).UseSystemTary();
+        kirinApp.Created += (_, _) =>
+        {
+            Task.Run(() =>
+            {
+                Thread.Sleep(1000);
+                kirinApp.ShowTaryMsg("1", "2");
+            });
+        };
         kirinApp.Run();
     }
 }
