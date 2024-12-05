@@ -121,11 +121,6 @@ public class WinConfig
     /// blazor选择器
     /// </summary>
     public string BlazorSelector { get; set; } = "#app";
-
-    /// <summary>
-    /// 启用系统托盘
-    /// </summary>
-    public bool UseSystemTray { get; set; } = false;
 }
 
 /// <summary>

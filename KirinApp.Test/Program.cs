@@ -21,7 +21,7 @@ class Program
             Icon = "logo.ico",
             Debug = true,
         };
-        var kirinApp = new KirinApp(winConfig).UseSystemTary();
+        var kirinApp = new KirinApp(winConfig);
         kirinApp.Created += (_, _) =>
         {
             Task.Run(() =>

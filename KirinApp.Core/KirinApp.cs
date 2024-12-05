@@ -213,12 +213,6 @@ public class KirinApp
         return this;
     }
 
-    public KirinApp UseSystemTary()
-    {
-        Config.UseSystemTray = true;
-        return this;
-    }
-
     #endregion
 
     public (bool selected, DirectoryInfo? dir) OpenDirectory(string initialDir = "") => Window.OpenDirectory(initialDir);
