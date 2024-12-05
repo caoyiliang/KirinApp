@@ -552,20 +552,5 @@ internal class MainWIndow : IWindow
             int errorCode = Marshal.GetLastWin32Error();
         }
     }
-
-    public override void ShowSysMsg(string title, string msg)
-    {
-        try
-        {
-     var a =   Win32Api.SendMessage(Handle, 0x000C, IntPtr.Zero, Marshal.StringToHGlobalUni(msg));
-
-
-        }
-        catch (Exception)
-        {
-
-            throw;
-        }
-    }
     #endregion
 }

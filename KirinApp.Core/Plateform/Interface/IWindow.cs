@@ -153,7 +153,6 @@ internal abstract class IWindow
         Create();
         InitWebControl();
         SystemTary();
-        ShowSysMsg("123","456");
         SizeChangeEvent += (s, e) => SizeChange(Handle, e.Width, e.Height);
     }
 
@@ -253,13 +252,6 @@ internal abstract class IWindow
     /// <param name="title">标题</param>
     /// <param name="msg">消息</param>
     public virtual void ShowTaryMsg(string title, string msg) { return; }
-
-    /// <summary>
-    /// 发送系统通知
-    /// </summary>
-    /// <param name="title">标题</param>
-    /// <param name="msg">消息</param>
-    public virtual void ShowSysMsg(string title, string msg) { return; }
     #endregion
 
     #region WebVew2方法
