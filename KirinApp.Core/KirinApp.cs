@@ -1,6 +1,6 @@
 ﻿using KirinAppCore.Interface;
 using KirinAppCore.Model;
-using KirinAppCore.Plateform.Windows;
+using KirinAppCore.Plateform.WebView2.Windows;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;

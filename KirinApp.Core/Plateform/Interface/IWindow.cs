@@ -1,6 +1,6 @@
 ﻿using KirinAppCore.Model;
-using KirinAppCore.Plateform.Windows;
-using KirinAppCore.Plateform.Windows.Models;
+using KirinAppCore.Plateform.WebView2.Windows;
+using KirinAppCore.Plateform.WebView2.Windows.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Web.WebView2.Core;
@@ -20,8 +20,6 @@ namespace KirinAppCore.Interface;
 internal abstract class IWindow
 {
     #region WebView2变量
-    protected CoreWebView2Environment? CoreWebEnv;
-    protected CoreWebView2Controller? CoreWebCon;
     protected ServiceProvider? ServiceProvide;
     protected int ManagedThreadId;
     #endregion

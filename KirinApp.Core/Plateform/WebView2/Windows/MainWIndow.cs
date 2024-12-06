@@ -1,6 +1,5 @@
 ﻿using KirinAppCore.Model;
 using KirinAppCore.Interface;
-using KirinAppCore.Plateform.Windows.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,14 +21,17 @@ using System.Text.RegularExpressions;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.WebView;
 using Newtonsoft.Json.Linq;
+using KirinAppCore.Plateform.WebView2.Windows.Models;
 
-namespace KirinAppCore.Plateform.Windows;
+namespace KirinAppCore.Plateform.WebView2.Windows;
 
 /// <summary>
 /// Windows实现类
 /// </summary>
 internal class MainWIndow : IWindow
 {
+    private CoreWebView2Environment? CoreWebEnv;
+    private CoreWebView2Controller? CoreWebCon;
     private WebManager? WebManager { get; set; }
     private SchemeConfig? SchemeConfig { get; set; }
 
@@ -47,7 +49,7 @@ internal class MainWIndow : IWindow
         OnCreate?.Invoke(this, new());
         var hIns = Win32Api.GetConsoleWindow();
         WindowProc = WndProc;
-        var className = Assembly.GetEntryAssembly()!.GetName().Name + "." + this.GetType().Name;
+        var className = Assembly.GetEntryAssembly()!.GetName().Name + "." + GetType().Name;
         var color = Win32Api.CreateSolidBrush((uint)ColorTranslator.ToWin32(ColorTranslator.FromHtml("#FFFFFF")));
         IntPtr ico = IntPtr.Zero;
         if (!string.IsNullOrWhiteSpace(Config.Icon))
@@ -133,12 +135,12 @@ internal class MainWIndow : IWindow
 
     public override void Show()
     {
-        if (Win32Api.ShowWindow(Handle, SW.SHOW)) base.State = WindowState.Normal;
+        if (Win32Api.ShowWindow(Handle, SW.SHOW)) State = WindowState.Normal;
     }
 
     public override void Hide()
     {
-        if (Win32Api.ShowWindow(Handle, SW.HIDE)) base.State = WindowState.Hide;
+        if (Win32Api.ShowWindow(Handle, SW.HIDE)) State = WindowState.Hide;
     }
 
     public override void Focus()
@@ -165,12 +167,12 @@ internal class MainWIndow : IWindow
 
     public override void Maximize()
     {
-        if (Win32Api.ShowWindow(Handle, SW.MAXIMIZE)) base.State = WindowState.Maximize;
+        if (Win32Api.ShowWindow(Handle, SW.MAXIMIZE)) State = WindowState.Maximize;
     }
 
     public override void Minimize()
     {
-        if (Win32Api.ShowWindow(Handle, SW.MINIMIZE)) base.State = WindowState.Minimize;
+        if (Win32Api.ShowWindow(Handle, SW.MINIMIZE)) State = WindowState.Minimize;
     }
 
     public override void SizeChange(IntPtr handle, int width, int height)
@@ -244,7 +246,7 @@ internal class MainWIndow : IWindow
             instanceHandle = IntPtr.Zero,
             filter = string.Join("", fileTypeFilter?.Select(s => $"{s.Key}\0{s.Value}\0") ?? new List<string>()),
             initialDir = initialDir,
-            file = Marshal.StringToBSTR(new String(new char[bufferLength])),
+            file = Marshal.StringToBSTR(new string(new char[bufferLength])),
             maxFile = bufferLength,
             fileTitle = new string(new char[bufferLength]),
             title = "打开文件",
@@ -272,7 +274,7 @@ internal class MainWIndow : IWindow
             instanceHandle = IntPtr.Zero,
             filter = string.Join("", fileTypeFilter?.Select(s => $"{s.Key}\0{s.Value}\0") ?? new List<string>()),
             initialDir = initialDir,
-            file = Marshal.StringToBSTR(new String(new char[bufferLength])),
+            file = Marshal.StringToBSTR(new string(new char[bufferLength])),
             maxFile = bufferLength,
             fileTitle = new string(new char[bufferLength]),
             title = "打开文件",
@@ -299,7 +301,7 @@ internal class MainWIndow : IWindow
                 }
                 else
                 {
-                    files.Add(new FileInfo(System.IO.Path.Combine(path, file)));
+                    files.Add(new FileInfo(Path.Combine(path, file)));
                 }
 
                 pointer += file.Length * 2 + 2;

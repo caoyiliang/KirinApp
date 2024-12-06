@@ -27,11 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Plateform\Linux\" />
-    <Folder Include="Plateform\MacOS\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.36" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="6.0.36" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />

@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KirinAppCore.Plateform.Windows.Models;
+namespace KirinAppCore.Plateform.WebView2.Windows.Models;
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
 internal struct WNDCLASS
 {
@@ -97,7 +97,7 @@ internal struct OpenFileDialogParams
 }
 
 [StructLayout(LayoutKind.Sequential)]
-internal struct  NotifyIconData
+internal struct NotifyIconData
 {
     public uint cbSize;
     public IntPtr hWnd;

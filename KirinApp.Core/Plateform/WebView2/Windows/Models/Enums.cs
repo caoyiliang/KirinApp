@@ -1,0 +1,93 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace KirinAppCore.Plateform.WebView2.Windows.Models;
+
+
+[Flags]
+public enum WindowExStyle : uint
+{
+    DLGMODALFRAME = 0x00000001,
+    TOPMOST = 0x00000008,
+    TOOLWINDOW = 0x00000080,
+    NOACTIVATE = 0x00000040,
+    APPWINDOW = 0x00040000,
+    LAYERED = 0x00080000,
+    WINDOWEDGE = 0x00000100,
+    TRANSPARENT = 0x00000020,
+    COMPOSITED = 0x02000000,
+    NOINHERITLAYOUT = 0x00100000,
+    LAYOUTRTL = 0x00400000,
+
+}
+
+[Flags]
+public enum WindowStyle : uint
+{
+    OVERLAPPED = 0x00000000,
+    CAPTION = 0xc00000,
+    POPUP = 0x80000000,
+    CHILD = 0x40000000,
+    MINIMIZE = 0x20000000,
+    VISIBLE = 0x10000000,
+    DISABLED = 0x08000000,
+    CLIPSIBLINGS = 0x04000000,
+    CLIPCHILDREN = 0x02000000,
+    MAXIMIZE = 0x01000000,
+    BORDER = 0x00800000,
+    DLGFRAME = 0x00400000,
+    VSCROLL = 0x00200000,
+    HSCROLL = 0x00100000,
+    SYSMENU = 0x00080000,
+    THICKFRAME = 0x00040000,
+    GROUP = 0x00020000,
+    TABSTOP = 0x00010000,
+    MINIMIZEBOX = 0x20000,
+    MAXIMIZEBOX = 0x10000,
+    SIZEFRAME = 0x40000,
+    POPUPWINDOW = POPUP | BORDER | SYSMENU,
+    OVERLAPPEDWINDOW = OVERLAPPED | CAPTION | SYSMENU | SIZEFRAME | MINIMIZEBOX | MAXIMIZEBOX,
+}
+
+public enum SW : int
+{
+    HIDE,
+    NORMAL,
+    MINIMIZED,
+    MAXIMIZE,
+    SHOWNOACTIVATE,
+    SHOW,
+    MINIMIZE,
+    SHOWMINNOACTIVE,
+    SHOWNA,
+    RESTORE,
+    SHOWDEFAULT,
+    FORCEMINIMIZE,
+}
+
+public enum DeviceCapability : int
+{
+    HORZRES = 8,
+    VERTRES = 10,
+    BITSPIXEL = 12,
+    PLANES = 14,
+    LOGPIXELSX = 88,
+    LOGPIXELSY = 90
+}
+
+public enum Notify : uint
+{
+    NIM_ADD = 0x00000000,
+    NIM_MODIFY = 0x00000001,
+    NIM_DELETE = 0x00000002,
+    NIF_MESSAGE = 0x00000001,
+    NIF_TIP = 0x00000004,
+    NIF_INFO = 0x00000010,
+    NIF_ICON = 0x00000002,
+    WM_MOUSEMOVE = 0x0200,
+    WM_USER = 0x040,
+    WM_TASKBARCREATED = WM_USER + 1
+}
