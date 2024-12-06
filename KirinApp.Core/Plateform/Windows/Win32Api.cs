@@ -46,6 +46,8 @@ internal static class Win32Api
     internal static extern int GetSystemMetrics(int nIndex);
     [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
     internal static extern nint GetDC(nint hwnd);
+    [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDC);
     [DllImport(G32, CharSet = CharSet.Unicode, SetLastError = true)]
     internal static extern int GetDeviceCaps(nint hdc, int nIndex);
     [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
@@ -63,8 +65,6 @@ internal static class Win32Api
     [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
     internal static extern bool FillRect(IntPtr hDC, ref Rect lprc, IntPtr hbr);
     [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
-    internal static extern void ReleaseDC(IntPtr hWnd, IntPtr hDC);
-    [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
     internal static extern bool SetProcessDPIAware();
     [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
     internal static extern bool PostMessage(IntPtr handle, uint Msg, IntPtr wParam, IntPtr lParam);
@@ -78,4 +78,8 @@ internal static class Win32Api
     internal static extern bool GetOpenFileName(ref OpenFileDialogParams param);
     [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
     internal static extern int MessageBox(IntPtr handle, string msg, string title, int options);
+
+    public delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData);
+    [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumProc lpfnEnum, IntPtr dwData);
 }

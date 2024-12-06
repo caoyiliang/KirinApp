@@ -137,9 +137,4 @@ public class Monitor
     /// 宽度
     /// </summary>
     public int Width { get; set; }
-
-    /// <summary>
-    /// 缩放
-    /// </summary>
-    public double Zoom { get; set; }
 }

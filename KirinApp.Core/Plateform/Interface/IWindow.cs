@@ -61,11 +61,6 @@ internal abstract class IWindow
     /// 主显示器
     /// </summary>
     public Model.Monitor MainMonitor { get; protected set; } = new();
-
-    /// <summary>
-    /// 显示器
-    /// </summary>
-    public List<Model.Monitor> Monitors { get; protected set; } = new();
     #endregion
 
     #region 事件

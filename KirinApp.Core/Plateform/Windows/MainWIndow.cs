@@ -21,6 +21,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.WebView;
+using Newtonsoft.Json.Linq;
 
 namespace KirinAppCore.Plateform.Windows;
 
@@ -322,20 +323,15 @@ internal class MainWIndow : IWindow
     /// </summary>
     public override void SetScreenInfo()
     {
+        //主显示器
         int width = Win32Api.GetSystemMetrics(0);
         int height = Win32Api.GetSystemMetrics(1);
 
-        nint hdc = Win32Api.GetDC(0);
-        int screenWidth = Win32Api.GetDeviceCaps(hdc, 118);
-
-        double dpi = Math.Round((double)screenWidth / width, 2);
         MainMonitor = new()
         {
             Width = width,
             Height = height,
-            Zoom = dpi,
         };
-        Monitors.Add(MainMonitor);
     }
     #endregion
 
@@ -414,6 +410,28 @@ internal class MainWIndow : IWindow
                 CoreWebCon.CoreWebView2.WebMessageReceived += (s, e) =>
                 {
                     WebManager.OnMessageReceived(e.Source, e.TryGetWebMessageAsString());
+                    try
+                    {
+                        var jobject = JObject.Parse(e.TryGetWebMessageAsString());
+                        if (jobject.ContainsKey("cmd"))
+                        {
+                            var cmd = jobject["cmd"]!.ToString();
+                            switch (cmd)
+                            {
+                                case "max": Maximize(); break;
+                                case "min": Minimize(); break;
+                                case "hide": Hide(); break;
+                                case "show": Show(); break;
+                                case "focus": Focus(); break;
+                                case "close": Close(); break;
+                                default:
+                                    break;
+                            }
+                            Maximize();
+                        }
+                        return;
+                    }
+                    catch { }
                     WebMessageReceived?.Invoke(s, e);
                 };
                 CoreWebCon.CoreWebView2.AddWebResourceRequestedFilter($"{SchemeConfig.AppOrigin}*",

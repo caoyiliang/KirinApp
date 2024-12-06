@@ -38,11 +38,6 @@ public class KirinApp
     /// </summary>
     public Model.Monitor MainMonitor => Window.MainMonitor;
 
-    /// <summary>
-    /// 所有显示器
-    /// </summary>
-    public List<Model.Monitor> Monitors => Window.Monitors;
-
     public KirinApp()
     {
         InitPlateform();
@@ -208,10 +203,51 @@ public class KirinApp
         return this;
     }
 
+    public KirinApp UseRawString(string rawString)
+    {
+        Config.AppType = WebAppType.RawString;
+        Config.RawString = rawString;
+        return this;
+    }
+
+    public KirinApp UseStatic(string path)
+    {
+        Config.AppType = WebAppType.Static;
+        Config.Url = path;
+
+        //重新获取依赖注入
+        InitPlateform();
+        RegistResource();
+        ServiceProvide = serviceCollection.BuildServiceProvider();
+        Window = ServiceProvide.GetRequiredService<IWindow>();
+        return this;
+    }
+
+    public KirinApp UseHttp(string url)
+    {
+        Config.AppType = WebAppType.Http;
+        Config.Url = url;
+
+        //重新获取依赖注入
+        InitPlateform();
+        RegistResource();
+        ServiceProvide = serviceCollection.BuildServiceProvider();
+        Window = ServiceProvide.GetRequiredService<IWindow>();
+        return this;
+    }
+
     public KirinApp UseBlazor<T>(string selector = "#app")
     {
+        Config.AppType = WebAppType.Blazor;
+        if (!selector.Contains("#")) selector = "#" + selector;
         Config.BlazorSelector = selector;
         Config.BlazorComponent = typeof(T);
+
+        //重新获取依赖注入
+        InitPlateform();
+        RegistResource();
+        ServiceProvide = serviceCollection.BuildServiceProvider();
+        Window = ServiceProvide.GetRequiredService<IWindow>();
         return this;
     }
 
@@ -224,6 +260,15 @@ public class KirinApp
     public void ExecuteJavaScript(string js) => Window.ExecuteJavaScript(js);
     public string ExecuteJavaScriptWithResult(string js) => Window.ExecuteJavaScriptWithResult(js);
     public void OpenDevTool() => Window.OpenDevTool();
-
     public void Reload() => Window.Reload();
+    public void ReloadUrl(string url)
+    {
+        SetUrl(url);
+        Reload();
+    }
+    public void ReloadRawString(string content)
+    {
+        SetRawString(content);
+        Reload();
+    }
 }

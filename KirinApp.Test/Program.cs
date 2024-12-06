@@ -16,12 +16,14 @@ class Program
             Width = 1600,
             AppType = WebAppType.Http,
             BlazorComponent = typeof(App),
-            Url = "https://ops.zink.asia:28238/",
+            Url = "index.html",
             RawString = "<span style='color:red'>这个是字符串</span>",
             Icon = "logo.ico",
             Debug = true,
         };
         var kirinApp = new KirinApp(winConfig);
+        kirinApp.UseBlazor<App>();
+        kirinApp.UseStatic("index.html");
         kirinApp.Created += (_, _) =>
         {
             Task.Run(() =>
