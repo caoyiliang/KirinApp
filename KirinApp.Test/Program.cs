@@ -24,13 +24,13 @@ class Program
         var kirinApp = new KirinApp(winConfig);
         kirinApp.UseBlazor<App>();
         kirinApp.UseStatic("index.html");
-        kirinApp.Created += (_, _) =>
+        kirinApp.Loaded += (_, _) =>
         {
-            Task.Run(() =>
-            {
-                Thread.Sleep(1000);
-                kirinApp.Reload();
-            });
+            kirinApp.SendWebMessage("你好");
+        };
+        kirinApp.WebMessageReceived += (_, _) =>
+        {
+            kirinApp.SendWebMessage("你好");
         };
         kirinApp.Run();
     }

@@ -55,7 +55,6 @@ public class KirinApp
         ServiceProvide = serviceCollection.BuildServiceProvider();
         Window = ServiceProvide.GetRequiredService<IWindow>();
 
-        EventRegister();
     }
 
     private void EventRegister()
@@ -72,6 +71,7 @@ public class KirinApp
     public void Run()
     {
         Window.Init(ServiceProvide, Config);
+        EventRegister();
         Window.Show();
         Window.MessageLoop();
     }
@@ -271,4 +271,5 @@ public class KirinApp
         SetRawString(content);
         Reload();
     }
+    public void SendWebMessage(string msg) => Window.SendWebMessage(msg);
 }

@@ -4,6 +4,7 @@ window.external = {
     },
     receiveMessage: callback => {
         window.chrome.webview.addEventListener('message', e => {
+            console.log(e.data)
             callback(e.data)
         });
     },
