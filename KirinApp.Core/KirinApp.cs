@@ -18,7 +18,7 @@ namespace KirinAppCore;
 
 public class KirinApp
 {
-    private WinConfig Config = new();
+    internal WinConfig Config = new();
     internal IWindow Window { get; private set; }
 
     protected ServiceProvider ServiceProvide { get; private set; }
@@ -37,6 +37,8 @@ public class KirinApp
     /// 主显示器
     /// </summary>
     public Model.Monitor MainMonitor => Window.MainMonitor;
+    public OSPlatform OS { get; private set; } = OSPlatform.Windows;
+    public OperatingSystem OsVersion { get; private set; } = Environment.OSVersion;
 
     public KirinApp()
     {
@@ -84,13 +86,12 @@ public class KirinApp
     private void InitPlateform()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            serviceCollection.AddSingleton<IWindow, MainWIndow>();
-        }
-        else
-        {
-            serviceCollection.AddSingleton<IWindow, MainWIndow>();
-        }
+            serviceCollection.AddSingleton<IWindow, KirinAppCore.Plateform.WebView2.Windows.MainWIndow>();
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            serviceCollection.AddSingleton<IWindow, KirinAppCore.Plateform.Webkit.Linux.MainWIndow>();
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            serviceCollection.AddSingleton<IWindow, KirinAppCore.Plateform.Webkit.MacOS.MainWIndow>();
+
         if (Config.AppType != WebAppType.Http)
         {
             serviceCollection.AddSingleton<JSComponentConfigurationStore>();
