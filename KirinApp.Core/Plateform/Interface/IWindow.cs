@@ -114,6 +114,25 @@ internal abstract class IWindow
     {
         switch (message)
         {
+            case WindowMessage.GETMINMAXINFO:
+                MinMaxInfo mmi = Marshal.PtrToStructure<MinMaxInfo>(lParam);
+                if (Config.MinimumSize != null)
+                {
+                    Config.MinimumWidth = Config.MinimumSize.Value.Width;
+                    Config.MinimumHeigh = Config.MinimumSize.Value.Height;
+
+                }
+                if (Config.MaximumSize != null)
+                {
+                    Config.MaximumWidth = Config.MaximumSize.Value.Width;
+                    Config.MaximumHeigh = Config.MaximumSize.Value.Height;
+                }
+                mmi.ptMinTrackSize.X = Config.MinimumWidth; // 设置最小宽度
+                mmi.ptMinTrackSize.Y = Config.MinimumHeigh; // 设置最小高度
+                mmi.ptMaxTrackSize.X = Config.MaximumWidth; // 设置最大宽度
+                mmi.ptMaxTrackSize.Y = Config.MaximumHeigh; // 设置最大高度
+                Marshal.StructureToPtr(mmi, lParam, true);
+                break;
             case WindowMessage.SIZE:
                 {
                     var size = GetClientSize();
@@ -285,6 +304,17 @@ internal abstract class IWindow
     /// <param name="js"></param>
     /// <returns></returns>
     public abstract void ExecuteJavaScript(string js);
+
+    /// <summary>
+    /// 执行js代码返回结果
+    /// </summary>
+    /// <param name="js"></param>
+    /// <returns></returns>
     public abstract string ExecuteJavaScriptWithResult(string js);
+
+    /// <summary>
+    /// 重新渲染
+    /// </summary>
+    public abstract void Reload();
     #endregion
 }

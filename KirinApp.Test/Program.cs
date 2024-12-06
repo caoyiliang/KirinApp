@@ -14,9 +14,9 @@ class Program
             AppName = "Test",
             Height = 1200,
             Width = 1600,
-            AppType = WebAppType.RawString,
+            AppType = WebAppType.Http,
             BlazorComponent = typeof(App),
-            Url = "index.html",
+            Url = "https://ops.zink.asia:28238/",
             RawString = "<span style='color:red'>这个是字符串</span>",
             Icon = "logo.ico",
             Debug = true,
@@ -26,7 +26,8 @@ class Program
         {
             Task.Run(() =>
             {
-
+                Thread.Sleep(1000);
+                kirinApp.Reload();
             });
         };
         kirinApp.Run();

@@ -171,12 +171,14 @@ public class KirinApp
     public KirinApp SetUrl(string url)
     {
         Config.Url = url;
+        Reload();
         return this;
     }
 
     public KirinApp SetRawString(string rawString)
     {
         Config.RawString = rawString;
+        Reload();
         return this;
     }
 
@@ -228,4 +230,6 @@ public class KirinApp
     public void ExecuteJavaScript(string js) => Window.ExecuteJavaScript(js);
     public string ExecuteJavaScriptWithResult(string js) => Window.ExecuteJavaScriptWithResult(js);
     public void OpenDevTool() => Window.OpenDevTool();
+
+    public void Reload() => Window.Reload();
 }

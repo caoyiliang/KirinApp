@@ -20,6 +20,7 @@ using static System.Net.Mime.MediaTypeNames;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Reflection.Metadata;
+using Microsoft.AspNetCore.Components.WebView;
 
 namespace KirinAppCore.Plateform.Windows;
 
@@ -28,6 +29,9 @@ namespace KirinAppCore.Plateform.Windows;
 /// </summary>
 internal class MainWIndow : IWindow
 {
+    private WebManager? WebManager { get; set; }
+    private SchemeConfig? SchemeConfig { get; set; }
+
     #region 事件
     public override event EventHandler<CoreWebView2WebMessageReceivedEventArgs>? WebMessageReceived;
     public override event EventHandler<EventArgs>? OnCreate;
@@ -84,7 +88,7 @@ internal class MainWIndow : IWindow
             windowStyle = WindowStyle.POPUPWINDOW | WindowStyle.CLIPCHILDREN | WindowStyle.CLIPSIBLINGS | WindowStyle.THICKFRAME | WindowStyle.MINIMIZEBOX | WindowStyle.MAXIMIZEBOX;
         else
             windowStyle = WindowStyle.OVERLAPPEDWINDOW | WindowStyle.CLIPCHILDREN | WindowStyle.CLIPSIBLINGS;
-        if (!Config.ResizeAble)
+        if (!Config.ResizeAble || Config.MaximumSize != null || Config.MaximumWidth > 0 || Config.MinimumHeigh > 0)
         {
             windowStyle &= ~WindowStyle.MAXIMIZEBOX;
             windowStyle &= ~WindowStyle.THICKFRAME;
@@ -383,7 +387,9 @@ internal class MainWIndow : IWindow
             //屏蔽快捷键
             CoreWebCon.AcceleratorKeyPressed += (s, e) =>
             {
-                if (!Config.Debug && e.VirtualKey >= 112 && e.VirtualKey <= 122) e.Handled = true;
+                if (!Config.Debug)
+                    if (e.VirtualKey >= 112 && e.VirtualKey <= 122) // F1 - F12
+                        e.Handled = true;
             };
 
             CoreWebCon.CoreWebView2.Settings.AreDevToolsEnabled = Config.Debug;
@@ -395,50 +401,32 @@ internal class MainWIndow : IWindow
                 if (Config.AppType == WebAppType.Static) url += Config.Url;
                 if (Config.AppType == WebAppType.Blazor) url += "blazorindex.html";
 
-                var schemeConfig = new Uri(url).ParseScheme();
+                SchemeConfig = new Uri(url).ParseScheme();
                 var dispatcher = new WebDispatcher(this);
-                var webViewManager = new WebManager(this, CoreWebCon.CoreWebView2, ServiceProvide!, dispatcher,
-                    ServiceProvide!.GetRequiredService<JSComponentConfigurationStore>(), schemeConfig);
+                WebManager = new WebManager(this, CoreWebCon.CoreWebView2, ServiceProvide!, dispatcher,
+                    ServiceProvide!.GetRequiredService<JSComponentConfigurationStore>(), SchemeConfig);
                 if (Config.AppType == WebAppType.Blazor)
                     _ = dispatcher.InvokeAsync(async () =>
                     {
-                        await webViewManager.AddRootComponentAsync(Config.BlazorComponent!, Config.BlazorSelector,
+                        await WebManager.AddRootComponentAsync(Config.BlazorComponent!, Config.BlazorSelector,
                             ParameterView.Empty);
                     });
                 CoreWebCon.CoreWebView2.WebMessageReceived += (s, e) =>
                 {
-                    webViewManager.OnMessageReceived(e.Source, e.TryGetWebMessageAsString());
+                    WebManager.OnMessageReceived(e.Source, e.TryGetWebMessageAsString());
                     WebMessageReceived?.Invoke(s, e);
                 };
-                CoreWebCon.CoreWebView2.AddWebResourceRequestedFilter($"{schemeConfig.AppOrigin}*",
+                CoreWebCon.CoreWebView2.AddWebResourceRequestedFilter($"{SchemeConfig.AppOrigin}*",
                     CoreWebView2WebResourceContext.All);
-                CoreWebCon.CoreWebView2.WebResourceRequested += (s, e) =>
-                {
-                    if (Config.AppType == WebAppType.RawString)
-                    {
-                        var contentType = "text/html";
-                        string pattern = @"<(\w+)([^>]*?)>(.*?)<\/\1>|<(\w+)([^>]*?)/>";
-                        if (!Regex.IsMatch(Config.RawString ?? "", pattern, RegexOptions.Singleline))
-                            contentType = "text/plain";
-                        byte[] byteArray = Encoding.UTF8.GetBytes(Config.RawString ?? "");
-                        MemoryStream ms = new(byteArray);
-                        e.Response = CoreWebEnv.CreateWebResourceResponse(ms, 200, "OK", $"Content-Type:{contentType}; charset=utf-8");
-                    }
-                    else
-                    {
-                        var response = webViewManager.OnResourceRequested(schemeConfig, e.Request.Uri.ToString());
-                        if (response.Content != null)
-                            e.Response = CoreWebEnv.CreateWebResourceResponse(response.Content, 200, "OK",
-                                $"Content-Type:{response.Type}; charset=utf-8");
-                    }
-                };
+
+                ResourceRequest();
 
                 var assembly = Assembly.GetExecutingAssembly();
                 var stream = assembly.GetManifestResourceStream("KirinAppCore.wwwroot.edge.document.js")!;
                 var content = new StreamReader(stream).ReadToEnd();
                 await CoreWebCon.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(content).ConfigureAwait(true);
 
-                webViewManager.Navigate("/");
+                WebManager.Navigate("/");
             }
             if (Config.AppType == WebAppType.Http)
             {
@@ -504,6 +492,45 @@ internal class MainWIndow : IWindow
     public override void SendWebMessage(string message)
     {
         CoreWebCon!.CoreWebView2.PostWebMessageAsString(message);
+    }
+
+    public override void Reload()
+    {
+        Task.Run(() =>
+        {
+            IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(() =>
+            {
+                ResourceRequest();
+                CoreWebCon?.CoreWebView2.Reload();
+            });
+            if (Config.AppType == WebAppType.Http)
+                actionPtr = Marshal.GetFunctionPointerForDelegate(() => CoreWebCon!.CoreWebView2.Navigate(Config.Url));
+            Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
+        });
+    }
+
+    private void ResourceRequest()
+    {
+        CoreWebCon!.CoreWebView2.WebResourceRequested += (s, e) =>
+        {
+            if (Config.AppType == WebAppType.RawString)
+            {
+                var contentType = "text/html";
+                string pattern = @"<(\w+)([^>]*?)>(.*?)<\/\1>|<(\w+)([^>]*?)/>";
+                if (!Regex.IsMatch(Config.RawString ?? "", pattern, RegexOptions.Singleline))
+                    contentType = "text/plain";
+                byte[] byteArray = Encoding.UTF8.GetBytes(Config.RawString ?? "");
+                MemoryStream ms = new(byteArray);
+                e.Response = CoreWebEnv!.CreateWebResourceResponse(ms, 200, "OK", $"Content-Type:{contentType}; charset=utf-8");
+            }
+            else
+            {
+                var response = WebManager!.OnResourceRequested(SchemeConfig!, e.Request.Uri.ToString());
+                if (response.Content != null)
+                    e.Response = CoreWebEnv!.CreateWebResourceResponse(response.Content, 200, "OK",
+                        $"Content-Type:{response.Type}; charset=utf-8");
+            }
+        };
     }
     #endregion
 }

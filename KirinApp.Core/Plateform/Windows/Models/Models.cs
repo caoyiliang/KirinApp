@@ -96,7 +96,7 @@ internal struct OpenFileDialogParams
 }
 
 [StructLayout(LayoutKind.Sequential)]
-public struct  NotifyIconData
+internal struct  NotifyIconData
 {
     public uint cbSize;
     public IntPtr hWnd;
@@ -115,4 +115,14 @@ public struct  NotifyIconData
     public uint dwInfoFlags;
     public Guid guidItem;
     public IntPtr hBalloonIcon;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal struct MinMaxInfo
+{
+    public POINT ptReserved;
+    public POINT ptMaxSize;
+    public POINT ptMaxTrackSize;
+    public POINT ptMinTrackSize;
+    public POINT ptMinSize;
 }
