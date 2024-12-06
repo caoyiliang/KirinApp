@@ -159,9 +159,7 @@ internal abstract class IWindow
     {
         ServiceProvide = serviceProvider;
         ManagedThreadId = Environment.CurrentManagedThreadId;
-        Config = winConfig;
-        Win32Api.SetProcessDPIAware();
-        SetScreenInfo();
+        Config = winConfig;    
         Create();
         InitWebControl();
         SizeChangeEvent += (s, e) => SizeChange(Handle, e.Width, e.Height);

@@ -14,7 +14,7 @@ class Program
             AppName = "Test",
             Height = 1200,
             Width = 1600,
-            AppType = WebAppType.Http,
+            AppType = WebAppType.Static,
             BlazorComponent = typeof(App),
             Url = "index.html",
             RawString = "<span style='color:red'>这个是字符串</span>",
@@ -22,8 +22,7 @@ class Program
             Debug = true,
         };
         var kirinApp = new KirinApp(winConfig);
-        kirinApp.UseBlazor<App>();
-        kirinApp.UseStatic("index.html");
+        
         kirinApp.Loaded += (_, _) =>
         {
             kirinApp.SendWebMessage("你好");

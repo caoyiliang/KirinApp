@@ -45,7 +45,9 @@ public class KirinApp
         ServiceProvide = serviceCollection.BuildServiceProvider();
         Window = ServiceProvide.GetRequiredService<IWindow>();
 
-        EventRegister();
+        //获取主显示器宽高
+        Win32Api.SetProcessDPIAware();
+        Window.SetScreenInfo();
     }
     public KirinApp(WinConfig winConfig)
     {
@@ -55,6 +57,9 @@ public class KirinApp
         ServiceProvide = serviceCollection.BuildServiceProvider();
         Window = ServiceProvide.GetRequiredService<IWindow>();
 
+        //获取主显示器宽高
+        Win32Api.SetProcessDPIAware();
+        Window.SetScreenInfo();
     }
 
     private void EventRegister()
@@ -207,6 +212,11 @@ public class KirinApp
     {
         Config.AppType = WebAppType.RawString;
         Config.RawString = rawString;
+
+        //重新获取依赖注入
+        InitPlateform();
+        RegistResource();
+        ServiceProvide = serviceCollection.BuildServiceProvider();
         return this;
     }
 
@@ -219,7 +229,6 @@ public class KirinApp
         InitPlateform();
         RegistResource();
         ServiceProvide = serviceCollection.BuildServiceProvider();
-        Window = ServiceProvide.GetRequiredService<IWindow>();
         return this;
     }
 
@@ -232,7 +241,6 @@ public class KirinApp
         InitPlateform();
         RegistResource();
         ServiceProvide = serviceCollection.BuildServiceProvider();
-        Window = ServiceProvide.GetRequiredService<IWindow>();
         return this;
     }
 
@@ -247,7 +255,6 @@ public class KirinApp
         InitPlateform();
         RegistResource();
         ServiceProvide = serviceCollection.BuildServiceProvider();
-        Window = ServiceProvide.GetRequiredService<IWindow>();
         return this;
     }
 

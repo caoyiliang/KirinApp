@@ -98,6 +98,7 @@ internal class MainWIndow : IWindow
         }
 
         var windowExStyle = WindowExStyle.APPWINDOW | WindowExStyle.WINDOWEDGE;
+        Win32Api.SetProcessDPIAware();
         Handle = Win32Api.CreateWindowExW(windowExStyle, className, Config.AppName, windowStyle, Config.Left,
             Config.Top, Config.Width, Config.Height, IntPtr.Zero, IntPtr.Zero, Win32Api.GetConsoleWindow(), null);
         if (Handle == IntPtr.Zero) throw new Exception("创建窗体失败！");
@@ -112,6 +113,7 @@ internal class MainWIndow : IWindow
         {
             case WindowMessage.PAINT:
                 {
+                    Win32Api.SetProcessDPIAware();
                     IntPtr hDC = Win32Api.GetDC(hwnd);
                     Win32Api.GetClientRect(hwnd, out Rect rect);
                     var color = (uint)ColorTranslator.ToWin32(ColorTranslator.FromHtml("#FFFFFF"));
