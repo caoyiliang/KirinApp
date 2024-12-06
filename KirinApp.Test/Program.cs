@@ -22,7 +22,6 @@ class Program
             Debug = true,
         };
         var kirinApp = new KirinApp(winConfig);
-        
         kirinApp.Loaded += (_, _) =>
         {
             kirinApp.SendWebMessage("你好");

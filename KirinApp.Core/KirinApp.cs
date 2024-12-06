@@ -107,16 +107,20 @@ public class KirinApp
     }
 
     #region 通过方法修改Config的属性
+    public string AppName { get => Config.AppName; set => Config.AppName = value; }
     public KirinApp SetAppName(string name)
     {
         Config.AppName = name;
         return this;
     }
-    public KirinApp SetIco(string path)
+    public string Icon { get => Config.Icon; set => Config.Icon = value; }
+    public KirinApp SetIcon(string path)
     {
         Config.Icon = path;
         return this;
     }
+    public int Width { get => Config.Width; set => Config.Width = value; }
+    public int Height { get => Config.Height; set => Config.Height = value; }
     public KirinApp SetSize(int width, int height)
     {
         Config.Height = height;
@@ -124,31 +128,42 @@ public class KirinApp
         return this;
     }
 
+    public System.Drawing.Size? Size { get => Config.Size; set => Config.Size = value; }
     public KirinApp SetSize(Size size)
     {
         Config.Size = size;
         return this;
     }
 
-
-    public KirinApp Chromless(bool b = true)
+    public bool Chromless { get => Config.Chromless; set => Config.Chromless = value; }
+    public KirinApp IsChromless(bool b = true)
     {
         Config.Chromless = b;
         return this;
     }
 
-    public KirinApp Debug(bool b = true)
+    public bool Debug { get => Config.Debug; set => Config.Debug = value; }
+    public KirinApp IsDebug(bool b = true)
     {
         Config.Debug = b;
         return this;
     }
 
+    public WebAppType AppType { get => Config.AppType; set => Config.AppType = value; }
     public KirinApp SetAppType(WebAppType appType)
     {
         Config.AppType = appType;
         return this;
     }
 
+    public int Left { get => Config.Left; set => Config.Left = value; }
+    public int Top { get => Config.Top; set => Config.Top = value; }
+    public KirinApp SetPosition(Point p)
+    {
+        Config.Left = p.X;
+        Config.Top = p.Y;
+        return this;
+    }
     public KirinApp SetPosition(int left, int top)
     {
         Config.Left = left;
@@ -156,18 +171,21 @@ public class KirinApp
         return this;
     }
 
-    public KirinApp ResizeAble(bool b = true)
+    public bool ResizeAble { get => Config.ResizeAble; set => Config.ResizeAble = value; }
+    public KirinApp SetResizeAble(bool b = true)
     {
         Config.ResizeAble = b;
         return this;
     }
 
-    public KirinApp Center(bool b = true)
+    public bool Center { get => Config.Center; set => Config.Center = value; }
+    public KirinApp SetCenter(bool b = true)
     {
         Config.Center = b;
         return this;
     }
 
+    public string? Url { get => Config.Url; set => Config.Url = value; }
     public KirinApp SetUrl(string url)
     {
         Config.Url = url;
@@ -175,6 +193,16 @@ public class KirinApp
         return this;
     }
 
+    public Type? BlazorComponent { get => Config.BlazorComponent; set => Config.BlazorComponent = value; }
+    public string BlazorSelector { get => Config.BlazorSelector; set => Config.BlazorSelector = value; }
+    public KirinApp SetBlazor<T>(string blazorSelector = "#app") where T : class
+    {
+        Config.BlazorComponent = typeof(T);
+        Config.BlazorSelector += blazorSelector;
+        return this;
+    }
+
+    public string? RawString { get => Config.RawString; set => Config.RawString = value; }
     public KirinApp SetRawString(string rawString)
     {
         Config.RawString = rawString;
@@ -182,6 +210,8 @@ public class KirinApp
         return this;
     }
 
+    public int MinimumWidth { get => Config.MinimumWidth; set => Config.MinimumWidth = value; }
+    public int MinimumHeigh { get => Config.MinimumHeigh; set => Config.MinimumHeigh = value; }
     public KirinApp SetMinSize(int width, int heigth)
     {
         Config.MinimumWidth = width;
@@ -189,12 +219,15 @@ public class KirinApp
         return this;
     }
 
+    public System.Drawing.Size? MinimumSize { get => Config.MinimumSize; set => Config.MinimumSize = value; }
     public KirinApp SetMinSize(Size size)
     {
         Config.MinimumSize = size;
         return this;
     }
 
+    public int MaximumWidth { get => Config.MaximumWidth; set => Config.MaximumWidth = value; }
+    public int MaximumHeigh { get => Config.MaximumHeigh; set => Config.MaximumHeigh = value; }
     public KirinApp SetMaxSize(int width, int heigth)
     {
         Config.MaximumWidth = width;
@@ -202,6 +235,7 @@ public class KirinApp
         return this;
     }
 
+    public System.Drawing.Size? MaximumSize { get => Config.MaximumSize; set => Config.MaximumSize = value; }
     public KirinApp SetMaxSize(Size size)
     {
         Config.MaximumSize = size;
@@ -244,7 +278,7 @@ public class KirinApp
         return this;
     }
 
-    public KirinApp UseBlazor<T>(string selector = "#app")
+    public KirinApp UseBlazor<T>(string selector = "#app") where T : class
     {
         Config.AppType = WebAppType.Blazor;
         if (!selector.Contains("#")) selector = "#" + selector;
