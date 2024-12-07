@@ -406,11 +406,14 @@ internal class MainWIndow : IWindow
                 WebManager = new WebManager(this, CoreWebCon.CoreWebView2, ServiceProvide!, dispatcher,
                     ServiceProvide!.GetRequiredService<JSComponentConfigurationStore>(), SchemeConfig);
                 if (Config.AppType == WebAppType.Blazor)
+                {
+                    if (Config.BlazorComponent == null) throw new Exception("Blazor component not found!");
                     _ = dispatcher.InvokeAsync(async () =>
                     {
                         await WebManager.AddRootComponentAsync(Config.BlazorComponent!, Config.BlazorSelector,
                             ParameterView.Empty);
                     });
+                }
                 CoreWebCon.CoreWebView2.WebMessageReceived += (s, e) =>
                 {
                     WebManager.OnMessageReceived(e.Source, e.TryGetWebMessageAsString());
