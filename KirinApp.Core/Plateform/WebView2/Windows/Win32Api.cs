@@ -32,6 +32,8 @@ internal static class Win32Api
 
     [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
     internal static extern bool ShowWindow(IntPtr handle, SW nCmdShow);
+    [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
+    internal static extern bool DestroyWindow(IntPtr hWnd);
 
     [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
     internal static extern bool SetForegroundWindow(IntPtr hWnd);

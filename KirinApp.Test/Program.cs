@@ -28,7 +28,27 @@ class Program
         };
         kirinApp.WebMessageReceived += (_, _) =>
         {
-            kirinApp.SendWebMessage("你好");
+            Task.Run(() =>
+            {
+                var setApp = new KirinApp(kirinApp);
+                setApp.AppName = "Setting";
+                setApp.Icon = "logo.ico";
+                setApp.Height = 400;
+                setApp.Width = 600;
+                setApp.UseBlazor<App>();
+                setApp.Run();
+            });
+            //Blazor 两个一起创建，或者点击创建过快会报错
+            Task.Run(() =>
+            {
+                var setApp2 = new KirinApp(kirinApp);
+                setApp2.AppName = "Setting2";
+                setApp2.Icon = "logo.ico";
+                setApp2.Height = 400;
+                setApp2.Width = 600;
+                setApp2.UseBlazor<App>();
+                setApp2.Run();
+            });
         };
         kirinApp.Run();
     }

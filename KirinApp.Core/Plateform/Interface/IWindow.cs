@@ -21,10 +21,14 @@ internal abstract class IWindow
 {
     #region WebView2变量
     protected ServiceProvider? ServiceProvide;
-    protected int ManagedThreadId;
     #endregion
 
     #region 窗体变量
+    /// <summary>
+    /// 父窗体
+    /// </summary>
+    public KirinApp? ParentWindows { get; internal set; }
+
     /// <summary>
     /// 窗体句柄
     /// </summary>
@@ -137,8 +141,7 @@ internal abstract class IWindow
                     var res = OnClose?.Invoke(this, new());
                     if (res == null || res.Value)
                     {
-                        Handle = IntPtr.Zero;
-                        Environment.Exit(0);
+                        Close();
                         return IntPtr.Zero;
                     }
                     else return IntPtr.Zero;
@@ -158,8 +161,7 @@ internal abstract class IWindow
     public virtual void Init(ServiceProvider serviceProvider, WinConfig winConfig)
     {
         ServiceProvide = serviceProvider;
-        ManagedThreadId = Environment.CurrentManagedThreadId;
-        Config = winConfig;    
+        Config = winConfig;
         Create();
         InitWebControl();
         SizeChangeEvent += (s, e) => SizeChange(Handle, e.Width, e.Height);
@@ -281,7 +283,7 @@ internal abstract class IWindow
     /// </summary>
     /// <param name="workItem"></param>
     /// <returns></returns>
-    public abstract Task InvokeAsync(Action workItem);
+    public abstract void Invoke(Action workItem);
 
     /// <summary>
     /// 给前端发送消息

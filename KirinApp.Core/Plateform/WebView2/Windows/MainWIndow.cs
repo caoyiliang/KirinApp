@@ -49,7 +49,7 @@ internal class MainWIndow : IWindow
         OnCreate?.Invoke(this, new());
         var hIns = Win32Api.GetConsoleWindow();
         WindowProc = WndProc;
-        var className = Assembly.GetEntryAssembly()!.GetName().Name + "." + GetType().Name;
+        var className = "KirinApp-" + Guid.NewGuid();
         var color = Win32Api.CreateSolidBrush((uint)ColorTranslator.ToWin32(ColorTranslator.FromHtml("#FFFFFF")));
         IntPtr ico = IntPtr.Zero;
         if (!string.IsNullOrWhiteSpace(Config.Icon))
@@ -73,7 +73,8 @@ internal class MainWIndow : IWindow
         };
         if (Win32Api.RegisterClassW(ref windClass) == 0)
         {
-            throw new Exception("初始化窗体失败!");
+            int errorCode = Marshal.GetLastWin32Error();
+            throw new Exception("初始化窗体失败，错误代码：" + errorCode);
         }
 
         if (Config.Size != null)
@@ -148,6 +149,14 @@ internal class MainWIndow : IWindow
     public override void Focus()
     {
         Win32Api.SetForegroundWindow(Handle);
+    }
+
+    public override void Close()
+    {
+        if (ParentWindows == null && Utils.Wnds.Count <= 1) base.Close();
+        var app = Utils.Wnds.FirstOrDefault(x => x.Window.Handle == Handle);
+        if (app != null) Utils.Wnds.Remove(app);
+        Win32Api.DestroyWindow(Handle);
     }
 
     public override void MessageLoop()
@@ -342,7 +351,7 @@ internal class MainWIndow : IWindow
     #region WebView2方法
     public override bool CheckAccess()
     {
-        return Environment.CurrentManagedThreadId == ManagedThreadId;
+        return Environment.CurrentManagedThreadId == Utils.MainThreadId;
     }
 
     public override async Task InvokeAsync(Func<Task> workItem)
@@ -356,9 +365,8 @@ internal class MainWIndow : IWindow
         }
     }
 
-    public override async Task InvokeAsync(Action workItem)
+    public override void Invoke(Action workItem)
     {
-        await Task.Delay(1);
         if (CheckAccess()) workItem();
         else
         {
@@ -397,7 +405,7 @@ internal class MainWIndow : IWindow
 
             if (Config.AppType != WebAppType.Http)
             {
-                var url = "http://localhost/";
+                var url = $"http://localhost/";
                 if (Config.AppType == WebAppType.Static) url += Config.Url;
                 if (Config.AppType == WebAppType.Blazor) url += "blazorindex.html";
 
@@ -459,8 +467,9 @@ internal class MainWIndow : IWindow
             }
             Loaded?.Invoke(this, new());
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            Console.WriteLine(e.Message);
             throw;
         }
     }

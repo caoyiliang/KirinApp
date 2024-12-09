@@ -21,10 +21,11 @@ internal class WebDispatcher : Dispatcher
     {
         try
         {
+            await Task.Delay(1);
             if (CheckAccess())
                 workItem();
             else
-                await window.InvokeAsync(workItem);
+                window.Invoke(workItem);
         }
         catch (Exception)
         {

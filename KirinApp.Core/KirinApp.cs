@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,24 +41,26 @@ public class KirinApp
     public OSPlatform OS { get; private set; } = OSPlatform.Windows;
     public OperatingSystem OsVersion { get; private set; } = Environment.OSVersion;
 
-    public KirinApp()
+    public KirinApp(KirinApp? parent = null)
     {
         InitPlateform();
         RegistResource();
         ServiceProvide = serviceCollection.BuildServiceProvider();
         Window = ServiceProvide.GetRequiredService<IWindow>();
+        Window.ParentWindows = parent;
 
         //获取主显示器宽高
         Win32Api.SetProcessDPIAware();
         Window.SetScreenInfo();
     }
-    public KirinApp(WinConfig winConfig)
+    public KirinApp(WinConfig winConfig, KirinApp? parent = null)
     {
         Config = winConfig;
         InitPlateform();
         RegistResource();
         ServiceProvide = serviceCollection.BuildServiceProvider();
         Window = ServiceProvide.GetRequiredService<IWindow>();
+        Window.ParentWindows = parent;
 
         //获取主显示器宽高
         Win32Api.SetProcessDPIAware();
@@ -77,10 +80,28 @@ public class KirinApp
 
     public void Run()
     {
-        Window.Init(ServiceProvide, Config);
-        EventRegister();
-        Window.Show();
-        Window.MessageLoop();
+        if (Utils.MainThreadId == 0)
+            Utils.MainThreadId = Environment.CurrentManagedThreadId;
+        if (Window.CheckAccess() && Parent == null && Utils.Wnds.Count == 0)
+        {
+            Window.Init(ServiceProvide, Config);
+            EventRegister();
+            Window.Show();
+            Utils.Wnds.Add(this);
+            Window.MessageLoop();
+        }
+        else
+        {
+            IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(() =>
+            {
+                Window.Init(ServiceProvide, Config);
+                EventRegister();
+                Window.Show();
+                Utils.Wnds.Add(this);
+                Window.MessageLoop();
+            });
+            Win32Api.PostMessage(Utils.Wnds[0].Window.Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
+        };
     }
 
     private void InitPlateform()
@@ -108,6 +129,8 @@ public class KirinApp
     }
 
     #region 通过方法修改Config的属性
+    public KirinApp? Parent { get => Window.ParentWindows; set => Window.ParentWindows = value; }
+
     public string AppName { get => Config.AppName; set => Config.AppName = value; }
     public KirinApp SetAppName(string name)
     {

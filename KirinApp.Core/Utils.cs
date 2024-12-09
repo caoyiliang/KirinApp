@@ -11,6 +11,9 @@ namespace KirinAppCore;
 
 internal static class Utils
 {
+    internal static int MainThreadId = 0;
+
+    internal static List<KirinApp> Wnds = new();
     internal static SchemeConfig ParseScheme(this Uri uri)
     {
         string AppScheme = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "http" : "app";

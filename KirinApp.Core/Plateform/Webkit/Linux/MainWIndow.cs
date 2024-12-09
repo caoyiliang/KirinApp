@@ -152,7 +152,7 @@ internal class MainWIndow : IWindow
     #region Webkit方法
     public override bool CheckAccess()
     {
-        return Environment.CurrentManagedThreadId == ManagedThreadId;
+        return Environment.CurrentManagedThreadId == Utils.MainThreadId;
     }
 
     public override async Task InvokeAsync(Func<Task> workItem)
@@ -166,9 +166,8 @@ internal class MainWIndow : IWindow
         }
     }
 
-    public override async Task InvokeAsync(Action workItem)
+    public override void Invoke(Action workItem)
     {
-        await Task.Delay(1);
         if (CheckAccess()) workItem();
         else
         {
