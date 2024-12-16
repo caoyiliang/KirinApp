@@ -40,7 +40,7 @@ public class WinConfig
     /// <summary>
     /// 无边框
     /// </summary>
-    public bool Chromless { get; set; } = false;
+    public bool Chromeless { get; set; } = false;
 
     /// <summary>
     /// 调试模式

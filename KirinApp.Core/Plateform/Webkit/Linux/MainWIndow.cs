@@ -21,6 +21,7 @@ using System.Text.RegularExpressions;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.WebView;
 using Newtonsoft.Json.Linq;
+using KirinAppCore.Plateform.Webkit.Linux.Models;
 
 namespace KirinAppCore.Plateform.Webkit.Linux;
 
@@ -31,6 +32,7 @@ internal class MainWIndow : IWindow
 {
     private WebManager? WebManager { get; set; }
     private SchemeConfig? SchemeConfig { get; set; }
+    private const uint GDK_EVENT_CONFIGURE = 0x2000; // Configure event
 
     #region 事件
     public override event EventHandler<CoreWebView2WebMessageReceivedEventArgs>? WebMessageReceived;
@@ -38,66 +40,125 @@ internal class MainWIndow : IWindow
     public override event EventHandler<EventArgs>? Created;
     public override event EventHandler<EventArgs>? OnLoad;
     public override event EventHandler<EventArgs>? Loaded;
+    public override event EventHandler<SizeChangeEventArgs>? SizeChangeEvent;
     #endregion
 
     #region 窗体方法
     protected override void Create()
     {
         OnCreate?.Invoke(this, new());
+        GtkApi.XInitThreads();
+        IntPtr argv = IntPtr.Zero;
+        int argc = 0;
+        GtkApi.gtk_init(ref argc, ref argv);
+
+        Handle = GtkApi.gtk_window_new(Config.Chromeless ? 1 : 0);
+        GtkApi.gtk_window_set_title(Handle, Config.AppName);
+        GtkApi.gtk_window_set_resizable(Handle, Config.ResizeAble);
+
+        if (!string.IsNullOrWhiteSpace(Config.Icon))
+        {
+            var icon = new Icon(Config.Icon);
+            if (icon != null)
+                GtkApi.gtk_window_set_icon(Handle, GtkApi.gdk_pixbuf_scale_simple(icon.Handle, 64, 64, GdkInterpType.GDK_INTERP_BILINEAR));
+        }
+        if (Config.Chromeless) GtkApi.gtk_window_set_decorated(Handle, true);
+
+        if (Config.Size != null)
+        {
+            Config.Width = Config.Size.Value.Width;
+            Config.Height = Config.Size.Value.Height;
+        }
+        if (Config.Center)
+        {
+            Config.Left = (MainMonitor!.Width - Config.Width) / 2;
+            Config.Top = (MainMonitor!.Height - Config.Height) / 2;
+        }
+        GtkApi.gtk_window_set_default_size(Handle, Config.Width, Config.Height);
+        var color = ColorTranslator.FromHtml("#FFFFFF");
+        var rgb = new GdkRGBA()
+        {
+            Red = color.R,
+            Green = color.G,
+            Blue = color.B,
+            Alpha = color.A
+        };
+        IntPtr result = Marshal.AllocHGlobal(Marshal.SizeOf(rgb));
+        Marshal.StructureToPtr(rgb, result, false);
+        GtkApi.gtk_widget_override_background_color(Handle, 0, result);
+        if (Config.Center)
+            GtkApi.gtk_window_set_position(Handle, (int)GtkWindowPosition.GtkWinPosCenter);
+        else
+            GtkApi.gtk_window_move(Handle, Config.Left, Config.Top);
+        if (Config.MinimumSize != null)
+        {
+            Config.MinimumHeigh = Config.MinimumSize.Value.Height;
+            Config.MinimumWidth = Config.MinimumSize.Value.Width;
+        }
+        if (Config.MaximumSize != null)
+        {
+            Config.MaximumHeigh = Config.MaximumSize.Value.Height;
+            Config.MaximumWidth = Config.MaximumSize.Value.Width;
+        }
+        var geometry = new GeometryInfo()
+        {
+            MinWidth = Config.MinimumWidth,
+            MinHeight = Config.MinimumHeigh,
+            MaxWidth = Config.MaximumWidth,
+            MaxHeight = Config.MaximumHeigh
+        };
+        GtkApi.gtk_window_set_geometry_hints(Handle, IntPtr.Zero, ref geometry, GdkWindowHints.GDK_HINT_MIN_SIZE | GdkWindowHints.GDK_HINT_MAX_SIZE);
+
+        GtkApi.gtk_widget_add_events(Handle, GDK_EVENT_CONFIGURE);
+        GtkApi.g_signal_connect(Handle, "configure-event", Marshal.GetFunctionPointerForDelegate(new Action<IntPtr, IntPtr>(OnWindowConfigure)), IntPtr.Zero);
 
         Created?.Invoke(this, new());
     }
-
-    protected override IntPtr WndProc(IntPtr hwnd, WindowMessage message, IntPtr wParam, IntPtr lParam)
+    private void OnWindowConfigure(IntPtr widget, IntPtr eventPtr)
     {
-        switch (message)
-        {
-            case WindowMessage.PAINT:
-                {
-                    break;
-                }
-            case WindowMessage.DIY_FUN:
-                {
-                    break;
-                }
-        }
-        return base.WndProc(hwnd, message, wParam, lParam);
+        int width, height;
+        GtkApi.gtk_window_get_size(widget, out width, out height);
+        SizeChangeEvent?.Invoke(widget, new SizeChangeEventArgs() { Width = width, Height = height });
     }
-
     public override void Show()
     {
-
+        GtkApi.gtk_widget_show_all(Handle);
+        State = WindowState.Normal;
     }
 
     public override void Hide()
     {
-
+        GtkApi.gtk_widget_hide_all(Handle);
+        State = WindowState.Hide;
     }
 
-    public override void Focus()
-    {
+    public override void Focus() => GtkApi.gtk_window_present(Handle);
 
-    }
-
-    public override void MessageLoop()
-    {
-
-    }
+    public override void MessageLoop() => GtkApi.gtk_main();
 
     public override Rect GetClientSize()
     {
         Rect rect = new();
+        GtkApi.gtk_window_get_position(Handle, out rect.Left, out rect.Top);
+        int width, height;
+        GtkApi.gtk_window_get_size(Handle, out width, out height);
+        rect.Width = width;
+        rect.Height = height;
+        rect.Bottom = MainMonitor.Height - rect.Top - height;
+        rect.Right = MainMonitor.Width - rect.Left - width;
         return rect;
     }
 
     public override void Maximize()
     {
-
+        GtkApi.gtk_window_maximize(Handle);
+        State = WindowState.Maximize;
     }
 
     public override void Minimize()
     {
-
+        GtkApi.gtk_window_iconify(Handle);
+        State = WindowState.Minimize;
     }
 
     public override void SizeChange(IntPtr handle, int width, int height)
@@ -145,7 +206,16 @@ internal class MainWIndow : IWindow
     /// </summary>
     public override void SetScreenInfo()
     {
-
+        IntPtr display = GtkApi.gdk_display_get_default();
+        if (display == IntPtr.Zero) return;
+        IntPtr monitor = GtkApi.gdk_display_get_monitor(display, 0);
+        GdkRectangle rect;
+        GtkApi.gdk_monitor_get_geometry(monitor, out rect);
+        MainMonitor = new()
+        {
+            Height = rect.Height,
+            Width = rect.Width,
+        };
     }
     #endregion
 
@@ -242,7 +312,7 @@ internal class MainWIndow : IWindow
 
     public override void SendWebMessage(string message)
     {
-        
+
     }
 
     public override void Reload()

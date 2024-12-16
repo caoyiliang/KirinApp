@@ -48,22 +48,6 @@ internal class MainWIndow : IWindow
         Created?.Invoke(this, new());
     }
 
-    protected override IntPtr WndProc(IntPtr hwnd, WindowMessage message, IntPtr wParam, IntPtr lParam)
-    {
-        switch (message)
-        {
-            case WindowMessage.PAINT:
-                {
-                    break;
-                }
-            case WindowMessage.DIY_FUN:
-                {
-                    break;
-                }
-        }
-        return base.WndProc(hwnd, message, wParam, lParam);
-    }
-
     public override void Show()
     {
 

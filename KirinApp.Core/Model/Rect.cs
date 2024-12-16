@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -15,13 +16,34 @@ internal struct Rect
     public int Top;
     public int Right;
     public int Bottom;
-
-    public int Width()
+    private int _width;
+    private int _height;
+    public int Width
     {
-        return this.Right - this.Left;
+        get
+        {
+            if (_width != 0)
+                return _width;
+            else
+                return this.Right - this.Left;
+        }
+        set
+        {
+            _width = value;
+        }
     }
-    public int Height()
+    public int Height
     {
-        return this.Bottom - this.Top;
+        get
+        {
+            if (_height != 0)
+                return _height;
+            else
+                return this.Bottom - this.Top;
+        }
+        set
+        {
+            _height = value;
+        }
     }
 }

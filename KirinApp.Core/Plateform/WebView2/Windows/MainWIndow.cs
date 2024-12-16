@@ -34,13 +34,15 @@ internal class MainWIndow : IWindow
     private CoreWebView2Controller? CoreWebCon;
     private WebManager? WebManager { get; set; }
     private SchemeConfig? SchemeConfig { get; set; }
-
+    private WndProcDelegate? WindowProc;
     #region 事件
     public override event EventHandler<CoreWebView2WebMessageReceivedEventArgs>? WebMessageReceived;
     public override event EventHandler<EventArgs>? OnCreate;
     public override event EventHandler<EventArgs>? Created;
     public override event EventHandler<EventArgs>? OnLoad;
     public override event EventHandler<EventArgs>? Loaded;
+    public override event EventHandler<SizeChangeEventArgs>? SizeChangeEvent;
+    public override event CloseDelegate? OnClose;
     #endregion
 
     #region 窗体方法
@@ -88,7 +90,7 @@ internal class MainWIndow : IWindow
             Config.Top = (MainMonitor!.Height - Config.Height) / 2;
         }
         WindowStyle windowStyle;
-        if (Config.Chromless)
+        if (Config.Chromeless)
             windowStyle = WindowStyle.POPUPWINDOW | WindowStyle.CLIPCHILDREN | WindowStyle.CLIPSIBLINGS | WindowStyle.THICKFRAME | WindowStyle.MINIMIZEBOX | WindowStyle.MAXIMIZEBOX;
         else
             windowStyle = WindowStyle.OVERLAPPEDWINDOW | WindowStyle.CLIPCHILDREN | WindowStyle.CLIPSIBLINGS;
@@ -108,10 +110,45 @@ internal class MainWIndow : IWindow
         Created?.Invoke(this, new());
     }
 
-    protected override IntPtr WndProc(IntPtr hwnd, WindowMessage message, IntPtr wParam, IntPtr lParam)
+    protected IntPtr WndProc(IntPtr hwnd, WindowMessage message, IntPtr wParam, IntPtr lParam)
     {
         switch (message)
         {
+            case WindowMessage.GETMINMAXINFO:
+                MinMaxInfo mmi = Marshal.PtrToStructure<MinMaxInfo>(lParam);
+                if (Config.MinimumSize != null)
+                {
+                    Config.MinimumWidth = Config.MinimumSize.Value.Width;
+                    Config.MinimumHeigh = Config.MinimumSize.Value.Height;
+
+                }
+                if (Config.MaximumSize != null)
+                {
+                    Config.MaximumWidth = Config.MaximumSize.Value.Width;
+                    Config.MaximumHeigh = Config.MaximumSize.Value.Height;
+                }
+                mmi.ptMinTrackSize.X = Config.MinimumWidth; // 设置最小宽度
+                mmi.ptMinTrackSize.Y = Config.MinimumHeigh; // 设置最小高度
+                mmi.ptMaxTrackSize.X = Config.MaximumWidth; // 设置最大宽度
+                mmi.ptMaxTrackSize.Y = Config.MaximumHeigh; // 设置最大高度
+                Marshal.StructureToPtr(mmi, lParam, true);
+                break;
+            case WindowMessage.SIZE:
+                {
+                    var size = GetClientSize();
+                    SizeChangeEvent?.Invoke(this, new SizeChangeEventArgs() { Width = size.Width, Height = size.Height });
+                    break;
+                }
+            case WindowMessage.CLOSE:
+                {
+                    var res = OnClose?.Invoke(this, new());
+                    if (res == null || res.Value)
+                    {
+                        Close();
+                        return IntPtr.Zero;
+                    }
+                    else return IntPtr.Zero;
+                }
             case WindowMessage.PAINT:
                 {
                     Win32Api.SetProcessDPIAware();
@@ -133,7 +170,7 @@ internal class MainWIndow : IWindow
                     return IntPtr.Zero;
                 }
         }
-        return base.WndProc(hwnd, message, wParam, lParam);
+        return Win32Api.DefWindowProcW(hwnd, message, wParam, lParam);
     }
 
     public override void Show()

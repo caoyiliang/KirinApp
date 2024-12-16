@@ -159,10 +159,10 @@ public class KirinApp
         return this;
     }
 
-    public bool Chromless { get => Config.Chromless; set => Config.Chromless = value; }
-    public KirinApp IsChromless(bool b = true)
+    public bool Chromeless { get => Config.Chromeless; set => Config.Chromeless = value; }
+    public KirinApp IsChromeless(bool b = true)
     {
-        Config.Chromless = b;
+        Config.Chromeless = b;
         return this;
     }
 

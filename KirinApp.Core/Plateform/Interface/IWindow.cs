@@ -35,11 +35,6 @@ internal abstract class IWindow
     public IntPtr Handle { get; protected set; } = IntPtr.Zero;
 
     /// <summary>
-    /// 窗体过程
-    /// </summary>
-    protected WndProcDelegate? WindowProc;
-
-    /// <summary>
     /// 窗体过程委托
     /// </summary>
     /// <param name="hWnd"></param>
@@ -99,57 +94,11 @@ internal abstract class IWindow
     /// <summary>
     /// 关闭委托
     /// </summary>
-    public virtual event NetClosingDelegate? OnClose;
-    public delegate bool? NetClosingDelegate(object sender, EventArgs e);
+    public virtual event CloseDelegate? OnClose;
+    public delegate bool? CloseDelegate(object sender, EventArgs e);
     #endregion
 
     #region 窗体方法
-    /// <summary>
-    /// 窗口过程
-    /// </summary>
-    protected virtual IntPtr WndProc(IntPtr hwnd, WindowMessage message, IntPtr wParam, IntPtr lParam)
-    {
-        switch (message)
-        {
-            case WindowMessage.GETMINMAXINFO:
-                MinMaxInfo mmi = Marshal.PtrToStructure<MinMaxInfo>(lParam);
-                if (Config.MinimumSize != null)
-                {
-                    Config.MinimumWidth = Config.MinimumSize.Value.Width;
-                    Config.MinimumHeigh = Config.MinimumSize.Value.Height;
-
-                }
-                if (Config.MaximumSize != null)
-                {
-                    Config.MaximumWidth = Config.MaximumSize.Value.Width;
-                    Config.MaximumHeigh = Config.MaximumSize.Value.Height;
-                }
-                mmi.ptMinTrackSize.X = Config.MinimumWidth; // 设置最小宽度
-                mmi.ptMinTrackSize.Y = Config.MinimumHeigh; // 设置最小高度
-                mmi.ptMaxTrackSize.X = Config.MaximumWidth; // 设置最大宽度
-                mmi.ptMaxTrackSize.Y = Config.MaximumHeigh; // 设置最大高度
-                Marshal.StructureToPtr(mmi, lParam, true);
-                break;
-            case WindowMessage.SIZE:
-                {
-                    var size = GetClientSize();
-                    SizeChangeEvent?.Invoke(this, new SizeChangeEventArgs() { Width = size.Width(), Height = size.Height() });
-                    break;
-                }
-            case WindowMessage.CLOSE:
-                {
-                    var res = OnClose?.Invoke(this, new());
-                    if (res == null || res.Value)
-                    {
-                        Close();
-                        return IntPtr.Zero;
-                    }
-                    else return IntPtr.Zero;
-                }
-        }
-        return Win32Api.DefWindowProcW(hwnd, message, wParam, lParam);
-    }
-
     /// <summary>
     /// 获取当前窗口的大小位置信息
     /// </summary>
