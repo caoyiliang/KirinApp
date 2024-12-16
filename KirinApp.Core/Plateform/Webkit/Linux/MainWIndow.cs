@@ -41,6 +41,7 @@ internal class MainWIndow : IWindow
     public override event EventHandler<EventArgs>? OnLoad;
     public override event EventHandler<EventArgs>? Loaded;
     public override event EventHandler<SizeChangeEventArgs>? SizeChangeEvent;
+    public override event EventHandler<PositionChangeEventArgs>? PositionChangeEvent;
     #endregion
 
     #region 窗体方法
@@ -114,11 +115,35 @@ internal class MainWIndow : IWindow
 
         Created?.Invoke(this, new());
     }
+
+    private int lastWidth;
+    private int lastHeight;
+    private int lastX;
+    private int lastY;
     private void OnWindowConfigure(IntPtr widget, IntPtr eventPtr)
     {
-        int width, height;
-        GtkApi.gtk_window_get_size(widget, out width, out height);
-        SizeChangeEvent?.Invoke(widget, new SizeChangeEventArgs() { Width = width, Height = height });
+        // 将事件指针转换为 GdkEventConfigure 结构
+        GdkEventConfigure configureEvent = Marshal.PtrToStructure<GdkEventConfigure>(eventPtr);
+
+        // 判断是否发生了大小变化
+        if (configureEvent.width != lastWidth || configureEvent.height != lastHeight)
+        {
+            lastWidth = configureEvent.width;
+            lastHeight = configureEvent.height;
+
+            SizeChangeEvent?.Invoke(widget, new SizeChangeEventArgs() { Width = lastWidth, Height = lastHeight });
+            SizeChange(Handle, lastWidth, lastHeight);
+        }
+        else if (configureEvent.x != lastX || configureEvent.y != lastY)
+        {
+            lastY = configureEvent.y;
+            lastX = configureEvent.x;
+            PositionChangeEvent?.Invoke(widget, new PositionChangeEventArgs() { X = lastX, Y = lastY });
+        }
+        else
+        {
+            Console.WriteLine("其他事件");
+        }
     }
     public override void Show()
     {
@@ -134,7 +159,7 @@ internal class MainWIndow : IWindow
 
     public override void Focus() => GtkApi.gtk_window_present(Handle);
 
-    public override void MessageLoop() => GtkApi.gtk_main();
+    public override void MainLoop() => GtkApi.gtk_main();
 
     public override Rect GetClientSize()
     {

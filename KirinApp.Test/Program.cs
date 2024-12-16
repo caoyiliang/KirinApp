@@ -26,6 +26,10 @@ class Program
         {
             kirinApp.SendWebMessage("你好");
         };
+        kirinApp.PositionChange += (s, e) =>
+        {
+            Console.WriteLine(e.X + ":" + e.Y);
+        };
         kirinApp.WebMessageReceived += (_, _) =>
         {
             Task.Run(() =>

@@ -72,6 +72,11 @@ internal abstract class IWindow
     public virtual event EventHandler<SizeChangeEventArgs>? SizeChangeEvent;
 
     /// <summary>
+    /// 窗口位置改变事件
+    /// </summary>
+    public virtual event EventHandler<PositionChangeEventArgs>? PositionChangeEvent;
+
+    /// <summary>
     /// 窗体创建前
     /// </summary>
     public virtual event EventHandler<EventArgs>? OnCreate;
@@ -113,7 +118,6 @@ internal abstract class IWindow
         Config = winConfig;
         Create();
         InitWebControl();
-        SizeChangeEvent += (s, e) => SizeChange(Handle, e.Width, e.Height);
     }
 
     /// <summary>
@@ -144,7 +148,7 @@ internal abstract class IWindow
     /// <summary>
     /// 消息循环
     /// </summary>
-    public abstract void MessageLoop();
+    public abstract void MainLoop();
 
     /// <summary>
     /// 最小化

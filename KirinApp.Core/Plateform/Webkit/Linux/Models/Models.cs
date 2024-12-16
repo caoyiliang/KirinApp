@@ -39,3 +39,17 @@ public struct GdkRectangle
     public int Width;
     public int Height;
 }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct GdkEventConfigure
+{
+    public IntPtr type;
+    public IntPtr window;
+    public int x;
+    public int y;
+    public int width;
+    public int height;
+    public int above;
+    public int border_width;
+    public int send_event;
+}

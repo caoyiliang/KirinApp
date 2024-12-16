@@ -42,6 +42,7 @@ internal class MainWIndow : IWindow
     public override event EventHandler<EventArgs>? OnLoad;
     public override event EventHandler<EventArgs>? Loaded;
     public override event EventHandler<SizeChangeEventArgs>? SizeChangeEvent;
+    public override event EventHandler<PositionChangeEventArgs>? PositionChangeEvent;
     public override event CloseDelegate? OnClose;
     #endregion
 
@@ -137,6 +138,13 @@ internal class MainWIndow : IWindow
                 {
                     var size = GetClientSize();
                     SizeChangeEvent?.Invoke(this, new SizeChangeEventArgs() { Width = size.Width, Height = size.Height });
+                    SizeChange(Handle, size.Width, size.Height);
+                    break;
+                }
+            case WindowMessage.MOVE:
+                {
+                    var move = GetClientSize();
+                    PositionChangeEvent?.Invoke(this, new PositionChangeEventArgs() { X = move.Left, Y = move.Top });
                     break;
                 }
             case WindowMessage.CLOSE:
@@ -196,7 +204,7 @@ internal class MainWIndow : IWindow
         Win32Api.DestroyWindow(Handle);
     }
 
-    public override void MessageLoop()
+    public override void MainLoop()
     {
         MSG message;
         while (Win32Api.GetMessageW(out message, IntPtr.Zero, 0, 0))

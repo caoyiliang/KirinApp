@@ -33,6 +33,7 @@ public class KirinApp
     public delegate bool? NetClosingDelegate(object sender, EventArgs e);
     public event EventHandler<CoreWebView2WebMessageReceivedEventArgs>? WebMessageReceived;
     public event EventHandler<SizeChangeEventArgs>? SizeChange;
+    public event EventHandler<PositionChangeEventArgs>? PositionChange;
 
     /// <summary>
     /// 主显示器
@@ -76,6 +77,7 @@ public class KirinApp
         Window.OnClose += (s, e) => OnClose?.Invoke(s, e);
         Window.WebMessageReceived += (s, e) => WebMessageReceived?.Invoke(s, e);
         Window.SizeChangeEvent += (s, e) => SizeChange?.Invoke(s, e);
+        Window.PositionChangeEvent += (s, e) => PositionChange?.Invoke(s, e);
     }
 
     public void Run()
@@ -88,7 +90,7 @@ public class KirinApp
             EventRegister();
             Window.Show();
             Utils.Wnds.Add(this);
-            Window.MessageLoop();
+            Window.MainLoop();
         }
         else
         {
@@ -98,7 +100,7 @@ public class KirinApp
                 EventRegister();
                 Window.Show();
                 Utils.Wnds.Add(this);
-                Window.MessageLoop();
+                Window.MainLoop();
             });
             Win32Api.PostMessage(Utils.Wnds[0].Window.Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
         };

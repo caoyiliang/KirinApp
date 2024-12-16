@@ -62,7 +62,7 @@ internal class MainWIndow : IWindow
 
     }
 
-    public override void MessageLoop()
+    public override void MainLoop()
     {
 
     }
