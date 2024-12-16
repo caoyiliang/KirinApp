@@ -1,6 +1,8 @@
 ﻿using KirinAppCore.Interface;
 using KirinAppCore.Model;
+using KirinAppCore.Plateform.Webkit.Linux;
 using KirinAppCore.Plateform.WebView2.Windows;
+using KirinAppCore.Platform.Webkit.Linux;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -111,7 +113,14 @@ public class KirinApp
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             serviceCollection.AddSingleton<IWindow, KirinAppCore.Plateform.WebView2.Windows.MainWIndow>();
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
             serviceCollection.AddSingleton<IWindow, KirinAppCore.Plateform.Webkit.Linux.MainWIndow>();
+            if (Utils.LinuxLibInstall("libwebkit2gtk-4.0"))
+                serviceCollection.AddSingleton<IWebKit, WebKit40>();
+            else if (Utils.LinuxLibInstall("libwebkit2gtk-4.1"))
+                serviceCollection.AddSingleton<IWebKit, WebKit41>();
+            else throw new Exception("检测到未安装libwebkit2gtk库");
+        }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             serviceCollection.AddSingleton<IWindow, KirinAppCore.Plateform.Webkit.MacOS.MainWIndow>();
 

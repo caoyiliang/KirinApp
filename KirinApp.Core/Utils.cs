@@ -2,6 +2,7 @@
 using Microsoft.Extensions.FileProviders;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -473,5 +474,25 @@ internal static class Utils
             default:
                 return MsgResult.OK;
         }
+    }
+
+    public static bool LinuxLibInstall(string libraryName)
+    {
+        // 创建一个新的进程来执行 shell 命令
+        Process process = new Process();
+        process.StartInfo.FileName = "bash";
+        process.StartInfo.Arguments = $"-c \"dpkg -l | grep {libraryName}\"";
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.UseShellExecute = false;
+        process.StartInfo.CreateNoWindow = true;
+
+        process.Start();
+
+        // 读取输出
+        string output = process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+
+        // 判断输出中是否包含库名
+        return output.Contains(libraryName);
     }
 }

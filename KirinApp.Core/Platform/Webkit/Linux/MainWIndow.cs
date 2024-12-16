@@ -22,6 +22,7 @@ using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.WebView;
 using Newtonsoft.Json.Linq;
 using KirinAppCore.Plateform.Webkit.Linux.Models;
+using System.Runtime;
 
 namespace KirinAppCore.Plateform.Webkit.Linux;
 
@@ -32,7 +33,6 @@ internal class MainWIndow : IWindow
 {
     private WebManager? WebManager { get; set; }
     private SchemeConfig? SchemeConfig { get; set; }
-    private const uint GDK_EVENT_CONFIGURE = 0x2000; // Configure event
 
     #region 事件
     public override event EventHandler<CoreWebView2WebMessageReceivedEventArgs>? WebMessageReceived;
@@ -110,7 +110,7 @@ internal class MainWIndow : IWindow
         };
         GtkApi.gtk_window_set_geometry_hints(Handle, IntPtr.Zero, ref geometry, GdkWindowHints.GDK_HINT_MIN_SIZE | GdkWindowHints.GDK_HINT_MAX_SIZE);
 
-        GtkApi.gtk_widget_add_events(Handle, GDK_EVENT_CONFIGURE);
+        GtkApi.gtk_widget_add_events(Handle, 0x2000);
         GtkApi.g_signal_connect(Handle, "configure-event", Marshal.GetFunctionPointerForDelegate(new Action<IntPtr, IntPtr>(OnWindowConfigure)), IntPtr.Zero);
 
         Created?.Invoke(this, new());
@@ -250,14 +250,24 @@ internal class MainWIndow : IWindow
         return Environment.CurrentManagedThreadId == Utils.MainThreadId;
     }
 
+
+    private delegate void GdkIdleFunc(IntPtr data);
     public override async Task InvokeAsync(Func<Task> workItem)
     {
         if (CheckAccess()) await workItem();
         else
         {
-            IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(workItem);
-            Action action = (Action)Marshal.GetDelegateForFunctionPointer(actionPtr, typeof(Action));
-            action.Invoke();
+            void Callback(IntPtr data)
+            {
+                try
+                {
+                    workItem();
+                }
+                catch (Exception)
+                {
+                }
+            }
+            GtkApi.gdk_threads_add_idle(Marshal.GetFunctionPointerForDelegate((GdkIdleFunc)Callback), IntPtr.Zero);
         }
     }
 
@@ -266,9 +276,17 @@ internal class MainWIndow : IWindow
         if (CheckAccess()) workItem();
         else
         {
-            IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(workItem);
-            //发送系统消息，在主线程执行
-            //Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
+            void Callback(IntPtr data)
+            {
+                try
+                {
+                    workItem();
+                }
+                catch (Exception)
+                {
+                }
+            }
+            GtkApi.gdk_threads_add_idle(Marshal.GetFunctionPointerForDelegate((GdkIdleFunc)Callback), IntPtr.Zero);
         }
     }
 
@@ -277,6 +295,7 @@ internal class MainWIndow : IWindow
         try
         {
             OnLoad?.Invoke(this, new());
+
             await Task.Delay(1);
             Loaded?.Invoke(this, new());
         }
