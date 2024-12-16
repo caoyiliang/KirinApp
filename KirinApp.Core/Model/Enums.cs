@@ -184,3 +184,11 @@ public enum WindowMessage : uint
                                    // 其他消息...
     DIY_FUN = 0x8000,
 }
+internal enum MessageType
+{
+    Info,
+    Warning,
+    Question,
+    Error,
+    Other
+}

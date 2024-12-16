@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Components.WebView;
 using Newtonsoft.Json.Linq;
 using KirinAppCore.Plateform.Webkit.Linux.Models;
 using System.Runtime;
+using KirinAppCore.Plateform.WebView2.Windows;
 
 namespace KirinAppCore.Plateform.Webkit.Linux;
 
@@ -193,17 +194,34 @@ internal class MainWIndow : IWindow
 
     private void CheckInitialDir(ref string initialDir)
     {
-
+        if (string.IsNullOrWhiteSpace(initialDir))
+            initialDir = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
     }
 
     private void CheckFileFilter(Dictionary<string, string>? dic)
     {
-
+        if (dic == null || dic.Count == 0)
+            dic = new Dictionary<string, string>() { { "所有文件(*.*)", "*.*" } };
     }
 
     public override (bool selected, DirectoryInfo? dir) OpenDirectory(string initialDir = "")
     {
         CheckInitialDir(ref initialDir);
+        IntPtr fileChooser = GtkApi.gtk_file_chooser_dialog_new("选择目录", IntPtr.Zero, FileChooserAction.SelectFolder,
+           "选择", ResponseType.Accept,
+           "取消", ResponseType.Cancel,
+           "", ResponseType.None, IntPtr.Zero);
+
+        GtkApi.gtk_file_chooser_set_current_folder(fileChooser, initialDir);
+        GtkApi.gtk_file_chooser_set_do_overwrite_confirmation(fileChooser, true);
+
+        if (GtkApi.gtk_dialog_run(fileChooser) == (int)ResponseType.Accept)
+        {
+            var selectedPath = Marshal.PtrToStringAuto(GtkApi.gtk_file_chooser_get_current_folder(fileChooser));
+            GtkApi.gtk_widget_destroy(fileChooser);
+            return (true, new DirectoryInfo(selectedPath!));
+        }
+        GtkApi.gtk_widget_destroy(fileChooser);
         return (false, null);
     }
 
@@ -211,6 +229,26 @@ internal class MainWIndow : IWindow
     {
         CheckInitialDir(ref initialDir);
         CheckFileFilter(fileTypeFilter);
+        IntPtr fileChooser = GtkApi.gtk_file_chooser_dialog_new("选择文件", IntPtr.Zero, FileChooserAction.Open,
+                "打开", ResponseType.Accept,
+                "取消", ResponseType.Cancel,
+                "", ResponseType.None, IntPtr.Zero);
+        GtkApi.gtk_file_chooser_set_current_folder(fileChooser, initialDir);
+
+        foreach (var filter in fileTypeFilter!)
+        {
+            var item = GtkApi.gtk_file_filter_new();
+            GtkApi.gtk_file_filter_add_pattern(item, Marshal.StringToHGlobalAnsi(filter.Value));
+            GtkApi.gtk_file_filter_set_name(item, Marshal.StringToHGlobalAnsi(filter.Key));
+            GtkApi.gtk_file_chooser_add_filter(fileChooser, item);
+        }
+        if (GtkApi.gtk_dialog_run(fileChooser) == (int)ResponseType.Accept)
+        {
+            var selectedFilePath = Marshal.PtrToStringAuto(GtkApi.gtk_file_chooser_get_filename(fileChooser));
+            GtkApi.gtk_widget_destroy(fileChooser);
+            return (true, new FileInfo(selectedFilePath!));
+        }
+        GtkApi.gtk_widget_destroy(fileChooser);
         return (false, null);
     }
 
@@ -218,12 +256,52 @@ internal class MainWIndow : IWindow
     {
         CheckInitialDir(ref initialDir);
         CheckFileFilter(fileTypeFilter);
+        IntPtr fileChooser = GtkApi.gtk_file_chooser_dialog_new("选择文件", IntPtr.Zero, FileChooserAction.Open,
+                "打开", ResponseType.Accept,
+                "取消", ResponseType.Cancel,
+                "", ResponseType.None, IntPtr.Zero);
+        GtkApi.gtk_file_chooser_set_select_multiple(fileChooser, true);
+        GtkApi.gtk_file_chooser_set_current_folder(fileChooser, initialDir);
+        GtkApi.gtk_file_chooser_set_do_overwrite_confirmation(fileChooser, true);
+
+        foreach (var filter in fileTypeFilter!)
+        {
+            var item = GtkApi.gtk_file_filter_new();
+            GtkApi.gtk_file_filter_add_pattern(item, Marshal.StringToHGlobalAnsi(filter.Value));
+            GtkApi.gtk_file_filter_set_name(item, Marshal.StringToHGlobalAnsi(filter.Key));
+            GtkApi.gtk_file_chooser_add_filter(fileChooser, item);
+        }
+        if (GtkApi.gtk_dialog_run(fileChooser) == (int)ResponseType.Accept)
+        {
+            List<FileInfo> selectedFiles = new();
+            var selectIntPrt = GtkApi.gtk_file_chooser_get_filenames(fileChooser);
+            int i = 0;
+            while (true)
+            {
+                IntPtr filePathPtr = Marshal.ReadIntPtr(selectIntPrt, i * IntPtr.Size);
+                if (filePathPtr == IntPtr.Zero)
+                    break;
+                string? filePath = Marshal.PtrToStringAnsi(filePathPtr);
+                if (string.IsNullOrWhiteSpace(filePath)) continue;
+                selectedFiles.Add(new(filePath));
+                i++;
+            }
+            GtkApi.gtk_widget_destroy(fileChooser);
+            if (selectedFiles.Count == 0)
+                return (false, null);
+            return (true, selectedFiles);
+        }
+        GtkApi.gtk_widget_destroy(fileChooser);
         return (false, null);
     }
 
-    public override MsgResult ShowDialog(string title, string msg, MsgBtns btn = MsgBtns.OK)
+    public override MsgResult ShowDialog(string title, string msg, MsgBtns btn = MsgBtns.OK, MessageType messageType = MessageType.Info)
     {
-        return MsgResult.OK;
+        IntPtr dialog = GtkApi.gtk_message_dialog_new(Handle, 0, (int)messageType, (int)btn, msg);
+        GtkApi.gtk_window_set_title(dialog, title);
+        int response = GtkApi.gtk_dialog_run(dialog);
+        GtkApi.gtk_widget_destroy(dialog);
+        return Utils.ToMsgResult(response);
     }
 
     /// <summary>

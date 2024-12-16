@@ -370,10 +370,16 @@ internal class MainWIndow : IWindow
         return (false, null);
     }
 
-    public override MsgResult ShowDialog(string title, string msg, MsgBtns btn = MsgBtns.OK)
+    public override MsgResult ShowDialog(string title, string msg, MsgBtns btn = MsgBtns.OK, MessageType messageType = MessageType.Info)
     {
         var handle = Win32Api.GetConsoleWindow();
-        return Utils.ToMsgResult(Win32Api.MessageBox(handle, msg, title, (int)btn | 64));
+        int type = 64;
+        if (messageType == MessageType.Info) type = 64;
+        if (messageType == MessageType.Error) type = 16;
+        if (messageType == MessageType.Warning) type = 48;
+        if (messageType == MessageType.Question) type = 64;
+
+        return Utils.ToMsgResult(Win32Api.MessageBox(handle, msg, title, (int)btn | type));
     }
 
     /// <summary>

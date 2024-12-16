@@ -28,3 +28,16 @@ internal enum GdkEventMask
     ButtonReleaseMask = 1 << 3,
     PointerMotionMask = 1 << 6,
 }
+internal enum FileChooserAction
+{
+    Open,
+    Save,
+    SelectFolder,
+    CreateFolder
+}
+internal enum ResponseType
+{
+    None = -1,
+    Accept = -3,
+    Cancel = -6
+}

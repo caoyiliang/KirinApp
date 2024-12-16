@@ -70,5 +70,35 @@ internal class GtkApi
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void gtk_window_iconify(IntPtr window);
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
-    public static extern uint gdk_threads_add_idle(IntPtr function, IntPtr data);
+    internal static extern uint gdk_threads_add_idle(IntPtr function, IntPtr data);
+
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern IntPtr gtk_file_chooser_dialog_new(string title, IntPtr parent, FileChooserAction action, string button1, ResponseType response1, string button2, ResponseType response2, string button3, ResponseType response3, IntPtr nullTerminated);
+
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void gtk_file_chooser_set_current_folder(IntPtr chooser, string folder);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern IntPtr gtk_file_filter_new();
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void gtk_file_filter_add_pattern(IntPtr filter, IntPtr pattern);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void gtk_file_filter_set_name(IntPtr filter, IntPtr name);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void gtk_file_chooser_add_filter(IntPtr chooser, IntPtr filter);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern int gtk_dialog_run(IntPtr dialog);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern IntPtr gtk_file_chooser_get_filename(IntPtr chooser);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void gtk_widget_destroy(IntPtr widget);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void gtk_file_chooser_set_select_multiple(IntPtr chooser, bool select_multiple);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void gtk_file_chooser_set_do_overwrite_confirmation(IntPtr chooser, bool doOverwriteConfirmation);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern IntPtr gtk_file_chooser_get_filenames(IntPtr chooser);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern IntPtr gtk_file_chooser_get_current_folder(IntPtr chooser);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern IntPtr gtk_message_dialog_new(IntPtr parent, int flags, int type, int buttons, string message);
 }

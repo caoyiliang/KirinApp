@@ -1,4 +1,5 @@
 ﻿using KirinAppCore.Model;
+using KirinAppCore.Plateform.Webkit.Linux.Models;
 using KirinAppCore.Plateform.WebView2.Windows;
 using KirinAppCore.Plateform.WebView2.Windows.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -167,7 +168,7 @@ internal abstract class IWindow
     /// <param name="msg">消息</param>
     /// <param name="btn">按钮</param>
     /// <returns></returns>
-    public abstract MsgResult ShowDialog(string title, string msg, MsgBtns btn = MsgBtns.OK);
+    public abstract MsgResult ShowDialog(string title, string msg, MsgBtns btn = MsgBtns.OK, MessageType messageType = MessageType.Info);
 
     /// <summary>
     /// 打开文件选择
