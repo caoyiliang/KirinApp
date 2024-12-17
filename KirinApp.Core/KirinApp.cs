@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Web.WebView2.Core;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -331,6 +332,20 @@ public class KirinApp
     public MsgResult ShowDialog(string title, string message, MsgBtns btns = MsgBtns.OK) => Window.ShowDialog(title, message, btns);
     public void ExecuteJavaScript(string js) => Window.ExecuteJavaScript(js);
     public string ExecuteJavaScriptWithResult(string js) => Window.ExecuteJavaScriptWithResult(js);
+    public T ExecuteJavaScriptWithResult<T>(string js)
+    {
+        var str = Window.ExecuteJavaScriptWithResult(js);
+        try
+        {
+            var res = JsonConvert.DeserializeObject<T>(str);
+            if (res == null) throw new JsonSerializationException();
+            return res;
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
     public void OpenDevTool() => Window.OpenDevTool();
     public void Reload() => Window.Reload();
     public void ReloadUrl(string url)

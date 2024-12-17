@@ -26,6 +26,9 @@ class Program
         {
             await Task.Delay(200);
             kirinApp.SendWebMessage("你好12312");
+            kirinApp.ExecuteJavaScript("console.log('Loaded success')");
+            var res = kirinApp.ExecuteJavaScriptWithResult<int>("1+12");
+            Console.WriteLine(res);
         };
         kirinApp.Created += (_, _) =>
         {
