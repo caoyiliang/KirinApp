@@ -52,8 +52,6 @@ public class KirinApp
         Window = ServiceProvide.GetRequiredService<IWindow>();
         Window.ParentWindows = parent;
 
-        //获取主显示器宽高
-        Win32Api.SetProcessDPIAware();
         Window.SetScreenInfo();
     }
     public KirinApp(WinConfig winConfig, KirinApp? parent = null)
@@ -65,16 +63,14 @@ public class KirinApp
         Window = ServiceProvide.GetRequiredService<IWindow>();
         Window.ParentWindows = parent;
 
-        //获取主显示器宽高
-        Win32Api.SetProcessDPIAware();
         Window.SetScreenInfo();
     }
 
     private void EventRegister()
     {
         Window.OnCreate += (s, e) => OnCreate?.Invoke(s, e);
-        Window.Created += (s, e) => Created?.Invoke(s, e);
         Window.OnLoad += (s, e) => OnLoad?.Invoke(s, e);
+        Window.Created += (s, e) => Created?.Invoke(s, e);
         Window.Loaded += (s, e) => Loaded?.Invoke(s, e);
         Window.OnClose += (s, e) => OnClose?.Invoke(s, e);
         Window.WebMessageReceived += (s, e) => WebMessageReceived?.Invoke(s, e);
@@ -88,8 +84,8 @@ public class KirinApp
             Utils.MainThreadId = Environment.CurrentManagedThreadId;
         if (Window.CheckAccess() && Parent == null && Utils.Wnds.Count == 0)
         {
-            Window.Init(ServiceProvide, Config);
             EventRegister();
+            Window.Init(ServiceProvide, Config);
             Window.Show();
             Utils.Wnds.Add(this);
             Window.MainLoop();
@@ -98,8 +94,8 @@ public class KirinApp
         {
             IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(() =>
             {
-                Window.Init(ServiceProvide, Config);
                 EventRegister();
+                Window.Init(ServiceProvide, Config);
                 Window.Show();
                 Utils.Wnds.Add(this);
                 Window.MainLoop();

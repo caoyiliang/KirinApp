@@ -387,6 +387,7 @@ internal class MainWIndow : IWindow
     /// </summary>
     public override void SetScreenInfo()
     {
+        Win32Api.SetProcessDPIAware();
         //主显示器
         int width = Win32Api.GetSystemMetrics(0);
         int height = Win32Api.GetSystemMetrics(1);
@@ -428,9 +429,9 @@ internal class MainWIndow : IWindow
 
     protected override async Task InitWebControl()
     {
+        OnLoad?.Invoke(this, new());
         try
         {
-            OnLoad?.Invoke(this, new());
             var userPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     Process.GetCurrentProcess().ProcessName);
             CoreWebEnv = await CoreWebView2Environment.CreateAsync(userDataFolder: userPath);
@@ -516,13 +517,13 @@ internal class MainWIndow : IWindow
             {
                 CoreWebCon.CoreWebView2.Navigate(Config.Url);
             }
-            Loaded?.Invoke(this, new());
         }
         catch (Exception e)
         {
             Console.WriteLine(e.Message);
             throw;
         }
+        Loaded?.Invoke(this, new());
     }
 
     public override void ExecuteJavaScript(string js)
@@ -576,7 +577,7 @@ internal class MainWIndow : IWindow
 
     public override void SendWebMessage(string message)
     {
-        CoreWebCon!.CoreWebView2.PostWebMessageAsString(message);
+        Invoke(() => CoreWebCon!.CoreWebView2.PostWebMessageAsString(message));
     }
 
     public override void Reload()

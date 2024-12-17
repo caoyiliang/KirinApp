@@ -22,9 +22,27 @@ class Program
             Debug = true,
         };
         var kirinApp = new KirinApp(winConfig);
-        kirinApp.Loaded += (_, _) =>
+        kirinApp.Loaded += async (_, _) =>
         {
-            kirinApp.SendWebMessage("你好");
+            await Task.Delay(200);
+            kirinApp.SendWebMessage("你好12312");
+        };
+        kirinApp.Created += (_, _) =>
+        {
+            Console.WriteLine(000);
+        };
+        kirinApp.OnLoad += (_, _) =>
+        {
+            Console.WriteLine(111);
+        };
+        kirinApp.OnCreate += (_, _) =>
+        {
+            Console.WriteLine(222);
+        };
+        kirinApp.OnClose += (_, _) =>
+        {
+            Console.WriteLine(222);
+            return true;
         };
         kirinApp.PositionChange += (s, e) =>
         {
@@ -41,17 +59,6 @@ class Program
                 setApp.Width = 600;
                 setApp.UseBlazor<App>();
                 setApp.Run();
-            });
-            //Blazor 两个一起创建，或者点击创建过快会报错
-            Task.Run(() =>
-            {
-                var setApp2 = new KirinApp(kirinApp);
-                setApp2.AppName = "Setting2";
-                setApp2.Icon = "logo.ico";
-                setApp2.Height = 400;
-                setApp2.Width = 600;
-                setApp2.UseBlazor<App>();
-                setApp2.Run();
             });
         };
         kirinApp.Run();
