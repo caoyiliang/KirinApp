@@ -118,7 +118,7 @@ internal class MainWIndow : IWindow
         return (false, null);
     }
 
-    public override MsgResult ShowDialog(string title, string msg, MsgBtns btn = MsgBtns.OK)
+    public override MsgResult ShowDialog(string title, string msg, MsgBtns btn = MsgBtns.OK, MessageType messageType = MessageType.Info)
     {
         return MsgResult.OK;
     }
