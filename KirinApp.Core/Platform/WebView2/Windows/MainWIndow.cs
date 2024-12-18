@@ -49,66 +49,77 @@ internal class MainWIndow : IWindow
     #region 窗体方法
     protected override void Create()
     {
-        OnCreate?.Invoke(this, new());
-        var hIns = Win32Api.GetConsoleWindow();
-        WindowProc = WndProc;
-        var className = "KirinApp-" + Guid.NewGuid();
-        var color = Win32Api.CreateSolidBrush((uint)ColorTranslator.ToWin32(ColorTranslator.FromHtml("#FFFFFF")));
-        IntPtr ico = IntPtr.Zero;
-        if (!string.IsNullOrWhiteSpace(Config.Icon))
+        try
         {
-            var icon = new Icon(Config.Icon);
-            if (icon != null)
-                ico = icon.Handle;
-        }
-        var windClass = new WNDCLASS
-        {
-            lpszClassName = className,
-            lpfnWndProc = Marshal.GetFunctionPointerForDelegate(WindowProc),
-            cbClsExtra = 0,
-            cbWndExtra = 0,
-            hbrBackground = color,
-            style = 0x0003,
-            hInstance = hIns,
-            lpszMenuName = null,
-            hCursor = Win32Api.LoadCursorW(IntPtr.Zero, (IntPtr)CursorResource.IDC_ARROW),
-            hIcon = ico
-        };
-        if (Win32Api.RegisterClassW(ref windClass) == 0)
-        {
-            int errorCode = Marshal.GetLastWin32Error();
-            throw new Exception("初始化窗体失败，错误代码：" + errorCode);
-        }
+            OnCreate?.Invoke(this, new());
+            var hIns = Win32Api.GetConsoleWindow();
+            WindowProc = WndProc;
+            var className = "KirinApp-" + Guid.NewGuid();
+            var color = Win32Api.CreateSolidBrush((uint)ColorTranslator.ToWin32(ColorTranslator.FromHtml("#FFFFFF")));
+            IntPtr ico = IntPtr.Zero;
+            if (!string.IsNullOrWhiteSpace(Config.Icon))
+            {
+                var icon = new Icon(Config.Icon);
+                if (icon != null)
+                    ico = icon.Handle;
+            }
+            var windClass = new WNDCLASS
+            {
+                lpszClassName = className,
+                lpfnWndProc = Marshal.GetFunctionPointerForDelegate(WindowProc),
+                cbClsExtra = 0,
+                cbWndExtra = 0,
+                hbrBackground = color,
+                style = 0x0003,
+                hInstance = hIns,
+                lpszMenuName = null,
+                hCursor = Win32Api.LoadCursorW(IntPtr.Zero, (IntPtr)CursorResource.IDC_ARROW),
+                hIcon = ico
+            };
+            if (Win32Api.RegisterClassW(ref windClass) == 0)
+            {
+                int errorCode = Marshal.GetLastWin32Error();
+                throw new Exception("错误代码：" + errorCode);
+            }
 
-        if (Config.Size != null)
-        {
-            Config.Width = Config.Size.Value.Width;
-            Config.Height = Config.Size.Value.Height;
-        }
-        if (Config.Center)
-        {
-            Config.Left = (MainMonitor!.Width - Config.Width) / 2;
-            Config.Top = (MainMonitor!.Height - Config.Height) / 2;
-        }
-        WindowStyle windowStyle;
-        if (Config.Chromeless)
-            windowStyle = WindowStyle.POPUPWINDOW | WindowStyle.CLIPCHILDREN | WindowStyle.CLIPSIBLINGS | WindowStyle.THICKFRAME | WindowStyle.MINIMIZEBOX | WindowStyle.MAXIMIZEBOX;
-        else
-            windowStyle = WindowStyle.OVERLAPPEDWINDOW | WindowStyle.CLIPCHILDREN | WindowStyle.CLIPSIBLINGS;
-        if (!Config.ResizeAble || Config.MaximumSize != null || Config.MaximumWidth > 0 || Config.MinimumHeigh > 0)
-        {
-            windowStyle &= ~WindowStyle.MAXIMIZEBOX;
-            windowStyle &= ~WindowStyle.THICKFRAME;
-        }
+            if (Config.Size != null)
+            {
+                Config.Width = Config.Size.Value.Width;
+                Config.Height = Config.Size.Value.Height;
+            }
+            if (Config.Center)
+            {
+                Config.Left = (MainMonitor!.Width - Config.Width) / 2;
+                Config.Top = (MainMonitor!.Height - Config.Height) / 2;
+            }
+            WindowStyle windowStyle;
+            if (Config.Chromeless)
+                windowStyle = WindowStyle.POPUPWINDOW | WindowStyle.CLIPCHILDREN | WindowStyle.CLIPSIBLINGS | WindowStyle.THICKFRAME | WindowStyle.MINIMIZEBOX | WindowStyle.MAXIMIZEBOX;
+            else
+                windowStyle = WindowStyle.OVERLAPPEDWINDOW | WindowStyle.CLIPCHILDREN | WindowStyle.CLIPSIBLINGS;
+            if (!Config.ResizeAble || Config.MaximumSize != null || Config.MaximumWidth > 0 || Config.MinimumHeigh > 0)
+            {
+                windowStyle &= ~WindowStyle.MAXIMIZEBOX;
+                windowStyle &= ~WindowStyle.THICKFRAME;
+            }
 
-        var windowExStyle = WindowExStyle.APPWINDOW | WindowExStyle.WINDOWEDGE;
-        Win32Api.SetProcessDPIAware();
-        Handle = Win32Api.CreateWindowExW(windowExStyle, className, Config.AppName, windowStyle, Config.Left,
-            Config.Top, Config.Width, Config.Height, IntPtr.Zero, IntPtr.Zero, Win32Api.GetConsoleWindow(), null);
-        if (Handle == IntPtr.Zero) throw new Exception("创建窗体失败！");
-        Win32Api.SetWindowTextW(Handle, Config.AppName);
-        Win32Api.UpdateWindow(Handle);
-        Created?.Invoke(this, new());
+            var windowExStyle = WindowExStyle.APPWINDOW | WindowExStyle.WINDOWEDGE;
+            Win32Api.SetProcessDPIAware();
+            Handle = Win32Api.CreateWindowExW(windowExStyle, className, Config.AppName, windowStyle, Config.Left,
+                Config.Top, Config.Width, Config.Height, IntPtr.Zero, IntPtr.Zero, Win32Api.GetConsoleWindow(), null);
+            if (Handle == IntPtr.Zero)
+            {
+                int errorCode = Marshal.GetLastWin32Error();
+                throw new Exception("错误代码：" + errorCode);
+            }
+            Win32Api.SetWindowTextW(Handle, Config.AppName);
+            Win32Api.UpdateWindow(Handle);
+            Created?.Invoke(this, new());
+        }
+        catch (Exception e)
+        {
+            throw new Exception("初始化窗体失败！原因：" + e.Message);
+        }
     }
 
     protected IntPtr WndProc(IntPtr hwnd, WindowMessage message, IntPtr wParam, IntPtr lParam)
@@ -523,8 +534,7 @@ internal class MainWIndow : IWindow
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
-            throw;
+            throw new Exception("界面初始化失败！原因：" + e.Message);
         }
         Loaded?.Invoke(this, new());
     }

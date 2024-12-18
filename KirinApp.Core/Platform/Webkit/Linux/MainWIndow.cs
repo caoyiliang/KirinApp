@@ -49,73 +49,79 @@ internal class MainWIndow : IWindow
     #region 窗体方法
     protected override void Create()
     {
-        OnCreate?.Invoke(this, new());
-        GtkApi.XInitThreads();
-        IntPtr argv = IntPtr.Zero;
-        int argc = 0;
-        GtkApi.gtk_init(ref argc, ref argv);
+        try
+        {
+            OnCreate?.Invoke(this, new());
+            GtkApi.XInitThreads();
+            IntPtr argv = IntPtr.Zero;
+            int argc = 0;
+            GtkApi.gtk_init(ref argc, ref argv);
 
-        Handle = GtkApi.gtk_window_new(Config.Chromeless ? 1 : 0);
-        GtkApi.gtk_window_set_title(Handle, Config.AppName);
-        GtkApi.gtk_window_set_resizable(Handle, Config.ResizeAble);
+            Handle = GtkApi.gtk_window_new(Config.Chromeless ? 1 : 0);
+            GtkApi.gtk_window_set_title(Handle, Config.AppName);
+            GtkApi.gtk_window_set_resizable(Handle, Config.ResizeAble);
 
-        if (!string.IsNullOrWhiteSpace(Config.Icon))
-        {
-            var icon = new Icon(Config.Icon);
-            if (icon != null)
-                GtkApi.gtk_window_set_icon(Handle, GtkApi.gdk_pixbuf_scale_simple(icon.Handle, 64, 64, GdkInterpType.GDK_INTERP_BILINEAR));
-        }
-        if (Config.Chromeless) GtkApi.gtk_window_set_decorated(Handle, true);
+            if (!string.IsNullOrWhiteSpace(Config.Icon))
+            {
+                var icon = new Icon(Config.Icon);
+                if (icon != null)
+                    GtkApi.gtk_window_set_icon(Handle, GtkApi.gdk_pixbuf_scale_simple(icon.Handle, 64, 64, GdkInterpType.GDK_INTERP_BILINEAR));
+            }
+            if (Config.Chromeless) GtkApi.gtk_window_set_decorated(Handle, true);
 
-        if (Config.Size != null)
-        {
-            Config.Width = Config.Size.Value.Width;
-            Config.Height = Config.Size.Value.Height;
-        }
-        if (Config.Center)
-        {
-            Config.Left = (MainMonitor!.Width - Config.Width) / 2;
-            Config.Top = (MainMonitor!.Height - Config.Height) / 2;
-        }
-        GtkApi.gtk_window_set_default_size(Handle, Config.Width, Config.Height);
-        var color = ColorTranslator.FromHtml("#FFFFFF");
-        var rgb = new GdkRGBA()
-        {
-            Red = color.R,
-            Green = color.G,
-            Blue = color.B,
-            Alpha = color.A
-        };
-        IntPtr result = Marshal.AllocHGlobal(Marshal.SizeOf(rgb));
-        Marshal.StructureToPtr(rgb, result, false);
-        GtkApi.gtk_widget_override_background_color(Handle, 0, result);
-        if (Config.Center)
-            GtkApi.gtk_window_set_position(Handle, (int)GtkWindowPosition.GtkWinPosCenter);
-        else
-            GtkApi.gtk_window_move(Handle, Config.Left, Config.Top);
-        if (Config.MinimumSize != null)
-        {
-            Config.MinimumHeigh = Config.MinimumSize.Value.Height;
-            Config.MinimumWidth = Config.MinimumSize.Value.Width;
-        }
-        if (Config.MaximumSize != null)
-        {
-            Config.MaximumHeigh = Config.MaximumSize.Value.Height;
-            Config.MaximumWidth = Config.MaximumSize.Value.Width;
-        }
-        var geometry = new GeometryInfo()
-        {
-            MinWidth = Config.MinimumWidth,
-            MinHeight = Config.MinimumHeigh,
-            MaxWidth = Config.MaximumWidth,
-            MaxHeight = Config.MaximumHeigh
-        };
-        GtkApi.gtk_window_set_geometry_hints(Handle, IntPtr.Zero, ref geometry, GdkWindowHints.GDK_HINT_MIN_SIZE | GdkWindowHints.GDK_HINT_MAX_SIZE);
+            if (Config.Size != null)
+            {
+                Config.Width = Config.Size.Value.Width;
+                Config.Height = Config.Size.Value.Height;
+            }
+            if (Config.Center)
+            {
+                Config.Left = (MainMonitor!.Width - Config.Width) / 2;
+                Config.Top = (MainMonitor!.Height - Config.Height) / 2;
+            }
+            GtkApi.gtk_window_set_default_size(Handle, Config.Width, Config.Height);
+            var color = ColorTranslator.FromHtml("#FFFFFF");
+            var rgb = new GdkRGBA()
+            {
+                Red = color.R,
+                Green = color.G,
+                Blue = color.B,
+                Alpha = color.A
+            };
+            IntPtr result = Marshal.AllocHGlobal(Marshal.SizeOf(rgb));
+            Marshal.StructureToPtr(rgb, result, false);
+            GtkApi.gtk_widget_override_background_color(Handle, 0, result);
+            if (Config.Center)
+                GtkApi.gtk_window_set_position(Handle, (int)GtkWindowPosition.GtkWinPosCenter);
+            else
+                GtkApi.gtk_window_move(Handle, Config.Left, Config.Top);
+            if (Config.MinimumSize != null)
+            {
+                Config.MinimumHeigh = Config.MinimumSize.Value.Height;
+                Config.MinimumWidth = Config.MinimumSize.Value.Width;
+            }
+            if (Config.MaximumSize != null)
+            {
+                Config.MaximumHeigh = Config.MaximumSize.Value.Height;
+                Config.MaximumWidth = Config.MaximumSize.Value.Width;
+            }
+            var geometry = new GeometryInfo()
+            {
+                MinWidth = Config.MinimumWidth,
+                MinHeight = Config.MinimumHeigh,
+                MaxWidth = Config.MaximumWidth,
+                MaxHeight = Config.MaximumHeigh
+            };
+            GtkApi.gtk_window_set_geometry_hints(Handle, IntPtr.Zero, ref geometry, GdkWindowHints.GDK_HINT_MIN_SIZE | GdkWindowHints.GDK_HINT_MAX_SIZE);
 
-        GtkApi.gtk_widget_add_events(Handle, 0x2000);
-        GtkApi.g_signal_connect(Handle, "configure-event", Marshal.GetFunctionPointerForDelegate(new Action<IntPtr, IntPtr>(OnWindowConfigure)), IntPtr.Zero);
-
-        Created?.Invoke(this, new());
+            GtkApi.gtk_widget_add_events(Handle, 0x2000);
+            GtkApi.g_signal_connect(Handle, "configure-event", Marshal.GetFunctionPointerForDelegate(new Action<IntPtr, IntPtr>(OnWindowConfigure)), IntPtr.Zero);
+            Created?.Invoke(this, new());
+        }
+        catch (Exception e)
+        {
+            throw new Exception("初始化窗体失败！原因：" + e.Message);
+        }
     }
 
     private int lastWidth;
@@ -379,9 +385,9 @@ internal class MainWIndow : IWindow
             Loaded?.Invoke(this, new());
             webKit.WebMessageReceived += (s, e) => WebMessageReceived?.Invoke(s, e);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            throw;
+            throw new Exception("界面初始化失败！原因：" + e.Message);
         }
     }
 
