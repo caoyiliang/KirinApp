@@ -24,6 +24,7 @@ using Newtonsoft.Json.Linq;
 using KirinAppCore.Plateform.Webkit.Linux.Models;
 using System.Runtime;
 using KirinAppCore.Plateform.WebView2.Windows;
+using KirinAppCore.Platform.Webkit.Linux;
 
 namespace KirinAppCore.Plateform.Webkit.Linux;
 
@@ -36,7 +37,7 @@ internal class MainWIndow : IWindow
     private SchemeConfig? SchemeConfig { get; set; }
 
     #region 事件
-    public override event EventHandler<CoreWebView2WebMessageReceivedEventArgs>? WebMessageReceived;
+    public override event EventHandler<WebMessageEvent>? WebMessageReceived;
     public override event EventHandler<EventArgs>? OnCreate;
     public override event EventHandler<EventArgs>? Created;
     public override event EventHandler<EventArgs>? OnLoad;
@@ -328,7 +329,6 @@ internal class MainWIndow : IWindow
         return Environment.CurrentManagedThreadId == Utils.MainThreadId;
     }
 
-
     private delegate void GdkIdleFunc(IntPtr data);
     public override async Task InvokeAsync(Func<Task> workItem)
     {
@@ -368,14 +368,16 @@ internal class MainWIndow : IWindow
         }
     }
 
+    private IWebKit? webKit;
     protected override async Task InitWebControl()
     {
+        webKit = ServiceProvide!.GetRequiredService<IWebKit>();
         try
         {
             OnLoad?.Invoke(this, new());
-
-            await Task.Delay(1);
+            await webKit.InitWebControl(this, Config);
             Loaded?.Invoke(this, new());
+            webKit.WebMessageReceived += (s, e) => WebMessageReceived?.Invoke(s, e);
         }
         catch (Exception)
         {
@@ -387,14 +389,10 @@ internal class MainWIndow : IWindow
     {
         Task.Run(() =>
         {
-            //while (CoreWebCon == null)
-            //    Thread.Sleep(10);
-            //Thread.Sleep(10);
-            //IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(() =>
-            //{
-            //    _ = CoreWebCon.CoreWebView2.ExecuteScriptAsync(js).Result;
-            //});
-            //Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
+            while (webKit == null)
+                Thread.Sleep(10);
+            Thread.Sleep(10);
+            Invoke(() => webKit.ExecuteJavaScript(js));
         });
     }
 
@@ -403,18 +401,14 @@ internal class MainWIndow : IWindow
         var tcs = new TaskCompletionSource<string>();
         Task.Run(() =>
         {
-            //while (CoreWebCon == null)
-            //    Task.Delay(10);
-            //Task.Delay(10);
-            //// 创建指向结果的委托
-            //IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(new Action(async () =>
-            //{
-            //    string res = await CoreWebCon.CoreWebView2.ExecuteScriptAsync(js);
-            //    tcs.SetResult(res); // 设置结果
-            //}));
-
-            //// 发送消息
-            //Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
+            while (webKit == null)
+                Thread.Sleep(10);
+            Thread.Sleep(10);
+            Invoke(() =>
+            {
+                var res = webKit!.ExecuteJavaScriptWithResult(js);
+                tcs.SetResult(res);
+            });
         });
         // 等待结果
         return tcs.Task.Result; // 返回结果
@@ -424,11 +418,10 @@ internal class MainWIndow : IWindow
     {
         Task.Run(() =>
         {
-            //while (CoreWebCon == null)
-            //    Thread.Sleep(10);
-            //Thread.Sleep(10);
-            //IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(() => CoreWebCon!.CoreWebView2.OpenDevToolsWindow());
-            //Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
+            while (webKit == null)
+                Thread.Sleep(10);
+            Thread.Sleep(10);
+            Invoke(() => webKit.OpenDevTool());
         });
     }
 
@@ -441,15 +434,16 @@ internal class MainWIndow : IWindow
     {
         Task.Run(() =>
         {
-            //IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(() =>
-            //{
-            //    ResourceRequest();
-            //    CoreWebCon?.CoreWebView2.Reload();
-            //});
-            //if (Config.AppType == WebAppType.Http)
-            //    actionPtr = Marshal.GetFunctionPointerForDelegate(() => CoreWebCon!.CoreWebView2.Navigate(Config.Url));
-            //Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
+            while (webKit == null)
+                Thread.Sleep(10);
+            Thread.Sleep(10);
+            Invoke(() => webKit.Reload());
         });
+    }
+
+    public override void Navigate(string url)
+    {
+        Invoke(() => webKit!.Navigate(url));
     }
     #endregion
 }

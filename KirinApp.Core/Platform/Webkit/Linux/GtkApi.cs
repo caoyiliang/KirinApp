@@ -13,7 +13,6 @@ internal class GtkApi
     internal const string GtkLib = "libgtk-3.so.0";
     internal const string GdkLib = "libgdk-3.so.0";
     internal const string Gioib = "libgio-2.0.so.0";
-
     internal const string GObjLb = "libgobject-2.0.so.0";
 
 
@@ -101,4 +100,11 @@ internal class GtkApi
     internal static extern IntPtr gtk_file_chooser_get_current_folder(IntPtr chooser);
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern IntPtr gtk_message_dialog_new(IntPtr parent, int flags, int type, int buttons, string message);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void gtk_container_add(IntPtr container, IntPtr widget); 
+    [DllImport(GObjLb, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern uint g_signal_connect_data(IntPtr instance, string detailedSignal, IntPtr handler, IntPtr data, IntPtr destroyData, uint connectFlags);
+    [DllImport(GObjLb, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern IntPtr g_memory_input_stream_new_from_data(IntPtr data, long len, IntPtr destroy);
+
 }

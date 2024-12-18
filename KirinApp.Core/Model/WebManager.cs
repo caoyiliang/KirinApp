@@ -17,21 +17,19 @@ namespace KirinAppCore.Model;
 
 internal class WebManager : WebViewManager
 {
-    CoreWebView2 webView;
     WebDispatcher dispatcher;
     Task handleMessageTask;
     Channel<string> messageQueue;
     IWindow window;
     IFileProvider fileProvider;
-    public WebManager(IWindow window, CoreWebView2 webView, IServiceProvider services, WebDispatcher dispatcher,
+    public WebManager(IWindow window, WebDispatcher dispatcher,
        JSComponentConfigurationStore jsComponents, SchemeConfig config)
-       : base(services, dispatcher, config.AppOriginUri!, services.GetRequiredService<IFileProvider>(), jsComponents, config.HomePagePath)
+       : base(window.ServiceProvide!, dispatcher, config.AppOriginUri!, window.ServiceProvide!.GetRequiredService<IFileProvider>(), jsComponents, config.HomePagePath)
     {
 
         this.window = window;
-        this.webView = webView;
         this.dispatcher = dispatcher;
-        fileProvider = services.GetRequiredService<IFileProvider>();
+        fileProvider = window.ServiceProvide!.GetRequiredService<IFileProvider>();
         messageQueue = Channel.CreateUnbounded<string>(new UnboundedChannelOptions() { SingleReader = true, SingleWriter = false, AllowSynchronousContinuations = false });
         handleMessageTask = Task.Factory.StartNew(MessageReadProgress, TaskCreationOptions.LongRunning);
     }
@@ -40,7 +38,7 @@ internal class WebManager : WebViewManager
     {
         await dispatcher.InvokeAsync(() =>
         {
-            webView.Navigate(absoluteUri.ToString());
+            window.Navigate(absoluteUri.ToString());
         });
     }
     protected override void SendMessage(string message)
@@ -86,7 +84,7 @@ internal class WebManager : WebViewManager
 
     public void OnMessageReceived(string source, string message)
     {
-        MessageReceived(new Uri(source), message);    
+        MessageReceived(new Uri(source), message);
     }
 
     public (Stream Content, string Type) OnResourceRequested(SchemeConfig config, string url)

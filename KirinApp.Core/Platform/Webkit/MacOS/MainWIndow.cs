@@ -33,7 +33,7 @@ internal class MainWIndow : IWindow
     private SchemeConfig? SchemeConfig { get; set; }
 
     #region 事件
-    public override event EventHandler<CoreWebView2WebMessageReceivedEventArgs>? WebMessageReceived;
+    public override event EventHandler<WebMessageEvent>? WebMessageReceived;
     public override event EventHandler<EventArgs>? OnCreate;
     public override event EventHandler<EventArgs>? Created;
     public override event EventHandler<EventArgs>? OnLoad;
@@ -242,6 +242,11 @@ internal class MainWIndow : IWindow
             //    actionPtr = Marshal.GetFunctionPointerForDelegate(() => CoreWebCon!.CoreWebView2.Navigate(Config.Url));
             //Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
         });
+    }
+
+    public override void Navigate(string url)
+    {
+        throw new NotImplementedException();
     }
     #endregion
 }

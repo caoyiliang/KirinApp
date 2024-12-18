@@ -1,4 +1,6 @@
-﻿using System;
+﻿using KirinAppCore.Interface;
+using KirinAppCore.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,10 +10,12 @@ namespace KirinAppCore.Platform.Webkit.Linux;
 
 internal interface IWebKit
 {
-    Task InitWebControl();
+    event EventHandler<WebMessageEvent>? WebMessageReceived;
+    Task InitWebControl(IWindow window,WinConfig config);
     void ExecuteJavaScript(string js);
     string ExecuteJavaScriptWithResult(string js);
     void OpenDevTool();
     void SendWebMessage(string message);
     void Reload();
+    void Navigate(string url);
 }

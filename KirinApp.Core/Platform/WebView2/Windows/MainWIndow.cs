@@ -32,11 +32,11 @@ internal class MainWIndow : IWindow
 {
     private CoreWebView2Environment? CoreWebEnv;
     private CoreWebView2Controller? CoreWebCon;
-    private WebManager? WebManager { get; set; }
-    private SchemeConfig? SchemeConfig { get; set; }
+    protected WebManager? WebManager { get; set; }
+    protected SchemeConfig? SchemeConfig { get; set; }
     private WndProcDelegate? WindowProc;
     #region 事件
-    public override event EventHandler<CoreWebView2WebMessageReceivedEventArgs>? WebMessageReceived;
+    public override event EventHandler<WebMessageEvent>? WebMessageReceived;
     public override event EventHandler<EventArgs>? OnCreate;
     public override event EventHandler<EventArgs>? Created;
     public override event EventHandler<EventArgs>? OnLoad;
@@ -463,8 +463,7 @@ internal class MainWIndow : IWindow
 
                 SchemeConfig = new Uri(url).ParseScheme();
                 var dispatcher = new WebDispatcher(this);
-                WebManager = new WebManager(this, CoreWebCon.CoreWebView2, ServiceProvide!, dispatcher,
-                    ServiceProvide!.GetRequiredService<JSComponentConfigurationStore>(), SchemeConfig);
+                WebManager = new WebManager(this, dispatcher, ServiceProvide!.GetRequiredService<JSComponentConfigurationStore>(), SchemeConfig);
                 if (Config.AppType == WebAppType.Blazor)
                 {
                     if (Config.BlazorComponent == null) throw new Exception("Blazor component not found!");
@@ -499,7 +498,11 @@ internal class MainWIndow : IWindow
                         return;
                     }
                     catch { }
-                    WebMessageReceived?.Invoke(s, e);
+                    WebMessageEvent msg = new WebMessageEvent()
+                    {
+                        Message = e.TryGetWebMessageAsString()
+                    };
+                    WebMessageReceived?.Invoke(s, msg);
                 };
                 CoreWebCon.CoreWebView2.AddWebResourceRequestedFilter($"{SchemeConfig.AppOrigin}*",
                     CoreWebView2WebResourceContext.All);
@@ -593,6 +596,11 @@ internal class MainWIndow : IWindow
                 actionPtr = Marshal.GetFunctionPointerForDelegate(() => CoreWebCon!.CoreWebView2.Navigate(Config.Url));
             Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
         });
+    }
+
+    public override void Navigate(string url)
+    {
+        Invoke(() => CoreWebCon!.CoreWebView2.Navigate(Config.Url));
     }
 
     private void ResourceRequest()

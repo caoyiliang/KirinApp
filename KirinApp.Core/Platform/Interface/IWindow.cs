@@ -21,7 +21,7 @@ namespace KirinAppCore.Interface;
 internal abstract class IWindow
 {
     #region WebView2变量
-    protected ServiceProvider? ServiceProvide;
+    public ServiceProvider? ServiceProvide;
     #endregion
 
     #region 窗体变量
@@ -65,7 +65,7 @@ internal abstract class IWindow
     /// <summary>
     /// 接收消息事件
     /// </summary>
-    public virtual event EventHandler<CoreWebView2WebMessageReceivedEventArgs>? WebMessageReceived;
+    public virtual event EventHandler<WebMessageEvent>? WebMessageReceived;
 
     /// <summary>
     /// 窗口大小改变事件
@@ -263,5 +263,11 @@ internal abstract class IWindow
     /// 重新渲染
     /// </summary>
     public abstract void Reload();
+
+    /// <summary>
+    /// 加载url
+    /// </summary>
+    /// <param name="url"></param>
+    public abstract void Navigate(string url);
     #endregion
 }
