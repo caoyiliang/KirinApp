@@ -536,10 +536,10 @@ internal class MainWIndow : IWindow
             while (CoreWebCon == null)
                 Thread.Sleep(10);
             Thread.Sleep(10);
-            IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(() =>
+            IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(new Action(async () =>
             {
-                _ = CoreWebCon.CoreWebView2.ExecuteScriptAsync(js).Result;
-            });
+                _ = await CoreWebCon.CoreWebView2.ExecuteScriptAsync(js);
+            }));
             Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
         });
     }
