@@ -11,6 +11,7 @@
   <ItemGroup>
     <None Remove="wwwroot\blazorindex.html" />
     <None Remove="wwwroot\edge.document.js" />
+    <None Remove="wwwroot\webkit.document.js" />
   </ItemGroup>
 
   <ItemGroup>

@@ -34,7 +34,7 @@ public class KirinApp
     public event EventHandler<EventArgs>? Loaded;
     public event NetClosingDelegate? OnClose;
     public delegate bool? NetClosingDelegate(object sender, EventArgs e);
-    public event EventHandler<CoreWebView2WebMessageReceivedEventArgs>? WebMessageReceived;
+    public event EventHandler<WebMessageEvent>? WebMessageReceived;
     public event EventHandler<SizeChangeEventArgs>? SizeChange;
     public event EventHandler<PositionChangeEventArgs>? PositionChange;
 

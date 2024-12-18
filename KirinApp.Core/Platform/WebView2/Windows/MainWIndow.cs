@@ -600,7 +600,7 @@ internal class MainWIndow : IWindow
 
     public override void Navigate(string url)
     {
-        Invoke(() => CoreWebCon!.CoreWebView2.Navigate(Config.Url));
+        CoreWebCon!.CoreWebView2.Navigate(url);
     }
 
     private void ResourceRequest()
