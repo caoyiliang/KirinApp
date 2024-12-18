@@ -250,14 +250,14 @@ internal abstract class IWindow
     /// </summary>
     /// <param name="js"></param>
     /// <returns></returns>
-    public abstract void ExecuteJavaScript(string js);
+    public abstract Task ExecuteJavaScript(string js);
 
     /// <summary>
     /// 执行js代码返回结果
     /// </summary>
     /// <param name="js"></param>
     /// <returns></returns>
-    public abstract string ExecuteJavaScriptWithResult(string js);
+    public abstract Task<string> ExecuteJavaScriptWithResult(string js);
 
     /// <summary>
     /// 重新渲染

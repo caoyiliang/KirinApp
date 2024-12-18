@@ -385,31 +385,31 @@ internal class MainWIndow : IWindow
         }
     }
 
-    public override void ExecuteJavaScript(string js)
+    public override async Task ExecuteJavaScript(string js)
     {
-        Task.Run(() =>
-        {
-            while (webKit == null)
-                Thread.Sleep(10);
-            Thread.Sleep(10);
-            Invoke(() => webKit.ExecuteJavaScript(js));
-        });
+        await Task.Run(async () =>
+          {
+              while (webKit == null)
+                  await Task.Delay(10);
+              await Task.Delay(10);
+              Invoke(() => webKit.ExecuteJavaScript(js));
+          });
     }
 
-    public override string ExecuteJavaScriptWithResult(string js)
+    public override async Task<string> ExecuteJavaScriptWithResult(string js)
     {
         var tcs = new TaskCompletionSource<string>();
-        Task.Run(() =>
-        {
-            while (webKit == null)
-                Thread.Sleep(10);
-            Thread.Sleep(10);
-            Invoke(() =>
-            {
-                var res = webKit!.ExecuteJavaScriptWithResult(js);
-                tcs.SetResult(res);
-            });
-        });
+        await Task.Run(async () =>
+         {
+             while (webKit == null)
+                 await Task.Delay(10);
+             await Task.Delay(10);
+             Invoke(() =>
+             {
+                 var res = webKit!.ExecuteJavaScriptWithResult(js);
+                 tcs.SetResult(res);
+             });
+         });
         // 等待结果
         return tcs.Task.Result; // 返回结果
     }

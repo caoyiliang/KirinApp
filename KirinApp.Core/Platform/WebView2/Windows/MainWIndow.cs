@@ -529,13 +529,13 @@ internal class MainWIndow : IWindow
         Loaded?.Invoke(this, new());
     }
 
-    public override void ExecuteJavaScript(string js)
+    public override async Task ExecuteJavaScript(string js)
     {
-        Task.Run(() =>
+        await Task.Run(async () =>
         {
             while (CoreWebCon == null)
-                Thread.Sleep(10);
-            Thread.Sleep(10);
+                await Task.Delay(10);
+            await Task.Delay(10);
             IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(new Action(async () =>
             {
                 _ = await CoreWebCon.CoreWebView2.ExecuteScriptAsync(js);
@@ -544,24 +544,24 @@ internal class MainWIndow : IWindow
         });
     }
 
-    public override string ExecuteJavaScriptWithResult(string js)
+    public override async Task<string> ExecuteJavaScriptWithResult(string js)
     {
         var tcs = new TaskCompletionSource<string>();
-        Task.Run(() =>
-        {
-            while (CoreWebCon == null)
-                Task.Delay(10);
-            Task.Delay(10);
-            // 创建指向结果的委托
-            IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(new Action(async () =>
-            {
-                string res = await CoreWebCon.CoreWebView2.ExecuteScriptAsync(js);
-                tcs.SetResult(res); // 设置结果
-            }));
+        await Task.Run(async () =>
+         {
+             while (CoreWebCon == null)
+                 await Task.Delay(10);
+             await Task.Delay(10);
+             // 创建指向结果的委托
+             IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(new Action(async () =>
+             {
+                 string res = await CoreWebCon.CoreWebView2.ExecuteScriptAsync(js);
+                 tcs.SetResult(res); // 设置结果
+             }));
 
-            // 发送消息
-            Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
-        });
+             // 发送消息
+             Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
+         });
         // 等待结果
         return tcs.Task.Result; // 返回结果
     }

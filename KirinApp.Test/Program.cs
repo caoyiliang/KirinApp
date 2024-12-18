@@ -24,11 +24,11 @@ class Program
         var kirinApp = new KirinApp(winConfig);
         kirinApp.Loaded += async (_, _) =>
         {
-            await Task.Delay(200);
             kirinApp.SendWebMessage("你好12312");
-            kirinApp.ExecuteJavaScript("console.log('Loaded success')");
-            var res = kirinApp.ExecuteJavaScriptWithResult<int>("1+12");
+            await kirinApp.ExecuteJavaScript("console.log('hellow kirinApp')");
+            var res = await kirinApp.ExecuteJavaScriptWithResult("1+2");
             Console.WriteLine(res);
+            kirinApp.OpenDevTool();
         };
         kirinApp.Created += (_, _) =>
         {

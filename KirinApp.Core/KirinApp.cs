@@ -118,8 +118,8 @@ public class KirinApp
                 serviceCollection.AddSingleton<IWebKit, WebKit41>();
             else throw new Exception("检测到未安装libwebkit2gtk库");
         }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            serviceCollection.AddSingleton<IWindow, KirinAppCore.Plateform.Webkit.MacOS.MainWIndow>();
+        //else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        //    serviceCollection.AddSingleton<IWindow, KirinAppCore.Plateform.Webkit.MacOS.MainWIndow>();
 
         if (Config.AppType != WebAppType.Http)
         {
@@ -238,7 +238,6 @@ public class KirinApp
     public KirinApp SetRawString(string rawString)
     {
         Config.RawString = rawString;
-        Reload();
         return this;
     }
 
@@ -330,11 +329,11 @@ public class KirinApp
     public (bool selected, FileInfo? file) OpenFile(string filePath = "") => Window.OpenFile(filePath);
     public (bool selected, List<FileInfo>? files) OpenFiles(string filePath = "") => Window.OpenFiles(filePath);
     public MsgResult ShowDialog(string title, string message, MsgBtns btns = MsgBtns.OK) => Window.ShowDialog(title, message, btns);
-    public void ExecuteJavaScript(string js) => Window.ExecuteJavaScript(js);
-    public string ExecuteJavaScriptWithResult(string js) => Window.ExecuteJavaScriptWithResult(js);
-    public T ExecuteJavaScriptWithResult<T>(string js)
+    public async Task ExecuteJavaScript(string js) => await Window.ExecuteJavaScript(js);
+    public async Task<string> ExecuteJavaScriptWithResult(string js) => await Window.ExecuteJavaScriptWithResult(js);
+    public async Task<T> ExecuteJavaScriptWithResult<T>(string js)
     {
-        var str = Window.ExecuteJavaScriptWithResult(js);
+        var str = await Window.ExecuteJavaScriptWithResult(js);
         try
         {
             var res = JsonConvert.DeserializeObject<T>(str);
@@ -348,14 +347,24 @@ public class KirinApp
     }
     public void OpenDevTool() => Window.OpenDevTool();
     public void Reload() => Window.Reload();
-    public void ReloadUrl(string url)
+    public void LoadStatic(string path)
     {
-        SetUrl(url);
+        UseStatic(path);
         Reload();
     }
-    public void ReloadRawString(string content)
+    public void LoadUrl(string url)
     {
-        SetRawString(content);
+        UseHttp(url);
+        Reload();
+    }
+    public void LoadRawString(string content)
+    {
+        UseRawString(content);
+        Reload();
+    }
+    public void LoadBlazor<T>(string selector = "#app") where T : class
+    {
+        UseBlazor<T>(selector);
         Reload();
     }
     public void SendWebMessage(string msg) => Window.SendWebMessage(msg);
