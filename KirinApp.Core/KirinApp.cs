@@ -67,10 +67,14 @@ public class KirinApp
         Window.SetScreenInfo();
     }
 
-    private void EventRegister()
+    private void EventRegister1()
     {
         Window.OnCreate += (s, e) => OnCreate?.Invoke(s, e);
         Window.OnLoad += (s, e) => OnLoad?.Invoke(s, e);
+    }
+
+    private void EventRegister2()
+    {
         Window.Created += (s, e) => Created?.Invoke(s, e);
         Window.Loaded += (s, e) => Loaded?.Invoke(s, e);
         Window.OnClose += (s, e) => OnClose?.Invoke(s, e);
@@ -85,9 +89,10 @@ public class KirinApp
             Utils.MainThreadId = Environment.CurrentManagedThreadId;
         if (Window.CheckAccess() && Parent == null && Utils.Wnds.Count == 0)
         {
-            EventRegister();
+            EventRegister1();
             Window.Init(ServiceProvide, Config);
             Window.Show();
+            EventRegister2();
             Utils.Wnds.Add(this);
             Window.MainLoop();
         }
@@ -95,9 +100,10 @@ public class KirinApp
         {
             IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(() =>
             {
-                EventRegister();
+                EventRegister1();
                 Window.Init(ServiceProvide, Config);
                 Window.Show();
+                EventRegister2();
                 Utils.Wnds.Add(this);
                 Window.MainLoop();
             });
