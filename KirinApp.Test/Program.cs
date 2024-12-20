@@ -52,18 +52,9 @@ class Program
         {
             Console.WriteLine(e.X + ":" + e.Y);
         };
-        kirinApp.WebMessageReceived += (_, _) =>
+        kirinApp.WebMessageReceived += (_, e) =>
         {
-            Task.Run(() =>
-            {
-                var setApp = new KirinApp(kirinApp);
-                setApp.AppName = "Setting";
-                setApp.Icon = "logo.ico";
-                setApp.Height = 400;
-                setApp.Width = 600;
-                setApp.UseBlazor<App>();
-                setApp.Run();
-            });
+            Console.WriteLine(e.Message);
         };
         kirinApp.Run();
     }

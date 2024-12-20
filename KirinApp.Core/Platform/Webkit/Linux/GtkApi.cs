@@ -10,10 +10,10 @@ namespace KirinAppCore.Plateform.Webkit.Linux;
 
 internal class GtkApi
 {
-    internal const string GtkLib = "libgtk-3.so.0";
-    internal const string GdkLib = "libgdk-3.so.0";
-    internal const string Gioib = "libgio-2.0.so.0";
-    internal const string GObjLb = "libgobject-2.0.so.0";
+    internal const string GtkLib = "/lib/x86_64-linux-gnu/libgtk-3.so.0";
+    internal const string GdkLib = "/lib/x86_64-linux-gnu/libgdk-3.so.0";
+    internal const string Gioib = "/lib/x86_64-linux-gnu/libgio-2.0.so.0";
+    internal const string GObjLb = "/lib/x86_64-linux-gnu/libgobject-2.0.so.0";
 
 
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
@@ -101,7 +101,7 @@ internal class GtkApi
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern IntPtr gtk_message_dialog_new(IntPtr parent, int flags, int type, int buttons, string message);
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void gtk_container_add(IntPtr container, IntPtr widget); 
+    internal static extern void gtk_container_add(IntPtr container, IntPtr widget);
     [DllImport(GObjLb, CallingConvention = CallingConvention.Cdecl)]
     internal static extern uint g_signal_connect_data(IntPtr instance, string detailedSignal, IntPtr handler, IntPtr data, IntPtr destroyData, uint connectFlags);
     [DllImport(GObjLb, CallingConvention = CallingConvention.Cdecl)]

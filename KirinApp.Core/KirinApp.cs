@@ -118,6 +118,7 @@ public class KirinApp
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             serviceCollection.AddSingleton<IWindow, KirinAppCore.Plateform.Webkit.Linux.MainWIndow>();
+            //检测注入libwebkit库
             if (Utils.LinuxLibInstall("libwebkit2gtk-4.0"))
                 serviceCollection.AddSingleton<IWebKit, WebKit40>();
             else if (Utils.LinuxLibInstall("libwebkit2gtk-4.1"))
