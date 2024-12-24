@@ -11,7 +11,7 @@ namespace KirinAppCore.Platform.Webkit.Linux;
 internal interface IWebKit
 {
     event EventHandler<WebMessageEvent>? WebMessageReceived;
-    Task InitWebControl(IWindow window,WinConfig config);
+    void InitWebControl(IWindow window, WinConfig config);
     void ExecuteJavaScript(string js);
     string ExecuteJavaScriptWithResult(string js);
     void OpenDevTool();

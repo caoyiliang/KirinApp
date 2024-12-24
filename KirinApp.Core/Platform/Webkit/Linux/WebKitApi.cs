@@ -90,66 +90,75 @@ internal class WebKit40 : IWebKit
     }
     private delegate IntPtr UriSchemeCallbackFunc(IntPtr request, IntPtr user_data);
     private delegate void ScriptMessageReceivedDelegate(IntPtr webView, IntPtr message, IntPtr userData);
-    public async Task InitWebControl(IWindow window, WinConfig config)
+    public void InitWebControl(IWindow window, WinConfig config)
     {
-        Window = window;
-        await Task.Delay(1);
-        var contentManager = webkit_user_content_manager_new();
-        Handle = webkit_web_view_new_with_user_content_manager(contentManager);
-        GtkApi.gtk_container_add(window.Handle, Handle);
-
-        if (config.Debug)
+        try
         {
-            IntPtr settings = webkit_web_view_get_settings(Handle);
-            webkit_settings_set_enable_developer_extras(settings, true);
+            Window = window;
+            var contentManager = webkit_user_content_manager_new();
+            Handle = webkit_web_view_new_with_user_content_manager(contentManager);
+
+            GtkApi.gtk_container_add(window.Handle, Handle);
+            
+            webkit_web_view_load_uri(Handle, "https://app.immersivetranslate.com/text/");
+
+            // if (config.Debug)
+            // {
+            //     IntPtr settings = webkit_web_view_get_settings(Handle);
+            //     webkit_settings_set_enable_developer_extras(settings, true);
+            // }
+            // else
+            // {
+            //     IntPtr settings = webkit_web_view_get_settings(Handle);
+            //     webkit_settings_set_enable_developer_extras(settings, false);
+            //     GtkApi.g_signal_connect_data(Handle, "context-menu", Marshal.GetFunctionPointerForDelegate(new ContextMenuCallbackDelegate(ContextMenuCallback)), IntPtr.Zero, IntPtr.Zero, 0);
+            // }
+            // if (config.AppType != WebAppType.Http)
+            // {
+            //     var url = $"http://localhost/";
+            //     if (config.AppType == WebAppType.Static) url += config.Url;
+            //     if (config.AppType == WebAppType.Blazor) url += "blazorindex.html";
+            //     SchemeConfig = new Uri(url).ParseScheme();
+            //     var dispatcher = new WebDispatcher(window);
+            //     WebManager = new WebManager(window, dispatcher, window.ServiceProvide!.GetRequiredService<JSComponentConfigurationStore>(), SchemeConfig);
+            //     if (config.AppType == WebAppType.Blazor)
+            //     {
+            //         if (config.BlazorComponent == null) throw new Exception("Blazor component not found!");
+            //         _ = dispatcher.InvokeAsync(async () =>
+            //         {
+            //             await WebManager.AddRootComponentAsync(config.BlazorComponent!, config.BlazorSelector,
+            //                 ParameterView.Empty);
+            //         });
+            //     }
+
+            //     UriSchemeCallbackFunc uriSchemeCallback = UriSchemeCallback;
+            //     var context = webkit_web_context_get_default();
+            //     webkit_web_context_register_uri_scheme(context, SchemeConfig.AppScheme, Marshal.GetFunctionPointerForDelegate(uriSchemeCallback), IntPtr.Zero, IntPtr.Zero);
+
+
+            //     var assembly = Assembly.GetExecutingAssembly();
+            //     var stream = assembly.GetManifestResourceStream("KirinAppCore.wwwroot.webkit.document.js")!;
+            //     var content = new StreamReader(stream).ReadToEnd();
+            //     var script = webkit_user_script_new(content, 2, 0, IntPtr.Zero, IntPtr.Zero);
+            //     webkit_user_content_manager_add_script(contentManager, script);
+            //     webkit_user_script_unref(script);
+
+            //     GtkApi.g_signal_connect_data(contentManager,
+            //         "script-message-received::KirinApp",
+            //         Marshal.GetFunctionPointerForDelegate(new ScriptMessageReceivedDelegate(ScriptMessageReceived)),
+            //         IntPtr.Zero, IntPtr.Zero, 0);
+            //     webkit_user_content_manager_register_script_message_handler(contentManager, "KirinApp");
+            //     WebManager.Navigate("/");
+            // }
+            // else
+            // {
+            //     webkit_web_view_load_uri(Handle, config.Url!);
+            // }
         }
-        else
+        catch (Exception e)
         {
-            IntPtr settings = webkit_web_view_get_settings(Handle);
-            webkit_settings_set_enable_developer_extras(settings, false);
-            GtkApi.g_signal_connect_data(Handle, "context-menu", Marshal.GetFunctionPointerForDelegate(new ContextMenuCallbackDelegate(ContextMenuCallback)), IntPtr.Zero, IntPtr.Zero, 0);
-        }
-
-        if (config.AppType != WebAppType.Http)
-        {
-            var url = $"http://localhost/";
-            if (config.AppType == WebAppType.Static) url += config.Url;
-            if (config.AppType == WebAppType.Blazor) url += "blazorindex.html";
-            SchemeConfig = new Uri(url).ParseScheme();
-            var dispatcher = new WebDispatcher(window);
-            WebManager = new WebManager(window, dispatcher, window.ServiceProvide!.GetRequiredService<JSComponentConfigurationStore>(), SchemeConfig);
-            if (config.AppType == WebAppType.Blazor)
-            {
-                if (config.BlazorComponent == null) throw new Exception("Blazor component not found!");
-                _ = dispatcher.InvokeAsync(async () =>
-                {
-                    await WebManager.AddRootComponentAsync(config.BlazorComponent!, config.BlazorSelector,
-                        ParameterView.Empty);
-                });
-            }
-
-            UriSchemeCallbackFunc uriSchemeCallback = UriSchemeCallback;
-            var context = webkit_web_context_get_default();
-            webkit_web_context_register_uri_scheme(context, SchemeConfig.AppScheme, Marshal.GetFunctionPointerForDelegate(uriSchemeCallback), IntPtr.Zero, IntPtr.Zero);
-
-
-            var assembly = Assembly.GetExecutingAssembly();
-            var stream = assembly.GetManifestResourceStream("KirinAppCore.wwwroot.webkit.document.js")!;
-            var content = new StreamReader(stream).ReadToEnd();
-            var script = webkit_user_script_new(content, 2, 0, IntPtr.Zero, IntPtr.Zero);
-            webkit_user_content_manager_add_script(contentManager, script);
-            webkit_user_script_unref(script);
-
-            GtkApi.g_signal_connect_data(contentManager,
-                "script-message-received::KirinApp",
-                Marshal.GetFunctionPointerForDelegate(new ScriptMessageReceivedDelegate(ScriptMessageReceived)),
-                IntPtr.Zero, IntPtr.Zero, 0);
-            webkit_user_content_manager_register_script_message_handler(contentManager, "KirinApp");
-            WebManager.Navigate("/");
-        }
-        else
-        {
-            webkit_web_view_load_uri(Handle, config.Url!);
+            System.Console.WriteLine(e.Message);
+            throw;
         }
     }
 
@@ -203,18 +212,26 @@ internal class WebKit40 : IWebKit
 
     private IntPtr UriSchemeCallback(IntPtr request, IntPtr user_data)
     {
-        var uri = Marshal.PtrToStringAnsi(webkit_uri_scheme_request_get_uri(request));
-        var response = WebManager!.OnResourceRequested(SchemeConfig!, uri!);
+        try
+        {
+            var uri = Marshal.PtrToStringAnsi(webkit_uri_scheme_request_get_uri(request));
+            var response = WebManager!.OnResourceRequested(SchemeConfig!, uri!);
 
-        using MemoryStream ms = new();
-        response.Content.CopyTo(ms);
-        var bytes = ms.ToArray();
-        IntPtr bytesPtr = Marshal.AllocHGlobal(bytes.Length);
-        Marshal.Copy(bytes, 0, bytesPtr, bytes.Length);
-        var stream = GtkApi.g_memory_input_stream_new_from_data(bytesPtr, bytes.Length, IntPtr.Zero);
-        webkit_uri_scheme_request_finish(request, stream, bytes.Length, Marshal.StringToCoTaskMemAnsi(response.Type));
+            using MemoryStream ms = new();
+            response.Content.CopyTo(ms);
+            var bytes = ms.ToArray();
+            IntPtr bytesPtr = Marshal.AllocHGlobal(bytes.Length);
+            Marshal.Copy(bytes, 0, bytesPtr, bytes.Length);
+            var stream = GtkApi.g_memory_input_stream_new_from_data(bytesPtr, bytes.Length, IntPtr.Zero);
+            webkit_uri_scheme_request_finish(request, stream, bytes.Length, Marshal.StringToCoTaskMemAnsi(response.Type));
 
-        return IntPtr.Zero;
+            return IntPtr.Zero;
+        }
+        catch (Exception e)
+        {
+            System.Console.WriteLine(e.Message);
+            throw;
+        }
     }
 
     private void ScriptMessageReceived(IntPtr webView, IntPtr message, IntPtr userData)
@@ -268,7 +285,7 @@ internal class WebKit41 : IWebKit
     private SchemeConfig? SchemeConfig { get; set; }
     private IWindow? Window { get; set; }
 
-    public Task InitWebControl(IWindow window, WinConfig config)
+    public void InitWebControl(IWindow window, WinConfig config)
     {
         throw new NotImplementedException();
     }

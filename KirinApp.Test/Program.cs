@@ -12,11 +12,11 @@ class Program
         WinConfig winConfig = new WinConfig()
         {
             AppName = "Test",
-            Height = 1200,
-            Width = 1600,
-            AppType = WebAppType.Static,
+            Height = 800,
+            Width = 1000,
+            AppType = WebAppType.Http,
             BlazorComponent = typeof(App),
-            Url = "index.html",
+            Url = "https://ops.zink.asia:28238/websites/runtimes/dotnet",
             RawString = "<span style='color:red'>这个是字符串</span>",
             Icon = "logo.ico",
             Debug = true,

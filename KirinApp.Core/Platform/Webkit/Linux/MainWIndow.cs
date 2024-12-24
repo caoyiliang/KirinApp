@@ -44,6 +44,7 @@ internal class MainWIndow : IWindow
     public override event EventHandler<EventArgs>? Loaded;
     public override event EventHandler<SizeChangeEventArgs>? SizeChangeEvent;
     public override event EventHandler<PositionChangeEventArgs>? PositionChangeEvent;
+    public override event CloseDelegate? OnClose;
     #endregion
 
     #region 窗体方法
@@ -52,10 +53,6 @@ internal class MainWIndow : IWindow
         try
         {
             OnCreate?.Invoke(this, new());
-            GtkApi.XInitThreads();
-            IntPtr argv = IntPtr.Zero;
-            int argc = 0;
-            GtkApi.gtk_init(ref argc, ref argv);
 
             Handle = GtkApi.gtk_window_new(Config.Chromeless ? 1 : 0);
             GtkApi.gtk_window_set_title(Handle, Config.AppName);
@@ -63,9 +60,23 @@ internal class MainWIndow : IWindow
 
             if (!string.IsNullOrWhiteSpace(Config.Icon))
             {
-                var icon = new Icon(Config.Icon);
-                if (icon != null)
-                    GtkApi.gtk_window_set_icon(Handle, GtkApi.gdk_pixbuf_scale_simple(icon.Handle, 64, 64, GdkInterpType.GDK_INTERP_BILINEAR));
+                using (var fs = new FileStream(Config.Icon, FileMode.Open))
+                using (var ms = new MemoryStream())
+                {
+                    fs.CopyTo(ms);
+                    byte[] byteArray = ms.ToArray();
+                    var imagePtr = Marshal.UnsafeAddrOfPinnedArrayElement(byteArray, 0);
+                    var stream = GtkApi.g_memory_input_stream_new_from_data(imagePtr, byteArray.Length, IntPtr.Zero);
+
+                    var pixbuf = GtkApi.gdk_pixbuf_new_from_stream(stream, IntPtr.Zero, IntPtr.Zero);
+                    GtkApi.g_input_stream_close(stream, IntPtr.Zero, IntPtr.Zero);
+
+                    var sam = GtkApi.gdk_pixbuf_scale_simple(pixbuf, 64, 64, GdkInterpType.GDK_INTERP_BILINEAR);
+                    GtkApi.gtk_window_set_icon(Handle, sam);
+
+                    // 释放 pixbuf
+                    GtkApi.g_object_unref(pixbuf);
+                }
             }
             if (Config.Chromeless) GtkApi.gtk_window_set_decorated(Handle, true);
 
@@ -80,6 +91,7 @@ internal class MainWIndow : IWindow
                 Config.Top = (MainMonitor!.Height - Config.Height) / 2;
             }
             GtkApi.gtk_window_set_default_size(Handle, Config.Width, Config.Height);
+
             var color = ColorTranslator.FromHtml("#FFFFFF");
             var rgb = new GdkRGBA()
             {
@@ -115,7 +127,8 @@ internal class MainWIndow : IWindow
             GtkApi.gtk_window_set_geometry_hints(Handle, IntPtr.Zero, ref geometry, GdkWindowHints.GDK_HINT_MIN_SIZE | GdkWindowHints.GDK_HINT_MAX_SIZE);
 
             GtkApi.gtk_widget_add_events(Handle, 0x2000);
-            GtkApi.g_signal_connect(Handle, "configure-event", Marshal.GetFunctionPointerForDelegate(new Action<IntPtr, IntPtr>(OnWindowConfigure)), IntPtr.Zero);
+            GtkApi.g_signal_connect_data(Handle, "configure-event", Marshal.GetFunctionPointerForDelegate<GtkWidgetEventDelegate>(OnWindowConfigure), IntPtr.Zero, IntPtr.Zero, 0);
+            GtkApi.g_signal_connect_data(Handle, "delete-event", Marshal.GetFunctionPointerForDelegate<GtkDeleteEventDelegate>(OnWindowClose), IntPtr.Zero, IntPtr.Zero, 0);
             Created?.Invoke(this, new());
         }
         catch (Exception e)
@@ -124,11 +137,29 @@ internal class MainWIndow : IWindow
         }
     }
 
+    protected delegate IntPtr GtkDeleteEventDelegate(IntPtr widget, IntPtr ev, IntPtr data);
+    private IntPtr OnWindowClose(IntPtr widget, IntPtr ev, IntPtr data)
+    {
+        var res = OnClose?.Invoke(this, EventArgs.Empty);
+        if (res == null || res.Value)
+        {
+            GtkApi.gtk_widget_destroy(Handle);
+            GtkApi.gtk_main_quit();
+            Close();
+            return (IntPtr)0;
+        }
+        else
+        {
+            return (IntPtr)1;
+        }
+    }
+
+    protected delegate bool GtkWidgetEventDelegate(IntPtr widget, IntPtr ev, IntPtr data);
     private int lastWidth;
     private int lastHeight;
     private int lastX;
     private int lastY;
-    private void OnWindowConfigure(IntPtr widget, IntPtr eventPtr)
+    private bool OnWindowConfigure(IntPtr widget, IntPtr eventPtr, IntPtr data)
     {
         // 将事件指针转换为 GdkEventConfigure 结构
         GdkEventConfigure configureEvent = Marshal.PtrToStructure<GdkEventConfigure>(eventPtr);
@@ -152,6 +183,7 @@ internal class MainWIndow : IWindow
         {
             Console.WriteLine("其他事件");
         }
+        return true;
     }
     public override void Show()
     {
@@ -316,6 +348,10 @@ internal class MainWIndow : IWindow
     /// </summary>
     public override void SetScreenInfo()
     {
+        GtkApi.XInitThreads();
+        IntPtr argv = IntPtr.Zero;
+        int argc = 0;
+        GtkApi.gtk_init(ref argc, ref argv);
         IntPtr display = GtkApi.gdk_display_get_default();
         if (display == IntPtr.Zero) return;
         IntPtr monitor = GtkApi.gdk_display_get_monitor(display, 0);
@@ -375,15 +411,16 @@ internal class MainWIndow : IWindow
     }
 
     private IWebKit? webKit;
-    protected override async Task InitWebControl()
+    protected override Task InitWebControl()
     {
         webKit = ServiceProvide!.GetRequiredService<IWebKit>();
         try
         {
             OnLoad?.Invoke(this, new());
-            await webKit.InitWebControl(this, Config);
+            webKit.InitWebControl(this, Config);
             Loaded?.Invoke(this, new());
             webKit.WebMessageReceived += (s, e) => WebMessageReceived?.Invoke(s, e);
+            return Task.Delay(1);
         }
         catch (Exception e)
         {

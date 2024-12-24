@@ -10,10 +10,10 @@ namespace KirinAppCore.Plateform.Webkit.Linux;
 
 internal class GtkApi
 {
-    internal const string GtkLib = "/lib/x86_64-linux-gnu/libgtk-3.so.0";
-    internal const string GdkLib = "/lib/x86_64-linux-gnu/libgdk-3.so.0";
-    internal const string Gioib = "/lib/x86_64-linux-gnu/libgio-2.0.so.0";
-    internal const string GObjLb = "/lib/x86_64-linux-gnu/libgobject-2.0.so.0";
+    internal const string GtkLib = "libgtk-3.so.0";
+    internal const string GdkLib = "libgdk-3.so.0";
+    internal const string Gioib = "libgio-2.0.so.0";
+    internal const string GObjLb = "libgobject-2.0.so.0";
 
 
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
@@ -28,7 +28,7 @@ internal class GtkApi
     internal static extern void gtk_window_set_resizable(IntPtr window, bool resizable);
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void gtk_window_set_icon(IntPtr window, IntPtr icon);
-    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(GdkLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern IntPtr gdk_pixbuf_scale_simple(IntPtr pixbuf, int width, int height, GdkInterpType interp_type);
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void gtk_window_set_decorated(IntPtr window, bool decorated);
@@ -45,9 +45,9 @@ internal class GtkApi
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void gtk_widget_add_events(IntPtr widget, uint events);
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void g_signal_connect(IntPtr instance, string detailed_signal, IntPtr handler, IntPtr data);
-    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void gtk_main();
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void gtk_main_quit();
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void gtk_widget_show_all(IntPtr widget);
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
@@ -102,9 +102,18 @@ internal class GtkApi
     internal static extern IntPtr gtk_message_dialog_new(IntPtr parent, int flags, int type, int buttons, string message);
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void gtk_container_add(IntPtr container, IntPtr widget);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void gtk_widget_set_size_request(IntPtr webKit, int width, int height);
     [DllImport(GObjLb, CallingConvention = CallingConvention.Cdecl)]
     internal static extern uint g_signal_connect_data(IntPtr instance, string detailedSignal, IntPtr handler, IntPtr data, IntPtr destroyData, uint connectFlags);
-    [DllImport(GObjLb, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(Gioib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern IntPtr g_memory_input_stream_new_from_data(IntPtr data, long len, IntPtr destroy);
+    [DllImport(GdkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern IntPtr gdk_pixbuf_new_from_stream(IntPtr stream, IntPtr cancellable, IntPtr error);
+
+    [DllImport(Gioib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void g_input_stream_close(IntPtr stream, IntPtr cancellable, IntPtr error);
+    [DllImport(GObjLb, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void g_object_unref(nint pixbuf);
 
 }

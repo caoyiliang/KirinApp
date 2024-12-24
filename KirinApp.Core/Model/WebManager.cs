@@ -90,7 +90,8 @@ internal class WebManager : WebViewManager
     public (Stream Content, string Type) OnResourceRequested(SchemeConfig config, string url)
     {
         var filePath = config.AppOriginUri!.RelativeUrl(url, config.HomePage);
-        FileInfo fileInfo = new FileInfo(filePath);
+        var path = Directory.GetCurrentDirectory();
+        FileInfo fileInfo = new FileInfo(Path.Combine(path, filePath));
         if (fileInfo.Exists)
         {
             return (fileInfo.OpenRead(), filePath.GetContentType().contentType);
