@@ -97,28 +97,6 @@ internal struct OpenFileDialogParams
 }
 
 [StructLayout(LayoutKind.Sequential)]
-internal struct NotifyIconData
-{
-    public uint cbSize;
-    public IntPtr hWnd;
-    public uint uID;
-    public uint uFlags;
-    public IntPtr hIcon;
-    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-    public string szTip;
-    public uint dwState;
-    public uint dwStateMask;
-    public uint uVersion;
-    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
-    public string szInfo;
-    public uint uTimeoutOrVersion;
-    public string szInfoTitle;
-    public uint dwInfoFlags;
-    public Guid guidItem;
-    public IntPtr hBalloonIcon;
-}
-
-[StructLayout(LayoutKind.Sequential)]
 internal struct MinMaxInfo
 {
     public POINT ptReserved;

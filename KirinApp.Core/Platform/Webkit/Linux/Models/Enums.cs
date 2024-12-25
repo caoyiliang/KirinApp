@@ -21,13 +21,6 @@ public enum GdkWindowHints
     GDK_HINT_MAX_SIZE = 1 << 1
 }
 
-[Flags]
-internal enum GdkEventMask
-{
-    ButtonPressMask = 1 << 2,
-    ButtonReleaseMask = 1 << 3,
-    PointerMotionMask = 1 << 6,
-}
 internal enum FileChooserAction
 {
     Open,

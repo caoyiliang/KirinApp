@@ -67,27 +67,3 @@ public enum SW : int
     SHOWDEFAULT,
     FORCEMINIMIZE,
 }
-
-public enum DeviceCapability : int
-{
-    HORZRES = 8,
-    VERTRES = 10,
-    BITSPIXEL = 12,
-    PLANES = 14,
-    LOGPIXELSX = 88,
-    LOGPIXELSY = 90
-}
-
-public enum Notify : uint
-{
-    NIM_ADD = 0x00000000,
-    NIM_MODIFY = 0x00000001,
-    NIM_DELETE = 0x00000002,
-    NIF_MESSAGE = 0x00000001,
-    NIF_TIP = 0x00000004,
-    NIF_INFO = 0x00000010,
-    NIF_ICON = 0x00000002,
-    WM_MOUSEMOVE = 0x0200,
-    WM_USER = 0x040,
-    WM_TASKBARCREATED = WM_USER + 1
-}
