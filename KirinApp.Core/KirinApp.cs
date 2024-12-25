@@ -71,12 +71,12 @@ public class KirinApp
     {
         Window.OnCreate += (s, e) => OnCreate?.Invoke(s, e);
         Window.OnLoad += (s, e) => OnLoad?.Invoke(s, e);
+        Window.Created += (s, e) => Created?.Invoke(s, e);
+        Window.Loaded += (s, e) => Loaded?.Invoke(s, e);
     }
 
     private void EventRegister2()
     {
-        Window.Created += (s, e) => Created?.Invoke(s, e);
-        Window.Loaded += (s, e) => Loaded?.Invoke(s, e);
         Window.OnClose += (s, e) => OnClose?.Invoke(s, e);
         Window.WebMessageReceived += (s, e) => WebMessageReceived?.Invoke(s, e);
         Window.SizeChangeEvent += (s, e) => SizeChange?.Invoke(s, e);

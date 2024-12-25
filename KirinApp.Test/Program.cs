@@ -1,11 +1,9 @@
-﻿using System;
-using KirinAppCore;
+﻿using KirinAppCore;
 using KirinAppCore.Model;
 using KirinAppCore.Test;
 
 class Program
 {
-    private static ManualResetEvent waitForInput = new ManualResetEvent(false);
     [STAThread]
     static void Main()
     {
@@ -14,7 +12,7 @@ class Program
             AppName = "Test",
             Height = 800,
             Width = 1000,
-            AppType = WebAppType.RawString,
+            AppType = WebAppType.Blazor,
             BlazorComponent = typeof(App),
             Url = "Index.html",
             RawString = "<span style='color:red'>这个是字符串</span>",
@@ -25,27 +23,22 @@ class Program
         kirinApp.Loaded += async (_, _) =>
         {
             await Task.Delay(100);
-            kirinApp.OpenDevTool();
-            kirinApp.SendWebMessage("你好12312");
-            await kirinApp.ExecuteJavaScript("console.log('hellow kirinApp')");
-            var res = await kirinApp.ExecuteJavaScriptWithResult("1+2");
-            Console.WriteLine(res);
+            Console.WriteLine(333);
         };
         kirinApp.Created += (_, _) =>
         {
-            Console.WriteLine(000);
+            Console.WriteLine(111);
         };
         kirinApp.OnLoad += (_, _) =>
         {
-            Console.WriteLine(111);
+            Console.WriteLine(222);
         };
         kirinApp.OnCreate += (_, _) =>
         {
-            Console.WriteLine(222);
+            Console.WriteLine(000);
         };
         kirinApp.OnClose += (_, _) =>
         {
-            Console.WriteLine(222);
             return true;
         };
         kirinApp.PositionChange += (s, e) =>
@@ -55,6 +48,7 @@ class Program
         kirinApp.WebMessageReceived += (_, e) =>
         {
             Console.WriteLine(e.Message);
+            //kirinApp.SendWebMessage("你好Ubuntu");
         };
         kirinApp.Run();
     }

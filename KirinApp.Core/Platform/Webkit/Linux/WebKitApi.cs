@@ -177,8 +177,8 @@ internal class WebKit40 : IWebKit
     public void SendWebMessage(string message)
     {
         var js = new StringBuilder();
-        js.Append("__dispatchMessageCallback(\"");
-        js.Append(message);
+        js.Append("window.__dispatchMessageCallback(\"");
+        js.Append(message.Replace(@"\", @"\\").Replace("'", @"\'").Replace("\"", "\\\""));
         js.Append("\")");
         webkit_web_view_run_javascript(Handle, js.ToString(), IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
     }

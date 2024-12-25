@@ -1,29 +1,9 @@
 ﻿using KirinAppCore.Model;
 using KirinAppCore.Interface;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Web.WebView2.Core;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Collections.Specialized.BitVector32;
-using static System.Net.Mime.MediaTypeNames;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.Reflection.Metadata;
-using Microsoft.AspNetCore.Components.WebView;
-using Newtonsoft.Json.Linq;
 using KirinAppCore.Plateform.Webkit.Linux.Models;
-using System.Runtime;
-using KirinAppCore.Plateform.WebView2.Windows;
 using KirinAppCore.Platform.Webkit.Linux;
 
 namespace KirinAppCore.Plateform.Webkit.Linux;
@@ -375,25 +355,31 @@ internal class MainWIndow : IWindow
         return Environment.CurrentManagedThreadId == Utils.MainThreadId;
     }
 
-    private delegate void GdkIdleFunc(IntPtr data);
-    private GdkIdleFunc _callback = new((_) => { });
+    private delegate bool GdkIdleFunc(IntPtr data);
+    private class InvokeWaitInfo
+    {
+        public Action callback;
+    }
+    private class InvokeWaitInfoTask
+    {
+        public Func<Task> callback;
+    }
+    internal static bool InvokeCallback(IntPtr data)
+    {
+        GCHandle handle = GCHandle.FromIntPtr(data);
+        var waitInfo = (InvokeWaitInfo?)handle.Target;
+        waitInfo?.callback?.Invoke();
+        return false;
+    }
     public override async Task InvokeAsync(Func<Task> workItem)
     {
         if (CheckAccess()) await workItem();
         else
         {
-            void Callback(IntPtr data)
-            {
-                try
-                {
-                    workItem();
-                }
-                catch (Exception)
-                {
-                }
-            }
-            _callback = new(Callback);
-            GtkApi.gdk_threads_add_idle(Marshal.GetFunctionPointerForDelegate(_callback), IntPtr.Zero);
+            var ac = new InvokeWaitInfoTask() { callback = workItem };
+          var fun =  Marshal.GetFunctionPointerForDelegate(new GdkIdleFunc(InvokeCallback));
+          var data = GCHandle.ToIntPtr(GCHandle.Alloc(ac));
+            GtkApi.gdk_threads_add_idle(fun,data);
         }
     }
 
@@ -402,18 +388,10 @@ internal class MainWIndow : IWindow
         if (CheckAccess()) workItem();
         else
         {
-            void Callback(IntPtr data)
-            {
-                try
-                {
-                    workItem();
-                }
-                catch (Exception)
-                {
-                }
-            }
-            _callback = new(Callback);
-            GtkApi.gdk_threads_add_idle(Marshal.GetFunctionPointerForDelegate(_callback), IntPtr.Zero);
+            var ac = new InvokeWaitInfo() { callback = workItem };
+            var fun =  Marshal.GetFunctionPointerForDelegate(new GdkIdleFunc(InvokeCallback));
+            var data = GCHandle.ToIntPtr(GCHandle.Alloc(ac));
+            GtkApi.gdk_threads_add_idle(fun,data);
         }
     }
 
@@ -477,7 +455,7 @@ internal class MainWIndow : IWindow
 
     public override void SendWebMessage(string message)
     {
-
+        webKit!.SendWebMessage(message);
     }
 
     public override void Reload()

@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using KirinAppCore.Interface;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Web.WebView2.Core;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace KirinAppCore.Model;
 
@@ -55,7 +49,6 @@ internal class WebManager : WebViewManager
                 var message = await reader.ReadAsync();
                 await dispatcher.InvokeAsync(() =>
                 {
-                    var msg = message;
                     window.SendWebMessage(message);
                 });
             }
