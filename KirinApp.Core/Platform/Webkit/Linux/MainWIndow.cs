@@ -127,8 +127,10 @@ internal class MainWIndow : IWindow
             GtkApi.gtk_window_set_geometry_hints(Handle, IntPtr.Zero, ref geometry, GdkWindowHints.GDK_HINT_MIN_SIZE | GdkWindowHints.GDK_HINT_MAX_SIZE);
 
             GtkApi.gtk_widget_add_events(Handle, 0x2000);
-            GtkApi.g_signal_connect_data(Handle, "configure-event", Marshal.GetFunctionPointerForDelegate<GtkWidgetEventDelegate>(OnWindowConfigure), IntPtr.Zero, IntPtr.Zero, 0);
-            GtkApi.g_signal_connect_data(Handle, "delete-event", Marshal.GetFunctionPointerForDelegate<GtkDeleteEventDelegate>(OnWindowClose), IntPtr.Zero, IntPtr.Zero, 0);
+            _onWindowConfigureDelegate = new(OnWindowConfigure);
+            GtkApi.g_signal_connect_data(Handle, "configure-event", Marshal.GetFunctionPointerForDelegate(_onWindowConfigureDelegate), IntPtr.Zero, IntPtr.Zero, 0);
+            _onWindowCloseDelegate = new(OnWindowClose);
+            GtkApi.g_signal_connect_data(Handle, "delete-event", Marshal.GetFunctionPointerForDelegate(_onWindowCloseDelegate), IntPtr.Zero, IntPtr.Zero, 0);
             Created?.Invoke(this, new());
         }
         catch (Exception e)
@@ -138,6 +140,7 @@ internal class MainWIndow : IWindow
     }
 
     protected delegate IntPtr GtkDeleteEventDelegate(IntPtr widget, IntPtr ev, IntPtr data);
+    private GtkDeleteEventDelegate _onWindowCloseDelegate;
     private IntPtr OnWindowClose(IntPtr widget, IntPtr ev, IntPtr data)
     {
         var res = OnClose?.Invoke(this, EventArgs.Empty);
@@ -155,6 +158,7 @@ internal class MainWIndow : IWindow
     }
 
     protected delegate bool GtkWidgetEventDelegate(IntPtr widget, IntPtr ev, IntPtr data);
+    private GtkWidgetEventDelegate _onWindowConfigureDelegate;
     private int lastWidth;
     private int lastHeight;
     private int lastX;
@@ -372,6 +376,7 @@ internal class MainWIndow : IWindow
     }
 
     private delegate void GdkIdleFunc(IntPtr data);
+    private GdkIdleFunc _callback;
     public override async Task InvokeAsync(Func<Task> workItem)
     {
         if (CheckAccess()) await workItem();
@@ -387,7 +392,8 @@ internal class MainWIndow : IWindow
                 {
                 }
             }
-            GtkApi.gdk_threads_add_idle(Marshal.GetFunctionPointerForDelegate((GdkIdleFunc)Callback), IntPtr.Zero);
+            _callback = new(Callback);
+            GtkApi.gdk_threads_add_idle(Marshal.GetFunctionPointerForDelegate(_callback), IntPtr.Zero);
         }
     }
 
@@ -406,7 +412,8 @@ internal class MainWIndow : IWindow
                 {
                 }
             }
-            GtkApi.gdk_threads_add_idle(Marshal.GetFunctionPointerForDelegate((GdkIdleFunc)Callback), IntPtr.Zero);
+            _callback = new(Callback);
+            GtkApi.gdk_threads_add_idle(Marshal.GetFunctionPointerForDelegate(_callback), IntPtr.Zero);
         }
     }
 
