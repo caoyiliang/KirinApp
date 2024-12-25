@@ -53,26 +53,19 @@ internal class WebKit40 : IWebKit
     internal static extern IntPtr webkit_web_view_run_javascript(IntPtr webView, string script, IntPtr cancellable, IntPtr callback, IntPtr userData);
     [DllImport(Lib)]
     internal static extern void webkit_context_menu_remove_all(IntPtr menu);
-    [DllImport(Lib)]
-    private static extern void webkit_web_view_open_devtools(IntPtr webView);
-    [DllImport(Lib)]
-    private static extern void webkit_web_view_reload(IntPtr webView);
     #endregion
 
 
-    public event EventHandler<WebMessageEvent>? WebMessageReceived;
     private IntPtr Handle { get; set; }
     private WebManager? WebManager { get; set; }
     private SchemeConfig? SchemeConfig { get; set; }
     private IWindow? Window { get; set; }
-    private delegate void ContextMenuCallbackDelegate(IntPtr webView, IntPtr menu, IntPtr userData); private static void ContextMenuCallback(IntPtr webView, IntPtr menu, IntPtr userData)
-    {
-        webkit_context_menu_remove_all(menu);
-    }
+    public event EventHandler<WebMessageEvent>? WebMessageReceived;
+    private delegate void ContextMenuCallbackDelegate(IntPtr webView, IntPtr menu, IntPtr userData);
     private delegate IntPtr UriSchemeCallbackFunc(IntPtr request, IntPtr user_data);
-
-    private UriSchemeCallbackFunc uriSchemeCallback = new((_,_) => 0);
+    private UriSchemeCallbackFunc uriSchemeCallback = new((_, _) => 0);
     private delegate void ScriptMessageReceivedDelegate(IntPtr webView, IntPtr message, IntPtr userData);
+
     public void InitWebControl(IWindow window, WinConfig config)
     {
         try
@@ -165,12 +158,12 @@ internal class WebKit40 : IWebKit
 
     public void OpenDevTool()
     {
-        webkit_web_view_open_devtools(Handle);
+        return;
     }
 
     public void Reload()
     {
-        webkit_web_view_reload(Handle);
+        InitWebControl(Window!, Window!.Config);
     }
 
     public void Navigate(string url)
@@ -182,12 +175,10 @@ internal class WebKit40 : IWebKit
     {
         var js = new StringBuilder();
         js.Append("__dispatchMessageCallback(\"");
-
         js.Append(message);
         js.Append("\")");
         webkit_web_view_run_javascript(Handle, js.ToString(), IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
     }
-
 
     private IntPtr UriSchemeCallback(IntPtr request, IntPtr user_data)
     {
@@ -260,6 +251,11 @@ internal class WebKit40 : IWebKit
             };
             WebMessageReceived?.Invoke(this, msg);
         }
+    }
+
+    private static void ContextMenuCallback(IntPtr webView, IntPtr menu, IntPtr userData)
+    {
+        webkit_context_menu_remove_all(menu);
     }
 }
 internal class WebKit41 : IWebKit
