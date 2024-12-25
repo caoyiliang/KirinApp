@@ -424,7 +424,7 @@ internal class MainWIndow : IWindow
         try
         {
             OnLoad?.Invoke(this, new());
-            webKit.InitWebControl(this, Config);
+            webKit.InitWebControl(this);
             Loaded?.Invoke(this, new());
             webKit.WebMessageReceived += (s, e) => WebMessageReceived?.Invoke(s, e);
             return Task.Delay(1);

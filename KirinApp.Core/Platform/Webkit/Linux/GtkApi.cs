@@ -115,5 +115,4 @@ internal class GtkApi
     internal static extern void g_input_stream_close(IntPtr stream, IntPtr cancellable, IntPtr error);
     [DllImport(GObjLb, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void g_object_unref(nint pixbuf);
-
 }

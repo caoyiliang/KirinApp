@@ -60,23 +60,26 @@ internal class WebKit40 : IWebKit
     private WebManager? WebManager { get; set; }
     private SchemeConfig? SchemeConfig { get; set; }
     private IWindow? Window { get; set; }
+    private WinConfig Config => Window!.Config;
     public event EventHandler<WebMessageEvent>? WebMessageReceived;
     private delegate void ContextMenuCallbackDelegate(IntPtr webView, IntPtr menu, IntPtr userData);
     private delegate IntPtr UriSchemeCallbackFunc(IntPtr request, IntPtr user_data);
     private UriSchemeCallbackFunc uriSchemeCallback = new((_, _) => 0);
     private delegate void ScriptMessageReceivedDelegate(IntPtr webView, IntPtr message, IntPtr userData);
 
-    public void InitWebControl(IWindow window, WinConfig config)
+    public void InitWebControl(IWindow? window = null)
     {
         try
         {
-            Window = window;
+            if (window != null)
+                Window = window;
+
             var contentManager = webkit_user_content_manager_new();
             Handle = webkit_web_view_new_with_user_content_manager(contentManager);
 
-            GtkApi.gtk_container_add(window.Handle, Handle);
+            GtkApi.gtk_container_add(Window!.Handle, Handle);
 
-            if (config.Debug)
+            if (Config.Debug)
             {
                 IntPtr settings = webkit_web_view_get_settings(Handle);
                 webkit_settings_set_enable_developer_extras(settings, true);
@@ -87,20 +90,20 @@ internal class WebKit40 : IWebKit
                 webkit_settings_set_enable_developer_extras(settings, false);
                 GtkApi.g_signal_connect_data(Handle, "context-menu", Marshal.GetFunctionPointerForDelegate(new ContextMenuCallbackDelegate(ContextMenuCallback)), IntPtr.Zero, IntPtr.Zero, 0);
             }
-            if (config.AppType != WebAppType.Http)
+            if (Config.AppType != WebAppType.Http)
             {
                 var url = $"http://localhost/";
-                if (config.AppType == WebAppType.Static) url += config.Url;
-                if (config.AppType == WebAppType.Blazor) url += "blazorindex.html";
+                if (Config.AppType == WebAppType.Static) url += Config.Url;
+                if (Config.AppType == WebAppType.Blazor) url += "blazorindex.html";
                 SchemeConfig = new Uri(url).ParseScheme();
-                var dispatcher = new WebDispatcher(window);
-                WebManager = new WebManager(window, dispatcher, window.ServiceProvide!.GetRequiredService<JSComponentConfigurationStore>(), SchemeConfig);
-                if (config.AppType == WebAppType.Blazor)
+                var dispatcher = new WebDispatcher(window!);
+                WebManager = new WebManager(window!, dispatcher, window!.ServiceProvide!.GetRequiredService<JSComponentConfigurationStore>(), SchemeConfig);
+                if (Config.AppType == WebAppType.Blazor)
                 {
-                    if (config.BlazorComponent == null) throw new Exception("Blazor component not found!");
+                    if (Config.BlazorComponent == null) throw new Exception("Blazor component not found!");
                     _ = dispatcher.InvokeAsync(async () =>
                     {
-                        await WebManager.AddRootComponentAsync(config.BlazorComponent!, config.BlazorSelector,
+                        await WebManager.AddRootComponentAsync(Config.BlazorComponent!, Config.BlazorSelector,
                             ParameterView.Empty);
                     });
                 }
@@ -124,7 +127,7 @@ internal class WebKit40 : IWebKit
             }
             else
             {
-                webkit_web_view_load_uri(Handle, config.Url!);
+                webkit_web_view_load_uri(Handle, Config.Url!);
             }
         }
         catch (Exception e)
@@ -163,7 +166,7 @@ internal class WebKit40 : IWebKit
 
     public void Reload()
     {
-        InitWebControl(Window!, Window!.Config);
+        InitWebControl();
     }
 
     public void Navigate(string url)
@@ -271,7 +274,7 @@ internal class WebKit41 : IWebKit
     private SchemeConfig? SchemeConfig { get; set; }
     private IWindow? Window { get; set; }
 
-    public void InitWebControl(IWindow window, WinConfig config)
+    public void InitWebControl(IWindow window)
     {
         throw new NotImplementedException();
     }
