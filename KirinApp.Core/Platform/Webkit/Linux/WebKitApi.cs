@@ -71,7 +71,7 @@ internal class WebKit40 : IWebKit
     }
     private delegate IntPtr UriSchemeCallbackFunc(IntPtr request, IntPtr user_data);
 
-    private UriSchemeCallbackFunc uriSchemeCallback;
+    private UriSchemeCallbackFunc uriSchemeCallback = new((_,_) => 0);
     private delegate void ScriptMessageReceivedDelegate(IntPtr webView, IntPtr message, IntPtr userData);
     public void InitWebControl(IWindow window, WinConfig config)
     {
@@ -82,7 +82,7 @@ internal class WebKit40 : IWebKit
             Handle = webkit_web_view_new_with_user_content_manager(contentManager);
 
             GtkApi.gtk_container_add(window.Handle, Handle);
-            
+
             if (config.Debug)
             {
                 IntPtr settings = webkit_web_view_get_settings(Handle);
@@ -214,7 +214,7 @@ internal class WebKit40 : IWebKit
             IntPtr bytesPtr = Marshal.AllocHGlobal(byteArray.Length);
             Marshal.Copy(byteArray, 0, bytesPtr, byteArray.Length);
             var stream = GtkApi.g_memory_input_stream_new_from_data(bytesPtr, byteArray.Length, IntPtr.Zero);
-            webkit_uri_scheme_request_finish(request, stream,byteArray.Length, Marshal.StringToCoTaskMemAnsi(contentType));
+            webkit_uri_scheme_request_finish(request, stream, byteArray.Length, Marshal.StringToCoTaskMemAnsi(contentType));
             return IntPtr.Zero;
         }
         catch (Exception e)

@@ -140,7 +140,7 @@ internal class MainWIndow : IWindow
     }
 
     protected delegate IntPtr GtkDeleteEventDelegate(IntPtr widget, IntPtr ev, IntPtr data);
-    private GtkDeleteEventDelegate _onWindowCloseDelegate;
+    private GtkDeleteEventDelegate _onWindowCloseDelegate = new((_, _, _) => IntPtr.Zero);
     private IntPtr OnWindowClose(IntPtr widget, IntPtr ev, IntPtr data)
     {
         var res = OnClose?.Invoke(this, EventArgs.Empty);
@@ -158,7 +158,7 @@ internal class MainWIndow : IWindow
     }
 
     protected delegate bool GtkWidgetEventDelegate(IntPtr widget, IntPtr ev, IntPtr data);
-    private GtkWidgetEventDelegate _onWindowConfigureDelegate;
+    private GtkWidgetEventDelegate _onWindowConfigureDelegate = new((_, _, _) => true);
     private int lastWidth;
     private int lastHeight;
     private int lastX;
@@ -376,7 +376,7 @@ internal class MainWIndow : IWindow
     }
 
     private delegate void GdkIdleFunc(IntPtr data);
-    private GdkIdleFunc _callback;
+    private GdkIdleFunc _callback = new((_) => { });
     public override async Task InvokeAsync(Func<Task> workItem)
     {
         if (CheckAccess()) await workItem();
