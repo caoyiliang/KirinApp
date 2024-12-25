@@ -18,10 +18,6 @@ internal class MainWIndow : IWindow
 
     #region 事件
     public override event EventHandler<WebMessageEvent>? WebMessageReceived;
-    public override event EventHandler<EventArgs>? OnCreate;
-    public override event EventHandler<EventArgs>? Created;
-    public override event EventHandler<EventArgs>? OnLoad;
-    public override event EventHandler<EventArgs>? Loaded;
     public override event EventHandler<SizeChangeEventArgs>? SizeChangeEvent;
     public override event EventHandler<PositionChangeEventArgs>? PositionChangeEvent;
     public override event CloseDelegate? OnClose;
@@ -32,8 +28,6 @@ internal class MainWIndow : IWindow
     {
         try
         {
-            OnCreate?.Invoke(this, new());
-
             Handle = GtkApi.gtk_window_new(Config.Chromeless ? 1 : 0);
             GtkApi.gtk_window_set_title(Handle, Config.AppName);
             GtkApi.gtk_window_set_resizable(Handle, Config.ResizeAble);
@@ -111,7 +105,6 @@ internal class MainWIndow : IWindow
             GtkApi.g_signal_connect_data(Handle, "configure-event", Marshal.GetFunctionPointerForDelegate(_onWindowConfigureDelegate), IntPtr.Zero, IntPtr.Zero, 0);
             _onWindowCloseDelegate = new(OnWindowClose);
             GtkApi.g_signal_connect_data(Handle, "delete-event", Marshal.GetFunctionPointerForDelegate(_onWindowCloseDelegate), IntPtr.Zero, IntPtr.Zero, 0);
-            Created?.Invoke(this, new());
         }
         catch (Exception e)
         {
@@ -358,17 +351,17 @@ internal class MainWIndow : IWindow
     private delegate bool GdkIdleFunc(IntPtr data);
     private class InvokeWaitInfo
     {
-        public Action callback;
+        public required Action Callback { get; set; }
     }
-    private class InvokeWaitInfoTask
+    private class InvokeWaitInfoTask()
     {
-        public Func<Task> callback;
+        public required Func<Task> Callback { get; set; }
     }
     internal static bool InvokeCallback(IntPtr data)
     {
         GCHandle handle = GCHandle.FromIntPtr(data);
         var waitInfo = (InvokeWaitInfo?)handle.Target;
-        waitInfo?.callback?.Invoke();
+        waitInfo?.Callback.Invoke();
         return false;
     }
     public override async Task InvokeAsync(Func<Task> workItem)
@@ -376,10 +369,10 @@ internal class MainWIndow : IWindow
         if (CheckAccess()) await workItem();
         else
         {
-            var ac = new InvokeWaitInfoTask() { callback = workItem };
-          var fun =  Marshal.GetFunctionPointerForDelegate(new GdkIdleFunc(InvokeCallback));
-          var data = GCHandle.ToIntPtr(GCHandle.Alloc(ac));
-            GtkApi.gdk_threads_add_idle(fun,data);
+            var ac = new InvokeWaitInfoTask() { Callback = workItem };
+            var fun = Marshal.GetFunctionPointerForDelegate(new GdkIdleFunc(InvokeCallback));
+            var data = GCHandle.ToIntPtr(GCHandle.Alloc(ac));
+            GtkApi.gdk_threads_add_idle(fun, data);
         }
     }
 
@@ -388,10 +381,10 @@ internal class MainWIndow : IWindow
         if (CheckAccess()) workItem();
         else
         {
-            var ac = new InvokeWaitInfo() { callback = workItem };
-            var fun =  Marshal.GetFunctionPointerForDelegate(new GdkIdleFunc(InvokeCallback));
+            var ac = new InvokeWaitInfo() { Callback = workItem };
+            var fun = Marshal.GetFunctionPointerForDelegate(new GdkIdleFunc(InvokeCallback));
             var data = GCHandle.ToIntPtr(GCHandle.Alloc(ac));
-            GtkApi.gdk_threads_add_idle(fun,data);
+            GtkApi.gdk_threads_add_idle(fun, data);
         }
     }
 
@@ -401,9 +394,7 @@ internal class MainWIndow : IWindow
         webKit = ServiceProvide!.GetRequiredService<IWebKit>();
         try
         {
-            OnLoad?.Invoke(this, new());
             webKit.InitWebControl(this);
-            Loaded?.Invoke(this, new());
             webKit.WebMessageReceived += (s, e) => WebMessageReceived?.Invoke(s, e);
             return Task.Delay(1);
         }

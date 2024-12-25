@@ -20,6 +20,8 @@ namespace KirinAppCore.Interface;
 /// </summary>
 internal abstract class IWindow
 {
+    //计划方法: 移动，系统托盘，发送系统通知，发送托盘气泡通知
+
     #region WebView2变量
     public ServiceProvider? ServiceProvide;
     #endregion
@@ -88,14 +90,14 @@ internal abstract class IWindow
     public virtual event EventHandler<EventArgs>? Created;
 
     /// <summary>
-    /// 页面加载前
+    /// 页面渲染前
     /// </summary>
     public virtual event EventHandler<EventArgs>? OnLoad;
 
     /// <summary>
-    /// 页面加载完成
+    /// 页面渲染完成
     /// </summary>
-    public virtual event EventHandler<EventArgs>? Loaded;
+    public virtual event EventHandler<EventArgs>? Loading;
 
     /// <summary>
     /// 关闭委托
@@ -117,8 +119,12 @@ internal abstract class IWindow
     {
         ServiceProvide = serviceProvider;
         Config = winConfig;
+        OnCreate?.Invoke(this, new EventArgs());
         Create();
+        Created?.Invoke(this, new EventArgs());
+        OnLoad?.Invoke(this, new EventArgs());
         InitWebControl();
+        Loading?.Invoke(this, new EventArgs());
     }
 
     /// <summary>

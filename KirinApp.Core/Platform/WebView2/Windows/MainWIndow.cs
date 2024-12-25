@@ -37,10 +37,6 @@ internal class MainWIndow : IWindow
     private WndProcDelegate? WindowProc;
     #region 事件
     public override event EventHandler<WebMessageEvent>? WebMessageReceived;
-    public override event EventHandler<EventArgs>? OnCreate;
-    public override event EventHandler<EventArgs>? Created;
-    public override event EventHandler<EventArgs>? OnLoad;
-    public override event EventHandler<EventArgs>? Loaded;
     public override event EventHandler<SizeChangeEventArgs>? SizeChangeEvent;
     public override event EventHandler<PositionChangeEventArgs>? PositionChangeEvent;
     public override event CloseDelegate? OnClose;
@@ -51,7 +47,6 @@ internal class MainWIndow : IWindow
     {
         try
         {
-            OnCreate?.Invoke(this, new());
             var hIns = Win32Api.GetConsoleWindow();
             WindowProc = WndProc;
             var className = "KirinApp-" + Guid.NewGuid();
@@ -114,7 +109,6 @@ internal class MainWIndow : IWindow
             }
             Win32Api.SetWindowTextW(Handle, Config.AppName);
             Win32Api.UpdateWindow(Handle);
-            Created?.Invoke(this, new());
         }
         catch (Exception e)
         {
@@ -440,7 +434,6 @@ internal class MainWIndow : IWindow
 
     protected override async Task InitWebControl()
     {
-        OnLoad?.Invoke(this, new());
         try
         {
             var userPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -536,7 +529,6 @@ internal class MainWIndow : IWindow
         {
             throw new Exception("界面初始化失败！原因：" + e.Message);
         }
-        Loaded?.Invoke(this, new());
     }
 
     public override async Task ExecuteJavaScript(string js)

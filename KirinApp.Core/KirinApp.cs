@@ -31,6 +31,7 @@ public class KirinApp
     public event EventHandler<EventArgs>? OnCreate;
     public event EventHandler<EventArgs>? Created;
     public event EventHandler<EventArgs>? OnLoad;
+    public event EventHandler<EventArgs>? Loading;
     public event EventHandler<EventArgs>? Loaded;
     public event NetClosingDelegate? OnClose;
     public delegate bool? NetClosingDelegate(object sender, EventArgs e);
@@ -72,11 +73,12 @@ public class KirinApp
         Window.OnCreate += (s, e) => OnCreate?.Invoke(s, e);
         Window.OnLoad += (s, e) => OnLoad?.Invoke(s, e);
         Window.Created += (s, e) => Created?.Invoke(s, e);
-        Window.Loaded += (s, e) => Loaded?.Invoke(s, e);
+        Window.Loading += (s, e) => Loading?.Invoke(s, e);
     }
 
     private void EventRegister2()
     {
+        Loaded?.Invoke(this, new EventArgs());
         Window.OnClose += (s, e) => OnClose?.Invoke(s, e);
         Window.WebMessageReceived += (s, e) => WebMessageReceived?.Invoke(s, e);
         Window.SizeChangeEvent += (s, e) => SizeChange?.Invoke(s, e);
@@ -332,6 +334,27 @@ public class KirinApp
 
     #endregion
 
+    public void LoadStatic(string path)
+    {
+        UseStatic(path);
+        Reload();
+    }
+    public void LoadUrl(string url)
+    {
+        UseHttp(url);
+        Reload();
+    }
+    public void LoadRawString(string content)
+    {
+        UseRawString(content);
+        Reload();
+    }
+    public void LoadBlazor<T>(string selector = "#app") where T : class
+    {
+        UseBlazor<T>(selector);
+        Reload();
+    }
+
     public (bool selected, DirectoryInfo? dir) OpenDirectory(string initialDir = "") => Window.OpenDirectory(initialDir);
     public (bool selected, FileInfo? file) OpenFile(string filePath = "") => Window.OpenFile(filePath);
     public (bool selected, List<FileInfo>? files) OpenFiles(string filePath = "") => Window.OpenFiles(filePath);
@@ -354,25 +377,12 @@ public class KirinApp
     }
     public void OpenDevTool() => Window.OpenDevTool();
     public void Reload() => Window.Reload();
-    public void LoadStatic(string path)
-    {
-        UseStatic(path);
-        Reload();
-    }
-    public void LoadUrl(string url)
-    {
-        UseHttp(url);
-        Reload();
-    }
-    public void LoadRawString(string content)
-    {
-        UseRawString(content);
-        Reload();
-    }
-    public void LoadBlazor<T>(string selector = "#app") where T : class
-    {
-        UseBlazor<T>(selector);
-        Reload();
-    }
     public void SendWebMessage(string msg) => Window.SendWebMessage(msg);
+    public void Hide() => Window.Hide();
+    public void Show() => Window.Show();
+    public void Close() => Window.Close();
+    public void Exit() => Environment.Exit(0);
+    public void Focus() => Window.Focus();
+    public void Minimize() => Window.Minimize();
+    public void Maximize() => Window.Maximize();
 }
