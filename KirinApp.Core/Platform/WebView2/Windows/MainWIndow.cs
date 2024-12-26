@@ -591,7 +591,7 @@ internal class MainWIndow : IWindow
         }
     }
 
-    public override async Task ExecuteJavaScript(string js)
+    public override async Task ExecuteJavaScript(string js, Action<string>? handlResult = null)
     {
         await Task.Run(async () =>
         {
@@ -600,28 +600,12 @@ internal class MainWIndow : IWindow
             await Task.Delay(100);
             IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(new Action(async () =>
             {
-                _ = await CoreWebCon.CoreWebView2.ExecuteScriptAsync(js);
+                var res = await CoreWebCon.CoreWebView2.ExecuteScriptAsync(js);
+                if (handlResult != null)
+                    handlResult(res);
             }));
             Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
         });
-    }
-
-    public override async Task ExecuteJavaScriptWithResult(string js, Action<string> handlResult)
-    {
-        await Task.Run(async () =>
-         {
-             while (CoreWebCon == null)
-                 await Task.Delay(10);
-             await Task.Delay(100);
-             // 创建指向结果的委托
-             IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(new Action(async () =>
-             {
-                 string res = await CoreWebCon.CoreWebView2.ExecuteScriptAsync(js);
-                 handlResult(res);
-             }));
-
-             Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
-         });
     }
 
     public override async Task InjectJsObject(string name, object obj)

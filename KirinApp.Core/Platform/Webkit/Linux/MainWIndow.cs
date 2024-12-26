@@ -430,30 +430,20 @@ internal class MainWIndow : IWindow
         }
     }
 
-    public override async Task ExecuteJavaScript(string js)
+    public override async Task ExecuteJavaScript(string js, Action<string>? handlResult = null)
     {
         await Task.Run(async () =>
           {
               while (webKit == null)
                   await Task.Delay(10);
               await Task.Delay(100);
-              Invoke(() => webKit.ExecuteJavaScript(js));
+              await Task.Delay(100);
+              Invoke(() =>
+              {
+                  var res = webKit!.ExecuteJavaScriptWithResult(js);
+                  if (handlResult != null) handlResult(res);
+              });
           });
-    }
-
-    public override async Task ExecuteJavaScriptWithResult(string js, Action<string> handlResult)
-    {
-        await Task.Run(async () =>
-         {
-             while (webKit == null)
-                 await Task.Delay(10);
-             await Task.Delay(100);
-             Invoke(() =>
-             {
-                 var res = webKit!.ExecuteJavaScriptWithResult(js);
-                 handlResult(res);
-             });
-         });
     }
 
     public override async Task InjectJsObject(string name, object obj)

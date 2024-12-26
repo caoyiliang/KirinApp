@@ -352,13 +352,11 @@ public class KirinApp
     public (bool selected, FileInfo? file) OpenFile(string filePath = "") => Window.OpenFile(filePath);
     public (bool selected, List<FileInfo>? files) OpenFiles(string filePath = "") => Window.OpenFiles(filePath);
     public MsgResult ShowDialog(string title, string message, MsgBtns btns = MsgBtns.OK) => Window.ShowDialog(title, message, btns);
-    public async Task ExecuteJavaScript(string js) => await Window.ExecuteJavaScript(js);
-    public async Task ExecuteJavaScriptWithResult(string js, Action<string> handlResult) => await Window.ExecuteJavaScriptWithResult(js, handlResult);
-    public async Task<T> ExecuteJavaScriptWithResult<T>(string js, Action<string> handlResult)
+    public async Task ExecuteJavaScript(string js, Action<string>? handlResult = null) => await Window.ExecuteJavaScript(js, handlResult);
+    public async Task<T> ExecuteJavaScript<T>(string js, Action<string> handlResult)
     {
         var tcs = new TaskCompletionSource<T>();
-
-        await Window.ExecuteJavaScriptWithResult(js, (data) =>
+        await Window.ExecuteJavaScript(js, (data) =>
         {
             try
             {
@@ -371,8 +369,7 @@ public class KirinApp
                 tcs.SetException(ex);
             }
         });
-
-        return await tcs.Task; // 等待 Task 完成并返回结果
+        return await tcs.Task;
     }
     public async Task InjectJsObject(string name, object obj) => await Window.InjectJsObject(name, obj);
     public void OpenDevTool() => Window.OpenDevTool();
