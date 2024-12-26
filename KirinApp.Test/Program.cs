@@ -12,7 +12,7 @@ class Program
             AppName = "Test",
             Height = 800,
             Width = 1000,
-            AppType = WebAppType.Blazor,
+            AppType = WebAppType.Static,
             BlazorComponent = typeof(App),
             Url = "Index.html",
             RawString = "<span style='color:red'>这个是字符串</span>",
@@ -22,16 +22,18 @@ class Program
         var kirinApp = new KirinApp(winConfig);
         kirinApp.Loaded += async (_, _) =>
         {
-            await Task.Delay(100);
             Console.WriteLine(333);
+            await kirinApp.InjectJsObject("UserInfo", new
+            {
+                userName = "admin",
+                age = 18,
+                sex = "男"
+            });
         };
-        kirinApp.Created += (_, _) =>
+        kirinApp.Created += async (_, _) =>
         {
+            await Task.Delay(1000);
             Console.WriteLine(111);
-        };
-        kirinApp.OnLoad += (_, _) =>
-        {
-            Console.WriteLine(222);
         };
         kirinApp.OnCreate += (_, _) =>
         {
@@ -48,7 +50,7 @@ class Program
         kirinApp.WebMessageReceived += (_, e) =>
         {
             Console.WriteLine(e.Message);
-            //kirinApp.SendWebMessage("你好Ubuntu");
+            kirinApp.SendWebMessage("你发给我的消息是：" + e.Message);
         };
         kirinApp.Run();
     }

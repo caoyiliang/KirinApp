@@ -22,6 +22,7 @@ using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.WebView;
 using Newtonsoft.Json.Linq;
 using KirinAppCore.Plateform.WebView2.Windows.Models;
+using Newtonsoft.Json;
 
 namespace KirinAppCore.Plateform.WebView2.Windows;
 
@@ -199,6 +200,62 @@ internal class MainWIndow : IWindow
     public override void Focus()
     {
         Win32Api.SetForegroundWindow(Handle);
+    }
+
+    public override void MoveTo(int x, int y)
+    {
+        if (x == 0 && y == 0) return;
+        Rect rect;
+        if (Win32Api.GetWindowRect(Handle, out rect))
+        {
+            try
+            {
+                Win32Api.SetWindowPos(Handle, IntPtr.Zero, (rect.Left + x), (rect.Top + y), (rect.Right - rect.Left), (rect.Bottom - rect.Top), 0);
+            }
+            catch
+            {
+                //TODO:偶尔会产生System.ExecutionEngineException，后续修改
+            }
+        }
+    }
+
+    public override void Move(int x, int y)
+    {
+        Rect rect;
+        if (Win32Api.GetWindowRect(Handle, out rect))
+        {
+            try
+            {
+                Win32Api.SetWindowPos(Handle, IntPtr.Zero, x, y, (rect.Right - rect.Left), (rect.Bottom - rect.Top), 0);
+            }
+            catch
+            {
+                //TODO:偶尔会产生System.ExecutionEngineException，后续修改
+            }
+        }
+    }
+
+    public override void Change(int width, int height)
+    {
+        Rect rect;
+        if (Win32Api.GetWindowRect(Handle, out rect))
+        {
+            try
+            {
+                Win32Api.SetWindowPos(Handle, IntPtr.Zero, rect.Left, rect.Top, width, height, 0);
+            }
+            catch
+            {
+                //TODO:偶尔会产生System.ExecutionEngineException，后续修改
+            }
+        }
+    }
+
+    public override void Normal()
+    {
+        Move(Config.Left, Config.Top);
+        Change(Config.Width, Config.Height);
+        Show();
     }
 
     public override void Close()
@@ -494,10 +551,13 @@ internal class MainWIndow : IWindow
                                 case "show": Show(); break;
                                 case "focus": Focus(); break;
                                 case "close": Close(); break;
+                                case "change": Change(jobject["data"]!["width"]!.ToString().ToInt(), jobject["data"]!["height"]!.ToString().ToInt()); break;
+                                case "normal": Normal(); break;
+                                case "move": Move(jobject["data"]!["x"]!.ToString().ToInt(), jobject["data"]!["y"]!.ToString().ToInt()); break;
+                                case "moveTo": MoveTo(jobject["data"]!["x"]!.ToString().ToInt(), jobject["data"]!["y"]!.ToString().ToInt()); break;
                                 default:
                                     break;
                             }
-                            Maximize();
                         }
                         return;
                     }
@@ -537,7 +597,7 @@ internal class MainWIndow : IWindow
         {
             while (CoreWebCon == null)
                 await Task.Delay(10);
-            await Task.Delay(10);
+            await Task.Delay(100);
             IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(new Action(async () =>
             {
                 _ = await CoreWebCon.CoreWebView2.ExecuteScriptAsync(js);
@@ -546,26 +606,28 @@ internal class MainWIndow : IWindow
         });
     }
 
-    public override async Task<string> ExecuteJavaScriptWithResult(string js)
+    public override async Task ExecuteJavaScriptWithResult(string js, Action<string> handlResult)
     {
-        var tcs = new TaskCompletionSource<string>();
         await Task.Run(async () =>
          {
              while (CoreWebCon == null)
                  await Task.Delay(10);
-             await Task.Delay(10);
+             await Task.Delay(100);
              // 创建指向结果的委托
              IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(new Action(async () =>
              {
                  string res = await CoreWebCon.CoreWebView2.ExecuteScriptAsync(js);
-                 tcs.SetResult(res); // 设置结果
+                 handlResult(res);
              }));
 
-             // 发送消息
              Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
          });
-        // 等待结果
-        return tcs.Task.Result; // 返回结果
+    }
+
+    public override async Task InjectJsObject(string name, object obj)
+    {
+        string js = $"window.external.{name} = {JsonConvert.SerializeObject(obj)}";
+        await ExecuteJavaScript(js);
     }
 
     public override void OpenDevTool()
@@ -574,7 +636,7 @@ internal class MainWIndow : IWindow
         {
             while (CoreWebCon == null)
                 Thread.Sleep(10);
-            Thread.Sleep(10);
+            Thread.Sleep(100);
             IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(() => CoreWebCon!.CoreWebView2.OpenDevToolsWindow());
             Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
         });

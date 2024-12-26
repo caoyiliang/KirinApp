@@ -1,10 +1,57 @@
 ﻿<h1>这个静态Html</h1>
-<button type="button" onclick="send()">发送</button>
+<div>
+    <input id="msg" value="" />
+    <button type="button" onclick="send()">发送消息</button>
+</div>
+<div>
+    <span>收到的消息：</span><span id="receiveMsg"></span>
+</div>
+<div>
+    <button type="button" onclick="cmd('max')">最大化</button>
+</div>
+<div>
+    <button type="button" onclick="cmd('min')">最小化</button>
+</div>
+<div>
+    <button type="button" onclick="cmd('close')">关闭</button>
+</div>
+<div>
+    <button type="button" onclick="cmd('normal')">恢复</button>
+</div>
+<div>
+    <span>x：</span><input id="x" />
+    <span>y：</span><input id="y" />
+    <button type="button" onclick="move('moveTo')">相对移动</button>
+    <button type="button" onclick="move('move')">绝对移动</button>
+</div>
+<div>
+    <span>宽：</span><input id="width" />
+    <span>高：</span><input id="height" />
+    <button type="button" onclick="change()">改变大小</button>
+</div>
+<div>
+    <div id="drag" style="background-color: #FFEFD5; height: 30px; width: 100px; cursor: move ">拖拽</div>
+</div>
 <script>
     function send() {
-        window.external.sendMessage("234");
+        var val = document.getElementById("msg").value;
+        window.external.sendMessage(val);
+    }
+    function cmd(cmdName) {
+        window.external[cmdName]();
+    }
+    function move(cmdName) {
+        var x = document.getElementById("x").value;
+        var y = document.getElementById("y").value;
+        window.external[cmdName](x, y);
+    }
+    function change() {
+        var width = document.getElementById("width").value;
+        var height = document.getElementById("height").value;
+        window.external.change(width, height);
     }
     window.external.receiveMessage(data => {
-        console.log('收到消息', data);
+        document.getElementById("receiveMsg").innerText = data;
     });
+    window.external.drag(document.getElementById("drag"));
 </script>

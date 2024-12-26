@@ -17,6 +17,7 @@ using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using static KirinAppCore.Interface.IWindow;
 
 namespace KirinAppCore;
 
@@ -30,8 +31,6 @@ public class KirinApp
 
     public event EventHandler<EventArgs>? OnCreate;
     public event EventHandler<EventArgs>? Created;
-    public event EventHandler<EventArgs>? OnLoad;
-    public event EventHandler<EventArgs>? Loading;
     public event EventHandler<EventArgs>? Loaded;
     public event NetClosingDelegate? OnClose;
     public delegate bool? NetClosingDelegate(object sender, EventArgs e);
@@ -68,22 +67,16 @@ public class KirinApp
         Window.SetScreenInfo();
     }
 
-    private void EventRegister1()
+    private void EventRegister()
     {
         Window.OnCreate += (s, e) => OnCreate?.Invoke(s, e);
-        Window.OnLoad += (s, e) => OnLoad?.Invoke(s, e);
         Window.Created += (s, e) => Created?.Invoke(s, e);
-        Window.Loading += (s, e) => Loading?.Invoke(s, e);
-    }
-
-    private void EventRegister2()
-    {
-        Loaded?.Invoke(this, new EventArgs());
         Window.OnClose += (s, e) => OnClose?.Invoke(s, e);
         Window.WebMessageReceived += (s, e) => WebMessageReceived?.Invoke(s, e);
         Window.SizeChangeEvent += (s, e) => SizeChange?.Invoke(s, e);
         Window.PositionChangeEvent += (s, e) => PositionChange?.Invoke(s, e);
     }
+
 
     public void Run()
     {
@@ -91,10 +84,10 @@ public class KirinApp
             Utils.MainThreadId = Environment.CurrentManagedThreadId;
         if (Window.CheckAccess() && Parent == null && Utils.Wnds.Count == 0)
         {
-            EventRegister1();
+            EventRegister();
             Window.Init(ServiceProvide, Config);
             Window.Show();
-            EventRegister2();
+            Loaded?.Invoke(this, new EventArgs());
             Utils.Wnds.Add(this);
             Window.MainLoop();
         }
@@ -102,10 +95,10 @@ public class KirinApp
         {
             IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(() =>
             {
-                EventRegister1();
+                EventRegister();
                 Window.Init(ServiceProvide, Config);
                 Window.Show();
-                EventRegister2();
+                Loaded?.Invoke(this, new EventArgs());
                 Utils.Wnds.Add(this);
                 Window.MainLoop();
             });
@@ -360,21 +353,28 @@ public class KirinApp
     public (bool selected, List<FileInfo>? files) OpenFiles(string filePath = "") => Window.OpenFiles(filePath);
     public MsgResult ShowDialog(string title, string message, MsgBtns btns = MsgBtns.OK) => Window.ShowDialog(title, message, btns);
     public async Task ExecuteJavaScript(string js) => await Window.ExecuteJavaScript(js);
-    public async Task<string> ExecuteJavaScriptWithResult(string js) => await Window.ExecuteJavaScriptWithResult(js);
-    public async Task<T> ExecuteJavaScriptWithResult<T>(string js)
+    public async Task ExecuteJavaScriptWithResult(string js, Action<string> handlResult) => await Window.ExecuteJavaScriptWithResult(js, handlResult);
+    public async Task<T> ExecuteJavaScriptWithResult<T>(string js, Action<string> handlResult)
     {
-        var str = await Window.ExecuteJavaScriptWithResult(js);
-        try
+        var tcs = new TaskCompletionSource<T>();
+
+        await Window.ExecuteJavaScriptWithResult(js, (data) =>
         {
-            var res = JsonConvert.DeserializeObject<T>(str);
-            if (res == null) throw new JsonSerializationException();
-            return res;
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+            try
+            {
+                var res = JsonConvert.DeserializeObject<T>(data);
+                if (res == null) throw new JsonSerializationException();
+                tcs.SetResult(res);
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
+        });
+
+        return await tcs.Task; // 等待 Task 完成并返回结果
     }
+    public async Task InjectJsObject(string name, object obj) => await Window.InjectJsObject(name, obj);
     public void OpenDevTool() => Window.OpenDevTool();
     public void Reload() => Window.Reload();
     public void SendWebMessage(string msg) => Window.SendWebMessage(msg);
@@ -383,6 +383,7 @@ public class KirinApp
     public void Close() => Window.Close();
     public void Exit() => Environment.Exit(0);
     public void Focus() => Window.Focus();
+    public void MoveTo(int x, int y) => Window.MoveTo(x, y);
     public void Minimize() => Window.Minimize();
     public void Maximize() => Window.Maximize();
 }

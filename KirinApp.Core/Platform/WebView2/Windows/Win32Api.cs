@@ -37,6 +37,11 @@ internal static class Win32Api
 
     [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
     internal static extern bool SetForegroundWindow(IntPtr hWnd);
+    [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
+    internal static extern bool GetWindowRect(IntPtr hWnd, out Rect lpRect);
+    [DllImport(U32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool SetWindowPos(IntPtr handle, IntPtr handleInsertAfter, int X, int Y, int cx, int cy, SWP uFlags = 0);
 
     [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
     internal static extern IntPtr DefWindowProcW(IntPtr handle, WindowMessage message, IntPtr wParam, IntPtr lParam);

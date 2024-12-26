@@ -20,7 +20,7 @@ namespace KirinAppCore.Interface;
 /// </summary>
 internal abstract class IWindow
 {
-    //计划方法: 移动，系统托盘，发送系统通知，发送托盘气泡通知
+    //计划方法: 系统托盘，发送系统通知，发送托盘气泡通知
 
     #region WebView2变量
     public ServiceProvider? ServiceProvide;
@@ -90,16 +90,6 @@ internal abstract class IWindow
     public virtual event EventHandler<EventArgs>? Created;
 
     /// <summary>
-    /// 页面渲染前
-    /// </summary>
-    public virtual event EventHandler<EventArgs>? OnLoad;
-
-    /// <summary>
-    /// 页面渲染完成
-    /// </summary>
-    public virtual event EventHandler<EventArgs>? Loading;
-
-    /// <summary>
     /// 关闭委托
     /// </summary>
     public virtual event CloseDelegate? OnClose;
@@ -122,9 +112,7 @@ internal abstract class IWindow
         OnCreate?.Invoke(this, new EventArgs());
         Create();
         Created?.Invoke(this, new EventArgs());
-        OnLoad?.Invoke(this, new EventArgs());
         InitWebControl();
-        Loading?.Invoke(this, new EventArgs());
     }
 
     /// <summary>
@@ -146,6 +134,36 @@ internal abstract class IWindow
     /// 聚焦
     /// </summary>
     public abstract void Focus();
+
+    /// <summary>
+    /// 移动到（相对定位）
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    public abstract void MoveTo(int x, int y);
+
+    /// <summary>
+    /// 移动到（绝对定位）
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    public abstract void Move(int x, int y);
+
+    /// <summary>
+    /// 改变大小
+    /// </summary>
+    public abstract void Change(int width, int height);
+
+    /// <summary>
+    /// 改变大小
+    /// </summary>
+    /// <param name="size"></param>
+    public virtual void Change(Size size) => Change(size.Width, size.Height);
+
+    /// <summary>
+    /// 复原
+    /// </summary>
+    public abstract void Normal();
 
     /// <summary>
     /// 关闭
@@ -263,7 +281,15 @@ internal abstract class IWindow
     /// </summary>
     /// <param name="js"></param>
     /// <returns></returns>
-    public abstract Task<string> ExecuteJavaScriptWithResult(string js);
+    public abstract Task ExecuteJavaScriptWithResult(string js, Action<string> handlResult);
+
+    /// <summary>
+    /// 注入js对象
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    public abstract Task InjectJsObject(string name, object obj);
 
     /// <summary>
     /// 重新渲染

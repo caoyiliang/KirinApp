@@ -495,4 +495,16 @@ internal static class Utils
         // 判断输出中是否包含库名
         return output.Contains(libraryName);
     }
+
+    public static int ToInt(this string str)
+    {
+        try
+        {
+            return int.Parse(str);
+        }
+        catch
+        {
+            return 0;
+        }
+    }
 }

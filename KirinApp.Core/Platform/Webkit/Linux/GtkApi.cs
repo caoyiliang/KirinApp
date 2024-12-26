@@ -55,6 +55,10 @@ internal class GtkApi
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void gtk_window_present(IntPtr widget);
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern IntPtr gtk_widget_get_window(IntPtr widget);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void gdk_window_get_origin(IntPtr window, out int x, out int y);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern IntPtr gdk_display_get_default();
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern IntPtr gdk_display_get_monitor(IntPtr display, int monitor_num);

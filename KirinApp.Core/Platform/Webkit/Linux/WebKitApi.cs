@@ -240,10 +240,13 @@ internal class WebKit40 : IWebKit
                         case "show": Window!.Show(); break;
                         case "focus": Window!.Focus(); break;
                         case "close": Window!.Close(); break;
+                        case "change": Window!.Change(jobject["data"]!["width"]!.ToString().ToInt(), jobject["data"]!["height"]!.ToString().ToInt()); break;
+                        case "normal": Window!.Normal(); break;
+                        case "move": Window!.Move(jobject["data"]!["x"]!.ToString().ToInt(), jobject["data"]!["y"]!.ToString().ToInt()); break;
+                        case "moveTo": Window!.MoveTo(jobject["data"]!["x"]!.ToString().ToInt(), jobject["data"]!["y"]!.ToString().ToInt()); break;
                         default:
                             break;
                     }
-                    Window!.Maximize();
                 }
                 return;
             }

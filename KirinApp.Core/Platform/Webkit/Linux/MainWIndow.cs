@@ -5,6 +5,8 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using KirinAppCore.Plateform.Webkit.Linux.Models;
 using KirinAppCore.Platform.Webkit.Linux;
+using Newtonsoft.Json;
+using KirinAppCore.Plateform.WebView2.Windows;
 
 namespace KirinAppCore.Plateform.Webkit.Linux;
 
@@ -175,6 +177,30 @@ internal class MainWIndow : IWindow
     }
 
     public override void Focus() => GtkApi.gtk_window_present(Handle);
+
+    public override void MoveTo(int x, int y)
+    {
+        IntPtr window = GtkApi.gtk_widget_get_window(Handle);
+        GtkApi.gdk_window_get_origin(window, out int windowX, out int windowY);
+        GtkApi.gtk_window_move(Handle, windowX + x, windowY + y);
+    }
+
+    public override void Move(int x, int y)
+    {
+        GtkApi.gtk_window_move(Handle, x, y);
+    }
+
+    public override void Change(int width, int height)
+    {
+        GtkApi.gtk_window_set_default_size(Handle, width, height);
+    }
+
+    public override void Normal()
+    {
+        Move(Config.Left, Config.Top);
+        Change(Config.Width, Config.Height);
+        Show();
+    }
 
     public override void MainLoop() => GtkApi.gtk_main();
 
@@ -410,27 +436,30 @@ internal class MainWIndow : IWindow
           {
               while (webKit == null)
                   await Task.Delay(10);
-              await Task.Delay(10);
+              await Task.Delay(100);
               Invoke(() => webKit.ExecuteJavaScript(js));
           });
     }
 
-    public override async Task<string> ExecuteJavaScriptWithResult(string js)
+    public override async Task ExecuteJavaScriptWithResult(string js, Action<string> handlResult)
     {
-        var tcs = new TaskCompletionSource<string>();
         await Task.Run(async () =>
          {
              while (webKit == null)
                  await Task.Delay(10);
-             await Task.Delay(10);
+             await Task.Delay(100);
              Invoke(() =>
              {
                  var res = webKit!.ExecuteJavaScriptWithResult(js);
-                 tcs.SetResult(res);
+                 handlResult(res);
              });
          });
-        // 等待结果
-        return tcs.Task.Result; // 返回结果
+    }
+
+    public override async Task InjectJsObject(string name, object obj)
+    {
+        string js = $"window.external.{name} = {JsonConvert.SerializeObject(obj)}";
+        await ExecuteJavaScript(js);
     }
 
     public override void OpenDevTool()
