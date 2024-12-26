@@ -18,4 +18,5 @@ internal interface IWebKit
     void SendWebMessage(string message);
     void Reload();
     void Navigate(string url);
+    void Change();
 }
