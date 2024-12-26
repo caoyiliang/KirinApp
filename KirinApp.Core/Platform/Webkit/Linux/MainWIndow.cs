@@ -54,7 +54,7 @@ internal class MainWIndow : IWindow
                     GtkApi.g_object_unref(pixbuf);
                 }
             }
-            if (Config.Chromeless) GtkApi.gtk_window_set_decorated(Handle, true);
+            GtkApi.gtk_window_set_decorated(Handle, !Config.Chromeless);
 
             if (Config.Size != null)
             {
@@ -79,10 +79,8 @@ internal class MainWIndow : IWindow
             IntPtr result = Marshal.AllocHGlobal(Marshal.SizeOf(rgb));
             Marshal.StructureToPtr(rgb, result, false);
             GtkApi.gtk_widget_override_background_color(Handle, 0, result);
-            if (Config.Center)
-                GtkApi.gtk_window_set_position(Handle, (int)GtkWindowPosition.GtkWinPosCenter);
-            else
-                GtkApi.gtk_window_move(Handle, Config.Left, Config.Top);
+            if(Config.Center)GtkApi.gtk_window_set_position(Handle,1);
+            else GtkApi.gtk_window_move(Handle, Config.Left, Config.Top);
             if (Config.MinimumSize != null)
             {
                 Config.MinimumHeigh = Config.MinimumSize.Value.Height;
@@ -162,7 +160,7 @@ internal class MainWIndow : IWindow
         {
             Console.WriteLine("其他事件");
         }
-        return true;
+        return false;
     }
     public override void Show()
     {
@@ -228,12 +226,7 @@ internal class MainWIndow : IWindow
         GtkApi.gtk_window_iconify(Handle);
         State = WindowState.Minimize;
     }
-
-    public override void SizeChange(IntPtr handle, int width, int height)
-    {
-
-    }
-
+    
     private void CheckInitialDir(ref string initialDir)
     {
         if (string.IsNullOrWhiteSpace(initialDir))

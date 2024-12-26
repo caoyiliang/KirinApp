@@ -53,8 +53,6 @@ internal class WebKit40 : IWebKit
     internal static extern IntPtr webkit_web_view_run_javascript(IntPtr webView, string script, IntPtr cancellable, IntPtr callback, IntPtr userData);
     [DllImport(Lib)]
     internal static extern void webkit_context_menu_remove_all(IntPtr menu);
-    [DllImport(Lib)]
-    internal static extern void gtk_widget_set_size_request(IntPtr view, int width, int height);
     #endregion
 
 
@@ -78,7 +76,6 @@ internal class WebKit40 : IWebKit
 
             var contentManager = webkit_user_content_manager_new();
             Handle = webkit_web_view_new_with_user_content_manager(contentManager);
-            gtk_widget_set_size_request(Handle, Config.Width, Config.Height);
             GtkApi.gtk_container_add(Window!.Handle, Handle);
 
             if (Config.Debug)
@@ -138,12 +135,7 @@ internal class WebKit40 : IWebKit
             throw;
         }
     }
-
-    public void Change()
-    {
-        gtk_widget_set_size_request(Handle, Config.Width, Config.Height);
-    }
-
+    
     public void ExecuteJavaScript(string js)
     {
         webkit_web_view_run_javascript(Handle, js, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
@@ -288,10 +280,7 @@ internal class WebKit41 : IWebKit
     {
         throw new NotImplementedException();
     }
-    public void Change()
-    {
-        throw new NotImplementedException();
-    }
+
     public void ExecuteJavaScript(string js)
     {
         throw new NotImplementedException();

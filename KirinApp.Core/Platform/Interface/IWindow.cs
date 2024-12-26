@@ -223,7 +223,10 @@ internal abstract class IWindow
     /// <param name="handle"></param>
     /// <param name="width"></param>
     /// <param name="height"></param>
-    public abstract void SizeChange(IntPtr handle, int width, int height);
+    public virtual void SizeChange(IntPtr handle, int width, int height)
+    {
+        
+    }
 
     /// <summary>
     /// 获取屏幕信息
