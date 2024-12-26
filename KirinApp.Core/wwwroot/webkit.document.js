@@ -33,7 +33,7 @@ window.external = {
         var obj = { cmd: 'close' }
         window.webkit.messageHandlers.KirinApp.postMessage(JSON.stringify(obj));
     },
-    moveTo: (selector) => {
+    drag: (selector) => {
         selector.addEventListener('mousedown', function (win) {
             const initialX = win.clientX;
             const initialY = win.clientY;
@@ -57,6 +57,10 @@ window.external = {
     },
     move: (x, y) => {
         var obj = { cmd: 'move', data: { x, y } }
+        window.webkit.messageHandlers.KirinApp.postMessage(JSON.stringify(obj));
+    },
+    moveTo: (x, y) => {
+        var obj = { cmd: 'moveTo', data: { x, y } }
         window.webkit.messageHandlers.KirinApp.postMessage(JSON.stringify(obj));
     },
     change: (width, height) => {

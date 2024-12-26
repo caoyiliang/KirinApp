@@ -41,7 +41,9 @@ internal class GtkApi
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void gtk_window_move(IntPtr raw, int x, int y);
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void gtk_window_set_geometry_hints(IntPtr window, IntPtr geometry_widget, ref GeometryInfo geometry, GdkWindowHints geom_mask);
+    internal static extern void gtk_window_resize(IntPtr raw, int x, int y);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void gtk_window_set_geometry_hints(IntPtr window, IntPtr geometryWidget, ref GeometryInfo geometry, GdkWindowHints geom_mask);
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void gtk_widget_add_events(IntPtr widget, uint events);
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]

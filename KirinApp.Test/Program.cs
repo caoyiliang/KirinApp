@@ -20,15 +20,15 @@ class Program
             Debug = true,
         };
         var kirinApp = new KirinApp(winConfig);
-        kirinApp.Loaded += async (_, _) =>
+        kirinApp.Loaded +=  (_, _) =>
         {
             Console.WriteLine(333);
-            await kirinApp.InjectJsObject("UserInfo", new
-            {
-                userName = "admin",
-                age = 18,
-                sex = "男"
-            });
+            //await kirinApp.InjectJsObject("UserInfo", new
+            // {
+            //     userName = "admin",
+            //     age = 18,
+            //     sex = "男"
+            // });
         };
         kirinApp.Created += async (_, _) =>
         {

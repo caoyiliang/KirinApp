@@ -26,10 +26,10 @@ internal enum GtkWindowPosition
 }
 public struct GeometryInfo
 {
-    public int MinWidth { get; set; }
-    public int MinHeight { get; set; }
-    public int MaxWidth { get; set; }
-    public int MaxHeight { get; set; }
+    public int min_width { get; set; }
+    public int min_height { get; set; }
+    public int max_width { get; set; }
+    public int max_height { get; set; }
 }
 [StructLayout(LayoutKind.Sequential)]
 public struct GdkRectangle

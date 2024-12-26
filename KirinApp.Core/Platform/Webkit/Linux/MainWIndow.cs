@@ -95,10 +95,10 @@ internal class MainWIndow : IWindow
             }
             var geometry = new GeometryInfo()
             {
-                MinWidth = Config.MinimumWidth,
-                MinHeight = Config.MinimumHeigh,
-                MaxWidth = Config.MaximumWidth,
-                MaxHeight = Config.MaximumHeigh
+                min_width = Config.MinimumWidth,
+                min_height = Config.MinimumHeigh,
+                max_width = Config.MaximumWidth,
+                max_height = Config.MaximumHeigh
             };
             GtkApi.gtk_window_set_geometry_hints(Handle, IntPtr.Zero, ref geometry, GdkWindowHints.GDK_HINT_MIN_SIZE | GdkWindowHints.GDK_HINT_MAX_SIZE);
 
@@ -192,7 +192,7 @@ internal class MainWIndow : IWindow
 
     public override void Change(int width, int height)
     {
-        GtkApi.gtk_window_set_default_size(Handle, width, height);
+        GtkApi.gtk_window_resize(Handle, width, height);
     }
 
     public override void Normal()
