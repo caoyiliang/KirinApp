@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 namespace KirinAppCore.Plateform.Webkit.Linux;
 
@@ -17,42 +18,66 @@ internal class WebKit40 : IWebKit
     private const string Lib = "libwebkit2gtk-4.0.so.37";
 
     #region api
+
     [DllImport(Lib)]
     internal static extern void webkit_web_view_load_uri(IntPtr webView, string uri);
+
     [DllImport(Lib)]
-    internal static extern IntPtr webkit_user_script_new(string source, int injectionTime, int injectionFlags, IntPtr whitelist, IntPtr blacklist);
+    internal static extern IntPtr webkit_user_script_new(string source, int injectionTime, int injectionFlags,
+        IntPtr whitelist, IntPtr blacklist);
+
     [DllImport(Lib)]
     internal static extern IntPtr webkit_user_content_manager_new();
+
     [DllImport(Lib)]
     internal static extern IntPtr webkit_web_view_new_with_user_content_manager(IntPtr manager);
+
     [DllImport(Lib)]
     internal static extern void webkit_user_content_manager_add_script(IntPtr manager, IntPtr script);
+
     [DllImport(Lib)]
     internal static extern void webkit_user_script_unref(IntPtr script);
+
     [DllImport(Lib)]
     internal static extern void webkit_settings_set_enable_developer_extras(IntPtr settings, bool enable);
+
     [DllImport(Lib)]
     internal static extern IntPtr webkit_web_view_get_settings(IntPtr webView);
+
     [DllImport(Lib)]
     internal static extern IntPtr webkit_web_context_get_default();
+
     [DllImport(Lib)]
-    internal static extern void webkit_web_context_register_uri_scheme(IntPtr context, string scheme, IntPtr callback, IntPtr user_data, IntPtr destroy_notify);
+    internal static extern void webkit_web_context_register_uri_scheme(IntPtr context, string scheme, IntPtr callback,
+        IntPtr user_data, IntPtr destroy_notify);
+
     [DllImport(Lib)]
     internal static extern IntPtr webkit_uri_scheme_request_get_uri(IntPtr request);
+
     [DllImport(Lib)]
-    internal static extern void webkit_uri_scheme_request_finish(IntPtr request, IntPtr stream, int length, IntPtr mimeType);
+    internal static extern void webkit_uri_scheme_request_finish(IntPtr request, IntPtr stream, int length,
+        IntPtr mimeType);
+
     [DllImport(Lib)]
-    internal static extern void webkit_user_content_manager_register_script_message_handler(IntPtr manager, string name);
+    internal static extern void
+        webkit_user_content_manager_register_script_message_handler(IntPtr manager, string name);
+
     [DllImport(Lib)]
     internal static extern IntPtr webkit_javascript_result_get_js_value(IntPtr result);
+
     [DllImport(Lib)]
     internal static extern IntPtr jsc_value_to_string(IntPtr value);
+
     [DllImport(Lib)]
     internal static extern bool jsc_value_is_string(IntPtr value);
+
     [DllImport(Lib)]
-    internal static extern IntPtr webkit_web_view_run_javascript(IntPtr webView, string script, IntPtr cancellable, IntPtr callback, IntPtr userData);
+    internal static extern IntPtr webkit_web_view_run_javascript(IntPtr webView, string script, IntPtr cancellable,
+        IntPtr callback, IntPtr userData);
+
     [DllImport(Lib)]
     internal static extern void webkit_context_menu_remove_all(IntPtr menu);
+
     #endregion
 
 
@@ -62,9 +87,13 @@ internal class WebKit40 : IWebKit
     private IWindow? Window { get; set; }
     private WinConfig Config => Window!.Config;
     public event EventHandler<WebMessageEvent>? WebMessageReceived;
+
     private delegate void ContextMenuCallbackDelegate(IntPtr webView, IntPtr menu, IntPtr userData);
+
     private delegate IntPtr UriSchemeCallbackFunc(IntPtr request, IntPtr user_data);
+
     private UriSchemeCallbackFunc uriSchemeCallback = new((_, _) => 0);
+
     private delegate void ScriptMessageReceivedDelegate(IntPtr webView, IntPtr message, IntPtr userData);
 
     public void InitWebControl(IWindow? window = null)
@@ -87,8 +116,11 @@ internal class WebKit40 : IWebKit
             {
                 IntPtr settings = webkit_web_view_get_settings(Handle);
                 webkit_settings_set_enable_developer_extras(settings, false);
-                GtkApi.g_signal_connect_data(Handle, "context-menu", Marshal.GetFunctionPointerForDelegate(new ContextMenuCallbackDelegate(ContextMenuCallback)), IntPtr.Zero, IntPtr.Zero, 0);
+                GtkApi.g_signal_connect_data(Handle, "context-menu",
+                    Marshal.GetFunctionPointerForDelegate(new ContextMenuCallbackDelegate(ContextMenuCallback)),
+                    IntPtr.Zero, IntPtr.Zero, 0);
             }
+
             if (Config.AppType != WebAppType.Http)
             {
                 var url = $"http://localhost/";
@@ -96,7 +128,8 @@ internal class WebKit40 : IWebKit
                 if (Config.AppType == WebAppType.Blazor) url += "blazorindex.html";
                 SchemeConfig = new Uri(url).ParseScheme();
                 var dispatcher = new WebDispatcher(window!);
-                WebManager = new WebManager(window!, dispatcher, window!.ServiceProvide!.GetRequiredService<JSComponentConfigurationStore>(), SchemeConfig);
+                WebManager = new WebManager(window!, dispatcher,
+                    window!.ServiceProvide!.GetRequiredService<JSComponentConfigurationStore>(), SchemeConfig);
                 if (Config.AppType == WebAppType.Blazor)
                 {
                     if (Config.BlazorComponent == null) throw new Exception("Blazor component not found!");
@@ -106,9 +139,11 @@ internal class WebKit40 : IWebKit
                             ParameterView.Empty);
                     });
                 }
+
                 uriSchemeCallback = UriSchemeCallback;
                 var context = webkit_web_context_get_default();
-                webkit_web_context_register_uri_scheme(context, SchemeConfig.AppScheme, Marshal.GetFunctionPointerForDelegate(uriSchemeCallback), IntPtr.Zero, IntPtr.Zero);
+                webkit_web_context_register_uri_scheme(context, SchemeConfig.AppScheme,
+                    Marshal.GetFunctionPointerForDelegate(uriSchemeCallback), IntPtr.Zero, IntPtr.Zero);
 
                 var assembly = Assembly.GetExecutingAssembly();
                 var stream = assembly.GetManifestResourceStream("KirinAppCore.wwwroot.webkit.document.js")!;
@@ -135,27 +170,22 @@ internal class WebKit40 : IWebKit
             throw;
         }
     }
-    
-    public void ExecuteJavaScript(string js)
+
+    public string ExecuteJavaScript(string js)
     {
-        webkit_web_view_run_javascript(Handle, js, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+        var jsHandle = webkit_web_view_run_javascript(Handle, js, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+        if (jsHandle == IntPtr.Zero) return "";
+        var res = webkit_javascript_result_get_js_value(jsHandle);
+        if (!jsc_value_is_string(res)) return "";
+        var jsString = jsc_value_to_string(res);
+        var result = Marshal.PtrToStringAnsi(jsString);
+        return result ?? "";
     }
 
-    public string ExecuteJavaScriptWithResult(string js)
+    public void InjectJsObject(string name, object obj)
     {
-        IntPtr jsHandle = webkit_web_view_run_javascript(Handle, js, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-        if (jsHandle == IntPtr.Zero)
-        {
-            throw new Exception("JavaScript execution failed.");
-        }
-
-        IntPtr res = webkit_javascript_result_get_js_value(jsHandle);
-        if (jsc_value_is_string(res))
-        {
-            IntPtr jsString = jsc_value_to_string(res);
-            return Marshal.PtrToStringAnsi(jsString) ?? throw new Exception("JavaScript execution failed.");
-        }
-        throw new Exception("JavaScript execution failed.");
+        var js = $"window.external.{name}={JsonConvert.SerializeObject(obj)}";
+        webkit_web_view_run_javascript(Handle, js, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
     }
 
     public void OpenDevTool()
@@ -204,10 +234,12 @@ internal class WebKit40 : IWebKit
                 byteArray = ms.ToArray();
                 contentType = response.Type;
             }
+
             IntPtr bytesPtr = Marshal.AllocHGlobal(byteArray.Length);
             Marshal.Copy(byteArray, 0, bytesPtr, byteArray.Length);
             var stream = GtkApi.g_memory_input_stream_new_from_data(bytesPtr, byteArray.Length, IntPtr.Zero);
-            webkit_uri_scheme_request_finish(request, stream, byteArray.Length, Marshal.StringToCoTaskMemAnsi(contentType));
+            webkit_uri_scheme_request_finish(request, stream, byteArray.Length,
+                Marshal.StringToCoTaskMemAnsi(contentType));
             return IntPtr.Zero;
         }
         catch (Exception e)
@@ -239,17 +271,27 @@ internal class WebKit40 : IWebKit
                         case "show": Window!.Show(); break;
                         case "focus": Window!.Focus(); break;
                         case "close": Window!.Close(); break;
-                        case "change": Window!.Change(jobject["data"]!["width"]!.ToString().ToInt(), jobject["data"]!["height"]!.ToString().ToInt()); break;
+                        case "change":
+                            Window!.Change(jobject["data"]!["width"]!.ToString().ToInt(),
+                                jobject["data"]!["height"]!.ToString().ToInt()); break;
                         case "normal": Window!.Normal(); break;
-                        case "move": Window!.Move(jobject["data"]!["x"]!.ToString().ToInt(), jobject["data"]!["y"]!.ToString().ToInt()); break;
-                        case "moveTo": Window!.MoveTo(jobject["data"]!["x"]!.ToString().ToInt(), jobject["data"]!["y"]!.ToString().ToInt()); break;
+                        case "move":
+                            Window!.Move(jobject["data"]!["x"]!.ToString().ToInt(),
+                                jobject["data"]!["y"]!.ToString().ToInt()); break;
+                        case "moveTo":
+                            Window!.MoveTo(jobject["data"]!["x"]!.ToString().ToInt(),
+                                jobject["data"]!["y"]!.ToString().ToInt()); break;
                         default:
                             break;
                     }
                 }
+
                 return;
             }
-            catch { }
+            catch
+            {
+            }
+
             WebMessageEvent msg = new WebMessageEvent()
             {
                 Message = messageString
@@ -263,9 +305,11 @@ internal class WebKit40 : IWebKit
         webkit_context_menu_remove_all(menu);
     }
 }
+
 internal class WebKit41 : IWebKit
 {
     private const string Libraries = "libwebkit2gtk-4.1.so.0";
+
     #region api
 
     #endregion
@@ -281,15 +325,16 @@ internal class WebKit41 : IWebKit
         throw new NotImplementedException();
     }
 
-    public void ExecuteJavaScript(string js)
+    public string ExecuteJavaScript(string js)
     {
-        throw new NotImplementedException();
+        return "";
     }
 
-    public string ExecuteJavaScriptWithResult(string js)
+    public void InjectJsObject(string name, object obj)
     {
-        throw new NotImplementedException();
+        return;
     }
+
 
     public void OpenDevTool()
     {

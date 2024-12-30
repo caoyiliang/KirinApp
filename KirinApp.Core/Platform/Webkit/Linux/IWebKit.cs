@@ -12,8 +12,8 @@ internal interface IWebKit
 {
     event EventHandler<WebMessageEvent>? WebMessageReceived;
     void InitWebControl(IWindow window);
-    void ExecuteJavaScript(string js);
-    string ExecuteJavaScriptWithResult(string js);
+    string ExecuteJavaScript(string js);
+    void InjectJsObject(string name, object obj);
     void OpenDevTool();
     void SendWebMessage(string message);
     void Reload();

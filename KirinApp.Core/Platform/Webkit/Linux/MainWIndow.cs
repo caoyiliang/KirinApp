@@ -433,8 +433,8 @@ internal class MainWIndow : IWindow
               await Task.Delay(100);
               Invoke(() =>
               {
-                  var res = webKit!.ExecuteJavaScriptWithResult(js);
-                  if (handlResult != null) handlResult(res);
+                  var res = webKit!.ExecuteJavaScript(js);
+                  handlResult?.Invoke(res);
               });
           });
     }

@@ -10,8 +10,8 @@ class Program
         WinConfig winConfig = new WinConfig()
         {
             AppName = "Test",
-            Height = 800,
-            Width = 1000,
+            Height = 600,
+            Width = 800,
             AppType = WebAppType.Static,
             BlazorComponent = typeof(App),
             Url = "Index.html",
@@ -20,7 +20,7 @@ class Program
             Debug = true,
         };
         var kirinApp = new KirinApp(winConfig);
-        kirinApp.Loaded +=  (_, _) =>
+        kirinApp.Loaded += (_, _) =>
         {
             Console.WriteLine(333);
             //await kirinApp.InjectJsObject("UserInfo", new
@@ -35,22 +35,19 @@ class Program
             await Task.Delay(1000);
             Console.WriteLine(111);
         };
-        kirinApp.OnCreate += (_, _) =>
-        {
-            Console.WriteLine(000);
-        };
-        kirinApp.OnClose += (_, _) =>
-        {
-            return true;
-        };
-        kirinApp.PositionChange += (s, e) =>
-        {
-            Console.WriteLine(e.X + ":" + e.Y);
-        };
-        kirinApp.WebMessageReceived += (_, e) =>
+        kirinApp.OnCreate += (_, _) => { Console.WriteLine(000); };
+        kirinApp.OnClose += (_, _) => { return true; };
+        kirinApp.PositionChange += (s, e) => { Console.WriteLine(e.X + ":" + e.Y); };
+        kirinApp.WebMessageReceived += async (_, e) =>
         {
             Console.WriteLine(e.Message);
             kirinApp.SendWebMessage("你发给我的消息是：" + e.Message);
+            await kirinApp.InjectJsObject("UserInfo", new
+            {
+                userName = "admin",
+                age = 18,
+                sex = "男"
+            });
         };
         kirinApp.Run();
     }
