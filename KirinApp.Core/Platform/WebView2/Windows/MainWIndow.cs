@@ -302,7 +302,7 @@ internal class MainWIndow : IWindow
             initialDir = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
     }
 
-    private void CheckFileFilter(Dictionary<string, string>? dic)
+    private void CheckFileFilter(ref Dictionary<string, string>? dic)
     {
         if (dic == null || dic.Count == 0)
             dic = new Dictionary<string, string>() { { "所有文件（*.*)", "*.*" } };
@@ -310,12 +310,14 @@ internal class MainWIndow : IWindow
 
     public override (bool selected, DirectoryInfo? dir) OpenDirectory(string initialDir = "")
     {
-        CheckInitialDir(ref initialDir);
         IntPtr pidl = IntPtr.Zero;
+        CheckInitialDir(ref initialDir);
+        IntPtr pidlRoot = IntPtr.Zero;
+        Win32Api.SHILCreateFromPath(initialDir, out pidlRoot, IntPtr.Zero);
         var @params = new BrowseInfo()
         {
             hwndOwner = IntPtr.Zero,
-            pidlRoot = IntPtr.Zero,
+            pidlRoot = pidlRoot,
             pszDisplayName = IntPtr.Zero,
             lpszTitle = "选择目录",
             ulFlags = 0,
@@ -353,7 +355,7 @@ internal class MainWIndow : IWindow
     public override (bool selected, FileInfo? file) OpenFile(string initialDir = "", Dictionary<string, string>? fileTypeFilter = null)
     {
         CheckInitialDir(ref initialDir);
-        CheckFileFilter(fileTypeFilter);
+        CheckFileFilter(ref fileTypeFilter);
         var bufferLength = 1024;
         OpenFileDialogParams @params = new OpenFileDialogParams()
         {
@@ -381,7 +383,7 @@ internal class MainWIndow : IWindow
     public override (bool selected, List<FileInfo>? files) OpenFiles(string initialDir = "", Dictionary<string, string>? fileTypeFilter = null)
     {
         CheckInitialDir(ref initialDir);
-        CheckFileFilter(fileTypeFilter);
+        CheckFileFilter(ref fileTypeFilter);
         var bufferLength = 1024;
         OpenFileDialogParams @params = new OpenFileDialogParams()
         {

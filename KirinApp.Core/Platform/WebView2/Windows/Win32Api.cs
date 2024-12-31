@@ -89,4 +89,6 @@ internal static class Win32Api
     public delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData);
     [DllImport(U32, CharSet = CharSet.Unicode, SetLastError = true)]
     public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumProc lpfnEnum, IntPtr dwData);
+    [DllImport(S32, SetLastError = true, CharSet = CharSet.Auto)]
+    public static extern int SHILCreateFromPath(string dir, out IntPtr pidl, IntPtr sfgao);
 }

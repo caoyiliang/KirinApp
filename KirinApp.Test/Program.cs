@@ -49,7 +49,8 @@ class Program
                 age = 18,
                 sex = "男"
             });
-            kirinApp.SetTopMost(true);
+            kirinApp.SetTopMost(false);
+            kirinApp.OpenDirectory("F:\\壁纸");
         };
         kirinApp.Run();
     }

@@ -486,8 +486,8 @@ public class KirinApp
     public (bool selected, DirectoryInfo? dir) OpenDirectory(string initialDir = "") =>
         Window.OpenDirectory(initialDir);
 
-    public (bool selected, FileInfo? file) OpenFile(string filePath = "") => Window.OpenFile(filePath);
-    public (bool selected, List<FileInfo>? files) OpenFiles(string filePath = "") => Window.OpenFiles(filePath);
+    public (bool selected, FileInfo? file) OpenFile(string filePath = "", Dictionary<string, string>? fileTypeFilter = null) => Window.OpenFile(filePath, fileTypeFilter);
+    public (bool selected, List<FileInfo>? files) OpenFiles(string filePath = "", Dictionary<string, string>? fileTypeFilter = null) => Window.OpenFiles(filePath, fileTypeFilter);
 
     public MsgResult ShowDialog(string title, string message, MsgBtns btns = MsgBtns.OK) =>
         Window.ShowDialog(title, message, btns);
