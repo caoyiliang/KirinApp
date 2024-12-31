@@ -121,4 +121,6 @@ internal class GtkApi
     internal static extern void g_input_stream_close(IntPtr stream, IntPtr cancellable, IntPtr error);
     [DllImport(GObjLb, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void g_object_unref(nint pixbuf);
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void gtk_window_set_keep_above(IntPtr wnd, bool topMost);
 }

@@ -79,8 +79,9 @@ internal class MainWIndow : IWindow
             IntPtr result = Marshal.AllocHGlobal(Marshal.SizeOf(rgb));
             Marshal.StructureToPtr(rgb, result, false);
             GtkApi.gtk_widget_override_background_color(Handle, 0, result);
-            if(Config.Center)GtkApi.gtk_window_set_position(Handle,1);
-            else GtkApi.gtk_window_move(Handle, Config.Left, Config.Top);
+            if (Config.Center) GtkApi.gtk_window_set_position(Handle, 1);
+            else GtkApi.gtk_window_move(Handle, Config.Left, Config.Top);         
+            TopMost(Config.TopMost);
             if (Config.MinimumSize != null)
             {
                 Config.MinimumHeigh = Config.MinimumSize.Value.Height;
@@ -193,6 +194,11 @@ internal class MainWIndow : IWindow
         GtkApi.gtk_window_resize(Handle, width, height);
     }
 
+    public override void TopMost(bool top)
+    {
+        var topMost = top ? -1 : 0;
+        GtkApi.gtk_window_set_keep_above(Handle, top);
+    }
     public override void Normal()
     {
         Move(Config.Left, Config.Top);
@@ -226,7 +232,7 @@ internal class MainWIndow : IWindow
         GtkApi.gtk_window_iconify(Handle);
         State = WindowState.Minimize;
     }
-    
+
     private void CheckInitialDir(ref string initialDir)
     {
         if (string.IsNullOrWhiteSpace(initialDir))

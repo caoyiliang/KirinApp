@@ -100,6 +100,7 @@ internal class MainWIndow : IWindow
             }
             Win32Api.SetWindowTextW(Handle, Config.AppName);
             Win32Api.UpdateWindow(Handle);
+            TopMost(Config.TopMost);
         }
         catch (Exception e)
         {
@@ -239,6 +240,12 @@ internal class MainWIndow : IWindow
                 //TODO:偶尔会产生System.ExecutionEngineException，后续修改
             }
         }
+    }
+
+    public override void TopMost(bool top)
+    {
+        var hWndInsertAfter = top ? -1 : -2;
+        var b = Win32Api.SetWindowPos(Handle, hWndInsertAfter, 0, 0, 0, 0, SWP.NOSIZE | SWP.NOMOVE);
     }
 
     public override void Normal()

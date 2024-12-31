@@ -161,6 +161,11 @@ internal abstract class IWindow
     public virtual void Change(Size size) => Change(size.Width, size.Height);
 
     /// <summary>
+    /// 置顶
+    /// </summary>
+    public abstract void TopMost(bool top);
+
+    /// <summary>
     /// 复原
     /// </summary>
     public abstract void Normal();
@@ -225,7 +230,7 @@ internal abstract class IWindow
     /// <param name="height"></param>
     public virtual void SizeChange(IntPtr handle, int width, int height)
     {
-        
+
     }
 
     /// <summary>

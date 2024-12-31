@@ -121,6 +121,11 @@ public class WinConfig
     /// blazor选择器
     /// </summary>
     public string BlazorSelector { get; set; } = "#app";
+
+    /// <summary>
+    /// 置顶
+    /// </summary>
+    public bool TopMost { get; set; } = false;
 }
 
 /// <summary>

@@ -275,6 +275,14 @@ public class KirinApp
         return this;
     }
 
+    public bool TopMost { get => Config.TopMost; set => Config.TopMost = value; }
+    public KirinApp SetTopMost(bool b = true)
+    {
+        Config.TopMost = b;
+        Window.TopMost(b);
+        return this;
+    }
+
     public KirinApp UseRawString(string rawString)
     {
         Config.AppType = WebAppType.RawString;
@@ -378,6 +386,8 @@ public class KirinApp
     public void Hide() => Window.Hide();
     public void Show() => Window.Show();
     public void Close() => Window.Close();
+    public void Change(int width, int height) => Window.Change(width, height);
+    public void Change(Size size) => Window.Change(size);
     public void Exit() => Environment.Exit(0);
     public void Focus() => Window.Focus();
     public void MoveTo(int x, int y) => Window.MoveTo(x, y);

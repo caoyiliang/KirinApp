@@ -29,6 +29,7 @@ class Program
             //     age = 18,
             //     sex = "男"
             // });
+            kirinApp.SetTopMost(true);
         };
         kirinApp.Created += async (_, _) =>
         {
@@ -48,6 +49,7 @@ class Program
                 age = 18,
                 sex = "男"
             });
+            kirinApp.SetTopMost(false);
         };
         kirinApp.Run();
     }
