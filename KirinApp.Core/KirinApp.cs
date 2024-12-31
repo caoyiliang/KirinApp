@@ -133,28 +133,56 @@ public class KirinApp
     private void RegistResource()
     {
         List<IFileProvider> containers = new List<IFileProvider>();
-        containers.Add(new ManifestEmbeddedFileProvider(typeof(Microsoft.AspNetCore.Components.WebView.WebViewManager).Assembly));
+        containers.Add(
+            new ManifestEmbeddedFileProvider(typeof(Microsoft.AspNetCore.Components.WebView.WebViewManager).Assembly));
         IFileProvider provider = new CompositeFileProvider(containers);
         serviceCollection.AddSingleton(provider);
     }
 
     #region 通过方法修改Config的属性
-    public KirinApp? Parent { get => Window.ParentWindows; set => Window.ParentWindows = value; }
 
-    public string AppName { get => Config.AppName; set => Config.AppName = value; }
+    public KirinApp? Parent
+    {
+        get => Window.ParentWindows;
+        set => Window.ParentWindows = value;
+    }
+
+    public string AppName
+    {
+        get => Config.AppName;
+        set => Config.AppName = value;
+    }
+
     public KirinApp SetAppName(string name)
     {
         Config.AppName = name;
         return this;
     }
-    public string Icon { get => Config.Icon; set => Config.Icon = value; }
+
+    public string Icon
+    {
+        get => Config.Icon;
+        set => Config.Icon = value;
+    }
+
     public KirinApp SetIcon(string path)
     {
         Config.Icon = path;
         return this;
     }
-    public int Width { get => Config.Width; set => Config.Width = value; }
-    public int Height { get => Config.Height; set => Config.Height = value; }
+
+    public int Width
+    {
+        get => Config.Width;
+        set => Config.Width = value;
+    }
+
+    public int Height
+    {
+        get => Config.Height;
+        set => Config.Height = value;
+    }
+
     public KirinApp SetSize(int width, int height)
     {
         Config.Height = height;
@@ -162,42 +190,73 @@ public class KirinApp
         return this;
     }
 
-    public System.Drawing.Size? Size { get => Config.Size; set => Config.Size = value; }
+    public System.Drawing.Size? Size
+    {
+        get => Config.Size;
+        set => Config.Size = value;
+    }
+
     public KirinApp SetSize(Size size)
     {
         Config.Size = size;
         return this;
     }
 
-    public bool Chromeless { get => Config.Chromeless; set => Config.Chromeless = value; }
+    public bool Chromeless
+    {
+        get => Config.Chromeless;
+        set => Config.Chromeless = value;
+    }
+
     public KirinApp IsChromeless(bool b = true)
     {
         Config.Chromeless = b;
         return this;
     }
 
-    public bool Debug { get => Config.Debug; set => Config.Debug = value; }
+    public bool Debug
+    {
+        get => Config.Debug;
+        set => Config.Debug = value;
+    }
+
     public KirinApp IsDebug(bool b = true)
     {
         Config.Debug = b;
         return this;
     }
 
-    public WebAppType AppType { get => Config.AppType; set => Config.AppType = value; }
+    public WebAppType AppType
+    {
+        get => Config.AppType;
+        set => Config.AppType = value;
+    }
+
     public KirinApp SetAppType(WebAppType appType)
     {
         Config.AppType = appType;
         return this;
     }
 
-    public int Left { get => Config.Left; set => Config.Left = value; }
-    public int Top { get => Config.Top; set => Config.Top = value; }
+    public int Left
+    {
+        get => Config.Left;
+        set => Config.Left = value;
+    }
+
+    public int Top
+    {
+        get => Config.Top;
+        set => Config.Top = value;
+    }
+
     public KirinApp SetPosition(Point p)
     {
         Config.Left = p.X;
         Config.Top = p.Y;
         return this;
     }
+
     public KirinApp SetPosition(int left, int top)
     {
         Config.Left = left;
@@ -205,21 +264,36 @@ public class KirinApp
         return this;
     }
 
-    public bool ResizeAble { get => Config.ResizeAble; set => Config.ResizeAble = value; }
+    public bool ResizeAble
+    {
+        get => Config.ResizeAble;
+        set => Config.ResizeAble = value;
+    }
+
     public KirinApp SetResizeAble(bool b = true)
     {
         Config.ResizeAble = b;
         return this;
     }
 
-    public bool Center { get => Config.Center; set => Config.Center = value; }
+    public bool Center
+    {
+        get => Config.Center;
+        set => Config.Center = value;
+    }
+
     public KirinApp SetCenter(bool b = true)
     {
         Config.Center = b;
         return this;
     }
 
-    public string? Url { get => Config.Url; set => Config.Url = value; }
+    public string? Url
+    {
+        get => Config.Url;
+        set => Config.Url = value;
+    }
+
     public KirinApp SetUrl(string url)
     {
         Config.Url = url;
@@ -227,8 +301,18 @@ public class KirinApp
         return this;
     }
 
-    public Type? BlazorComponent { get => Config.BlazorComponent; set => Config.BlazorComponent = value; }
-    public string BlazorSelector { get => Config.BlazorSelector; set => Config.BlazorSelector = value; }
+    public Type? BlazorComponent
+    {
+        get => Config.BlazorComponent;
+        set => Config.BlazorComponent = value;
+    }
+
+    public string BlazorSelector
+    {
+        get => Config.BlazorSelector;
+        set => Config.BlazorSelector = value;
+    }
+
     public KirinApp SetBlazor<T>(string blazorSelector = "#app") where T : class
     {
         Config.BlazorComponent = typeof(T);
@@ -236,15 +320,30 @@ public class KirinApp
         return this;
     }
 
-    public string? RawString { get => Config.RawString; set => Config.RawString = value; }
+    public string? RawString
+    {
+        get => Config.RawString;
+        set => Config.RawString = value;
+    }
+
     public KirinApp SetRawString(string rawString)
     {
         Config.RawString = rawString;
         return this;
     }
 
-    public int MinimumWidth { get => Config.MinimumWidth; set => Config.MinimumWidth = value; }
-    public int MinimumHeigh { get => Config.MinimumHeigh; set => Config.MinimumHeigh = value; }
+    public int MinimumWidth
+    {
+        get => Config.MinimumWidth;
+        set => Config.MinimumWidth = value;
+    }
+
+    public int MinimumHeigh
+    {
+        get => Config.MinimumHeigh;
+        set => Config.MinimumHeigh = value;
+    }
+
     public KirinApp SetMinSize(int width, int heigth)
     {
         Config.MinimumWidth = width;
@@ -252,15 +351,30 @@ public class KirinApp
         return this;
     }
 
-    public System.Drawing.Size? MinimumSize { get => Config.MinimumSize; set => Config.MinimumSize = value; }
+    public System.Drawing.Size? MinimumSize
+    {
+        get => Config.MinimumSize;
+        set => Config.MinimumSize = value;
+    }
+
     public KirinApp SetMinSize(Size size)
     {
         Config.MinimumSize = size;
         return this;
     }
 
-    public int MaximumWidth { get => Config.MaximumWidth; set => Config.MaximumWidth = value; }
-    public int MaximumHeigh { get => Config.MaximumHeigh; set => Config.MaximumHeigh = value; }
+    public int MaximumWidth
+    {
+        get => Config.MaximumWidth;
+        set => Config.MaximumWidth = value;
+    }
+
+    public int MaximumHeigh
+    {
+        get => Config.MaximumHeigh;
+        set => Config.MaximumHeigh = value;
+    }
+
     public KirinApp SetMaxSize(int width, int heigth)
     {
         Config.MaximumWidth = width;
@@ -268,14 +382,24 @@ public class KirinApp
         return this;
     }
 
-    public System.Drawing.Size? MaximumSize { get => Config.MaximumSize; set => Config.MaximumSize = value; }
+    public System.Drawing.Size? MaximumSize
+    {
+        get => Config.MaximumSize;
+        set => Config.MaximumSize = value;
+    }
+
     public KirinApp SetMaxSize(Size size)
     {
         Config.MaximumSize = size;
         return this;
     }
 
-    public bool TopMost { get => Config.TopMost; set => Config.TopMost = value; }
+    public bool TopMost
+    {
+        get => Config.TopMost;
+        set => Config.TopMost = value;
+    }
+
     public KirinApp SetTopMost(bool b = true)
     {
         Config.TopMost = b;
@@ -340,27 +464,37 @@ public class KirinApp
         UseStatic(path);
         Reload();
     }
+
     public void LoadUrl(string url)
     {
         UseHttp(url);
         Reload();
     }
+
     public void LoadRawString(string content)
     {
         UseRawString(content);
         Reload();
     }
+
     public void LoadBlazor<T>(string selector = "#app") where T : class
     {
         UseBlazor<T>(selector);
         Reload();
     }
 
-    public (bool selected, DirectoryInfo? dir) OpenDirectory(string initialDir = "") => Window.OpenDirectory(initialDir);
+    public (bool selected, DirectoryInfo? dir) OpenDirectory(string initialDir = "") =>
+        Window.OpenDirectory(initialDir);
+
     public (bool selected, FileInfo? file) OpenFile(string filePath = "") => Window.OpenFile(filePath);
     public (bool selected, List<FileInfo>? files) OpenFiles(string filePath = "") => Window.OpenFiles(filePath);
-    public MsgResult ShowDialog(string title, string message, MsgBtns btns = MsgBtns.OK) => Window.ShowDialog(title, message, btns);
-    public async Task ExecuteJavaScript(string js, Action<string>? handlResult = null) => await Window.ExecuteJavaScript(js, handlResult);
+
+    public MsgResult ShowDialog(string title, string message, MsgBtns btns = MsgBtns.OK) =>
+        Window.ShowDialog(title, message, btns);
+
+    public async Task ExecuteJavaScript(string js, Action<string>? handlResult = null) =>
+        await Window.ExecuteJavaScript(js, handlResult);
+
     public async Task<T> ExecuteJavaScript<T>(string js, Action<string> handlResult)
     {
         var tcs = new TaskCompletionSource<T>();
@@ -379,6 +513,7 @@ public class KirinApp
         });
         return await tcs.Task;
     }
+
     public async Task InjectJsObject(string name, object obj) => await Window.InjectJsObject(name, obj);
     public void OpenDevTool() => Window.OpenDevTool();
     public void Reload() => Window.Reload();
@@ -393,4 +528,5 @@ public class KirinApp
     public void MoveTo(int x, int y) => Window.MoveTo(x, y);
     public void Minimize() => Window.Minimize();
     public void Maximize() => Window.Maximize();
+    public void Normal() => Window.Normal();
 }

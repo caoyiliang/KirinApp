@@ -30,7 +30,8 @@ internal class MainWIndow : IWindow
     {
         try
         {
-            Handle = GtkApi.gtk_window_new(Config.Chromeless ? 1 : 0);
+            Handle = GtkApi.gtk_window_new(Config.Chromeless ? 1 : 0);        
+            TopMost(Config.TopMost);
             GtkApi.gtk_window_set_title(Handle, Config.AppName);
             GtkApi.gtk_window_set_resizable(Handle, Config.ResizeAble);
 
@@ -80,8 +81,7 @@ internal class MainWIndow : IWindow
             Marshal.StructureToPtr(rgb, result, false);
             GtkApi.gtk_widget_override_background_color(Handle, 0, result);
             if (Config.Center) GtkApi.gtk_window_set_position(Handle, 1);
-            else GtkApi.gtk_window_move(Handle, Config.Left, Config.Top);         
-            TopMost(Config.TopMost);
+            else GtkApi.gtk_window_move(Handle, Config.Left, Config.Top); 
             if (Config.MinimumSize != null)
             {
                 Config.MinimumHeigh = Config.MinimumSize.Value.Height;
@@ -196,8 +196,7 @@ internal class MainWIndow : IWindow
 
     public override void TopMost(bool top)
     {
-        var topMost = top ? -1 : 0;
-        GtkApi.gtk_window_set_keep_above(Handle, top);
+        GtkApi.gtk_window_set_keep_above(Handle, true);
     }
     public override void Normal()
     {

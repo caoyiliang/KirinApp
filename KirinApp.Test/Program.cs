@@ -49,7 +49,7 @@ class Program
                 age = 18,
                 sex = "男"
             });
-            kirinApp.SetTopMost(false);
+            kirinApp.SetTopMost(true);
         };
         kirinApp.Run();
     }
