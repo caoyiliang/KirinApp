@@ -10,115 +10,249 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
+using System.Reflection.Metadata;
 
 namespace KirinAppCore.Plateform.Webkit.Linux;
 
-internal class WebKit40 : IWebKit
+internal class WebKit(string libName) : IWebKit
 {
-    private const string Lib = "libwebkit2gtk-4.0.so.37";
+    private IntPtr LibPtr
+    {
+        get
+        {
+            IntPtr handle = dlopen(libName, 1);
+            if (handle == IntPtr.Zero)
+            {
+                throw new Exception($"Failed to load library that is '{libName}'.");
+            }
+            return handle;
+        }
+    }
 
     #region api
+    [DllImport("libdl.so.2", SetLastError = true)]
+    private static extern IntPtr dlopen(string filename, int flags);
 
-    [DllImport(Lib)]
-    internal static extern void webkit_web_view_load_uri(IntPtr webView, string uri);
+    [DllImport("libdl.so.2", SetLastError = true)]
+    private static extern IntPtr dlsym(IntPtr handle, string symbol);
+    protected void LoadFunction(string functionName, params object[] parameters)
+    {
+        IntPtr funcAddress = dlsym(LibPtr, functionName);
+        if (funcAddress == IntPtr.Zero)
+        {
+            throw new Exception($"Failed to get function address for {functionName}");
+        }
 
-    [DllImport(Lib)]
-    internal static extern IntPtr webkit_user_script_new(string source, int injectionTime, int injectionFlags,
-        IntPtr whitelist, IntPtr blacklist);
+        // 创建委托类型
+        var delegateType = typeof(Action<object[]>);
+        var functionDelegate = Marshal.GetDelegateForFunctionPointer(funcAddress, delegateType);
 
-    [DllImport(Lib)]
-    internal static extern IntPtr webkit_user_content_manager_new();
+        // 调用函数
+        functionDelegate.DynamicInvoke(parameters);
+    }
+    protected TResult LoadFunction<TResult>(string functionName, params object[] parameters)
+    {
+        IntPtr funcAddress = dlsym(LibPtr, functionName);
+        if (funcAddress == IntPtr.Zero)
+        {
+            throw new Exception($"Failed to get function address for {functionName}");
+        }
 
-    [DllImport(Lib)]
-    internal static extern IntPtr webkit_web_view_new_with_user_content_manager(IntPtr manager);
+        // 创建委托类型
+        var delegateType = typeof(Func<,>).MakeGenericType(typeof(TResult), typeof(object[]));
+        var functionDelegate = Marshal.GetDelegateForFunctionPointer(funcAddress, delegateType);
 
-    [DllImport(Lib)]
-    internal static extern void webkit_user_content_manager_add_script(IntPtr manager, IntPtr script);
+        // 调用函数并返回结果
+        return (TResult)functionDelegate.DynamicInvoke(parameters)!;
+    }
 
-    [DllImport(Lib)]
-    internal static extern void webkit_user_script_unref(IntPtr script);
+    protected virtual void webkit_web_view_load_uri(IntPtr webView, string uri)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        LoadFunction(methodName, webView, uri);
+    }
 
-    [DllImport(Lib)]
-    internal static extern void webkit_settings_set_enable_developer_extras(IntPtr settings, bool enable);
+    protected virtual IntPtr webkit_user_script_new(string source, int injectionTime, int injectionFlags,
+        IntPtr whitelist, IntPtr blacklist)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        return LoadFunction<IntPtr>(methodName, source, injectionTime, injectionFlags, whitelist, blacklist);
+    }
+    protected virtual IntPtr webkit_user_content_manager_new()
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        return LoadFunction<IntPtr>(methodName);
+    }
 
-    [DllImport(Lib)]
-    internal static extern IntPtr webkit_web_view_get_settings(IntPtr webView);
 
-    [DllImport(Lib)]
-    internal static extern IntPtr webkit_web_context_get_default();
+    protected virtual IntPtr webkit_web_view_new_with_user_content_manager(IntPtr manager)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        return LoadFunction<IntPtr>(methodName, manager);
+    }
 
-    [DllImport(Lib)]
-    internal static extern void webkit_web_context_register_uri_scheme(IntPtr context, string scheme, IntPtr callback,
-        IntPtr user_data, IntPtr destroy_notify);
 
-    [DllImport(Lib)]
-    internal static extern IntPtr webkit_uri_scheme_request_get_uri(IntPtr request);
+    protected virtual void webkit_user_content_manager_add_script(IntPtr manager, IntPtr script)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        LoadFunction(methodName, manager, script);
+    }
 
-    [DllImport(Lib)]
-    internal static extern void webkit_uri_scheme_request_finish(IntPtr request, IntPtr stream, int length,
-        IntPtr mimeType);
 
-    [DllImport(Lib)]
-    internal static extern void
-        webkit_user_content_manager_register_script_message_handler(IntPtr manager, string name);
+    protected virtual void webkit_user_script_unref(IntPtr script)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        LoadFunction(methodName, script);
+    }
 
-    [DllImport(Lib)]
-    internal static extern IntPtr webkit_javascript_result_get_js_value(IntPtr result);
 
-    [DllImport(Lib)]
-    internal static extern IntPtr jsc_value_to_string(IntPtr value);
+    protected virtual void webkit_settings_set_enable_developer_extras(IntPtr settings, bool enable)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        LoadFunction(methodName, settings, enable);
+    }
 
-    [DllImport(Lib)]
-    internal static extern bool jsc_value_is_string(IntPtr value);
 
-    [DllImport(Lib)]
-    internal static extern IntPtr webkit_web_view_run_javascript(IntPtr webView, string script, IntPtr cancellable,
-        IntPtr callback, IntPtr userData);
+    protected virtual IntPtr webkit_web_view_get_settings(IntPtr webView)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        return LoadFunction<IntPtr>(methodName, webView);
+    }
 
-    [DllImport(Lib)]
-    internal static extern void webkit_context_menu_remove_all(IntPtr menu);
+
+    protected virtual IntPtr webkit_web_context_get_default()
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        return LoadFunction<IntPtr>(methodName);
+    }
+
+
+    protected virtual void webkit_web_context_register_uri_scheme(IntPtr context, string scheme, IntPtr callback,
+        IntPtr user_data, IntPtr destroy_notify)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        LoadFunction(methodName, context, scheme, callback, user_data, destroy_notify);
+    }
+
+
+    protected virtual IntPtr webkit_uri_scheme_request_get_uri(IntPtr request)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        return LoadFunction<IntPtr>(methodName, request);
+    }
+
+
+    protected virtual void webkit_uri_scheme_request_finish(IntPtr request, IntPtr stream, int length,
+        IntPtr mimeType)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        LoadFunction(methodName, request, stream, length, mimeType);
+    }
+
+
+    protected virtual void webkit_user_content_manager_register_script_message_handler(IntPtr manager, string name)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        LoadFunction(methodName, manager, name);
+    }
+
+
+    protected virtual IntPtr webkit_javascript_result_get_js_value(IntPtr result)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        return LoadFunction<IntPtr>(methodName, result);
+    }
+
+
+    protected virtual IntPtr jsc_value_to_string(IntPtr value)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        return LoadFunction<IntPtr>(methodName, value);
+    }
+
+
+    protected virtual bool jsc_value_is_string(IntPtr value)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        return LoadFunction<bool>(methodName, value);
+    }
+
+
+    protected virtual IntPtr webkit_web_view_run_javascript(IntPtr webView, string script, IntPtr cancellable,
+        IntPtr callback, IntPtr userData)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        return LoadFunction<IntPtr>(methodName, webView, script, cancellable, callback, userData);
+    }
+
+    protected virtual void webkit_context_menu_remove_all(IntPtr menu)
+    {
+        MethodBase method = MethodBase.GetCurrentMethod()!;
+        string methodName = method.Name;
+        LoadFunction(methodName, menu);
+    }
 
     #endregion
 
-
-    private IntPtr Handle { get; set; }
-    private WebManager? WebManager { get; set; }
-    private SchemeConfig? SchemeConfig { get; set; }
-    private IWindow? Window { get; set; }
-    private WinConfig Config => Window!.Config;
+    protected IntPtr Handle { get; set; }
+    protected WebManager? WebManager { get; set; }
+    protected SchemeConfig? SchemeConfig { get; set; }
+    protected IWindow? Window { get; set; }
+    protected WinConfig Config => Window!.Config;
     public event EventHandler<WebMessageEvent>? WebMessageReceived;
 
-    private delegate void ContextMenuCallbackDelegate(IntPtr webView, IntPtr menu, IntPtr userData);
+    protected delegate void ContextMenuCallbackDelegate(IntPtr webView, IntPtr menu, IntPtr userData);
 
-    private delegate IntPtr UriSchemeCallbackFunc(IntPtr request, IntPtr user_data);
+    protected delegate IntPtr UriSchemeCallbackFunc(IntPtr request, IntPtr user_data);
 
-    private UriSchemeCallbackFunc uriSchemeCallback = new((_, _) => 0);
+    protected UriSchemeCallbackFunc uriSchemeCallback = new((_, _) => 0);
 
-    private delegate void ScriptMessageReceivedDelegate(IntPtr webView, IntPtr message, IntPtr userData);
+    protected delegate void ScriptMessageReceivedDelegate(IntPtr webView, IntPtr message, IntPtr userData);
 
-    public void InitWebControl(IWindow? window = null)
+    public virtual void InitWebControl(IWindow? window = null)
     {
         try
         {
             if (window != null)
                 Window = window;
 
-            var contentManager = webkit_user_content_manager_new();
-            Handle = webkit_web_view_new_with_user_content_manager(contentManager);
+            var contentManager = LoadFunction<IntPtr>("webkit_user_content_manager_new");
+            Handle = LoadFunction<IntPtr>("webkit_web_view_new_with_user_content_manager", contentManager);
             GtkApi.gtk_container_add(Window!.Handle, Handle);
 
             if (Config.Debug)
             {
-                IntPtr settings = webkit_web_view_get_settings(Handle);
+                IntPtr settings = LoadFunction<IntPtr>("webkit_web_view_get_settings", Handle);
+                LoadFunction("webkit_settings_set_enable_developer_extras", settings, true);
                 webkit_settings_set_enable_developer_extras(settings, true);
             }
             else
             {
+                void ContextMenuCallback(IntPtr webView, IntPtr menu, IntPtr userData) =>
+                    webkit_context_menu_remove_all(menu);
+
                 IntPtr settings = webkit_web_view_get_settings(Handle);
                 webkit_settings_set_enable_developer_extras(settings, false);
                 GtkApi.g_signal_connect_data(Handle, "context-menu",
-                    Marshal.GetFunctionPointerForDelegate(new ContextMenuCallbackDelegate(ContextMenuCallback)),
-                    IntPtr.Zero, IntPtr.Zero, 0);
+                                Marshal.GetFunctionPointerForDelegate(new ContextMenuCallbackDelegate(ContextMenuCallback)),
+                                IntPtr.Zero, IntPtr.Zero, 0);
             }
 
             if (Config.AppType != WebAppType.Http)
@@ -134,10 +268,10 @@ internal class WebKit40 : IWebKit
                 {
                     if (Config.BlazorComponent == null) throw new Exception("Blazor component not found!");
                     _ = dispatcher.InvokeAsync(async () =>
-                    {
-                        await WebManager.AddRootComponentAsync(Config.BlazorComponent!, Config.BlazorSelector,
-                            ParameterView.Empty);
-                    });
+                                        {
+                                            await WebManager.AddRootComponentAsync(Config.BlazorComponent!, Config.BlazorSelector,
+                                                ParameterView.Empty);
+                                        });
                 }
 
                 uriSchemeCallback = UriSchemeCallback;
@@ -171,7 +305,7 @@ internal class WebKit40 : IWebKit
         }
     }
 
-    public string ExecuteJavaScript(string js)
+    public virtual string ExecuteJavaScript(string js)
     {
         var jsHandle = webkit_web_view_run_javascript(Handle, js, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
         if (jsHandle == IntPtr.Zero) return "";
@@ -182,28 +316,28 @@ internal class WebKit40 : IWebKit
         return result ?? "";
     }
 
-    public void InjectJsObject(string name, object obj)
+    public virtual void InjectJsObject(string name, object obj)
     {
         var js = $"window.external.{name}={JsonConvert.SerializeObject(obj)}";
         webkit_web_view_run_javascript(Handle, js, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
     }
 
-    public void OpenDevTool()
+    public virtual void OpenDevTool()
     {
         return;
     }
 
-    public void Reload()
+    public virtual void Reload()
     {
         InitWebControl();
     }
 
-    public void Navigate(string url)
+    public virtual void Navigate(string url)
     {
         webkit_web_view_load_uri(Handle, url);
     }
 
-    public void SendWebMessage(string message)
+    public virtual void SendWebMessage(string message)
     {
         var js = new StringBuilder();
         js.Append("window.__dispatchMessageCallback(\"");
@@ -212,7 +346,7 @@ internal class WebKit40 : IWebKit
         webkit_web_view_run_javascript(Handle, js.ToString(), IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
     }
 
-    private IntPtr UriSchemeCallback(IntPtr request, IntPtr user_data)
+    public virtual IntPtr UriSchemeCallback(IntPtr request, IntPtr user_data)
     {
         try
         {
@@ -249,7 +383,7 @@ internal class WebKit40 : IWebKit
         }
     }
 
-    private void ScriptMessageReceived(IntPtr webView, IntPtr message, IntPtr userData)
+    public virtual void ScriptMessageReceived(IntPtr webView, IntPtr message, IntPtr userData)
     {
         IntPtr jsResult = webkit_javascript_result_get_js_value(message);
         if (jsc_value_is_string(jsResult))
@@ -299,60 +433,12 @@ internal class WebKit40 : IWebKit
             WebMessageReceived?.Invoke(this, msg);
         }
     }
-
-    private static void ContextMenuCallback(IntPtr webView, IntPtr menu, IntPtr userData)
-    {
-        webkit_context_menu_remove_all(menu);
-    }
 }
 
-internal class WebKit41 : IWebKit
+internal class WebKit40() : WebKit("libwebkit2gtk-4.0.so.37")
 {
-    private const string Libraries = "libwebkit2gtk-4.1.so.0";
+}
 
-    #region api
-
-    #endregion
-
-    public event EventHandler<WebMessageEvent>? WebMessageReceived;
-    private IntPtr Handle { get; set; }
-    private WebManager? WebManager { get; set; }
-    private SchemeConfig? SchemeConfig { get; set; }
-    private IWindow? Window { get; set; }
-
-    public void InitWebControl(IWindow window)
-    {
-        throw new NotImplementedException();
-    }
-
-    public string ExecuteJavaScript(string js)
-    {
-        return "";
-    }
-
-    public void InjectJsObject(string name, object obj)
-    {
-        return;
-    }
-
-
-    public void OpenDevTool()
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Reload()
-    {
-        throw new NotImplementedException();
-    }
-
-    public void SendWebMessage(string message)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Navigate(string url)
-    {
-        throw new NotImplementedException();
-    }
+internal class WebKit41() : WebKit("libwebkit2gtk-4.1.so.0")
+{
 }
