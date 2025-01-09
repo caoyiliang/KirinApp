@@ -94,7 +94,7 @@ internal class WebKit(string libName) : IWebKit
         return LoadFunction<IntPtr, UserContentManager>(methodName);
     }
 
-    private delegate IntPtr WebViewWithUserContentManager();
+    private delegate IntPtr WebViewWithUserContentManager(IntPtr manager);
     protected virtual IntPtr webkit_web_view_new_with_user_content_manager(IntPtr manager)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
