@@ -39,23 +39,7 @@ internal class WebKit(string libName) : IWebKit
     [DllImport("libdl.so.2", SetLastError = true)]
     private static extern IntPtr dlsym(IntPtr handle, string symbol);
 
-    protected void LoadFunction(string functionName, params object[] parameters)
-    {
-        IntPtr funcAddress = dlsym(LibPtr, functionName);
-        if (funcAddress == IntPtr.Zero)
-        {
-            throw new Exception($"Failed to get function address for {functionName}");
-        }
-
-        // 创建委托类型
-        var delegateType = typeof(Action<object[]>);
-        var functionDelegate = Marshal.GetDelegateForFunctionPointer(funcAddress, delegateType);
-
-        // 调用函数
-        functionDelegate.DynamicInvoke(parameters);
-    }
-
-    protected TResult LoadFunction<TResult>(string functionName, params object[] parameters)
+    protected void LoadFunction<TDelegate>(string functionName, params object[] parameters)
     {
         IntPtr funcAddress = dlsym(LibPtr, functionName);
         if (funcAddress == IntPtr.Zero)
@@ -64,13 +48,12 @@ internal class WebKit(string libName) : IWebKit
         }
 
         // 将函数指针转换为委托
-        var delegateType = typeof(Action<object[]>);
-        var functionDelegate = Marshal.GetDelegateForFunctionPointer(funcAddress,delegateType);
+        var functionDelegate = Marshal.GetDelegateForFunctionPointer<TDelegate>(funcAddress);
 
         // 调用函数并返回结果
-        return (TResult)((Delegate)(object)functionDelegate).DynamicInvoke(parameters);
+        ((Delegate)(object)functionDelegate!).DynamicInvoke(parameters);
     }
-    
+
     protected TResult LoadFunction<TResult, TDelegate>(string functionName, params object[] parameters)
     {
         IntPtr funcAddress = dlsym(LibPtr, functionName);
@@ -83,24 +66,23 @@ internal class WebKit(string libName) : IWebKit
         var functionDelegate = Marshal.GetDelegateForFunctionPointer<TDelegate>(funcAddress);
 
         // 调用函数并返回结果
-        return (TResult)((Delegate)(object)functionDelegate).DynamicInvoke(parameters);
+        return (TResult)((Delegate)(object)functionDelegate!).DynamicInvoke(parameters)!;
     }
 
     private delegate void WebViewLoadUri(IntPtr webView, string uri);
-
     protected virtual void webkit_web_view_load_uri(IntPtr webView, string uri)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        LoadFunction(methodName, webView, uri);
+        LoadFunction<WebViewLoadUri>(methodName, webView, uri);
     }
 
-    protected virtual IntPtr webkit_user_script_new(string source, int injectionTime, int injectionFlags,
-        IntPtr whitelist, IntPtr blacklist)
+    private delegate IntPtr UserScript(string source, int injectionTime, int injectionFlags, IntPtr whitelist, IntPtr blacklist);
+    protected virtual IntPtr webkit_user_script_new(string source, int injectionTime, int injectionFlags, IntPtr whitelist, IntPtr blacklist)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        return LoadFunction<IntPtr>(methodName, source, injectionTime, injectionFlags, whitelist, blacklist);
+        return LoadFunction<IntPtr, UserScript>(methodName, source, injectionTime, injectionFlags, whitelist, blacklist);
     }
 
     private delegate IntPtr UserContentManager();
@@ -109,129 +91,127 @@ internal class WebKit(string libName) : IWebKit
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        return LoadFunction<IntPtr,UserContentManager>(methodName);
+        return LoadFunction<IntPtr, UserContentManager>(methodName);
     }
 
-
+    private delegate IntPtr WebViewWithUserContentManager();
     protected virtual IntPtr webkit_web_view_new_with_user_content_manager(IntPtr manager)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        return LoadFunction<IntPtr>(methodName, manager);
+        return LoadFunction<IntPtr, WebViewWithUserContentManager>(methodName, manager);
     }
 
-
+    private delegate void UserContentManagerAddScript(IntPtr manager, IntPtr script);
     protected virtual void webkit_user_content_manager_add_script(IntPtr manager, IntPtr script)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        LoadFunction(methodName, manager, script);
+        LoadFunction<UserContentManagerAddScript>(methodName, manager, script);
     }
 
-
+    private delegate void UserScriptUnref(IntPtr script);
     protected virtual void webkit_user_script_unref(IntPtr script)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        LoadFunction(methodName, script);
+        LoadFunction<UserScriptUnref>(methodName, script);
     }
 
-
+    private delegate void SettingSetEnableDev(IntPtr settings, bool enable);
     protected virtual void webkit_settings_set_enable_developer_extras(IntPtr settings, bool enable)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        LoadFunction(methodName, settings, enable);
+        LoadFunction<SettingSetEnableDev>(methodName, settings, enable);
     }
 
-
+    private delegate IntPtr WebViewGetSetting(IntPtr webView);
     protected virtual IntPtr webkit_web_view_get_settings(IntPtr webView)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        return LoadFunction<IntPtr>(methodName, webView);
+        return LoadFunction<IntPtr, WebViewGetSetting>(methodName, webView);
     }
 
-
+    private delegate IntPtr WebContentGetDefault();
     protected virtual IntPtr webkit_web_context_get_default()
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        return LoadFunction<IntPtr>(methodName);
+        return LoadFunction<IntPtr, WebContentGetDefault>(methodName);
     }
 
-
-    protected virtual void webkit_web_context_register_uri_scheme(IntPtr context, string scheme, IntPtr callback,
-        IntPtr user_data, IntPtr destroy_notify)
+    private delegate void WebContentRegisterUriScheme(IntPtr context, string scheme, IntPtr callback, IntPtr user_data, IntPtr destroy_notify);
+    protected virtual void webkit_web_context_register_uri_scheme(IntPtr context, string scheme, IntPtr callback, IntPtr user_data, IntPtr destroy_notify)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        LoadFunction(methodName, context, scheme, callback, user_data, destroy_notify);
+        LoadFunction<WebContentRegisterUriScheme>(methodName, context, scheme, callback, user_data, destroy_notify);
     }
 
-
+    private delegate IntPtr UriSchemeRequestGetUri(IntPtr request);
     protected virtual IntPtr webkit_uri_scheme_request_get_uri(IntPtr request)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        return LoadFunction<IntPtr>(methodName, request);
+        return LoadFunction<IntPtr, UriSchemeRequestGetUri>(methodName, request);
     }
 
-
-    protected virtual void webkit_uri_scheme_request_finish(IntPtr request, IntPtr stream, int length,
-        IntPtr mimeType)
+    private delegate void UriSchemeRequestFinish(IntPtr request, IntPtr stream, int length, IntPtr mimeType);
+    protected virtual void webkit_uri_scheme_request_finish(IntPtr request, IntPtr stream, int length, IntPtr mimeType)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        LoadFunction(methodName, request, stream, length, mimeType);
+        LoadFunction<UriSchemeRequestFinish>(methodName, request, stream, length, mimeType);
     }
 
-
+    private delegate void UserContentManagerRegisterScriptMessageHandler(IntPtr manager, string name);
     protected virtual void webkit_user_content_manager_register_script_message_handler(IntPtr manager, string name)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        LoadFunction(methodName, manager, name);
+        LoadFunction<UserContentManagerRegisterScriptMessageHandler>(methodName, manager, name);
     }
 
-
+    private delegate IntPtr JsResultGetJsValue(IntPtr result);
     protected virtual IntPtr webkit_javascript_result_get_js_value(IntPtr result)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        return LoadFunction<IntPtr>(methodName, result);
+        return LoadFunction<IntPtr, JsResultGetJsValue>(methodName, result);
     }
 
-
+    private delegate IntPtr JsValueToString(IntPtr value);
     protected virtual IntPtr jsc_value_to_string(IntPtr value)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        return LoadFunction<IntPtr>(methodName, value);
+        return LoadFunction<IntPtr, JsValueToString>(methodName, value);
     }
 
-
+    private delegate bool JsValueIsString(IntPtr value);
     protected virtual bool jsc_value_is_string(IntPtr value)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        return LoadFunction<bool>(methodName, value);
+        return LoadFunction<bool, JsValueIsString>(methodName, value);
     }
 
-
-    protected virtual IntPtr webkit_web_view_run_javascript(IntPtr webView, string script, IntPtr cancellable,
-        IntPtr callback, IntPtr userData)
+    private delegate IntPtr WebViewRunJs(IntPtr webView, string script, IntPtr cancellable, IntPtr callback, IntPtr userData);
+    protected virtual IntPtr webkit_web_view_run_javascript(IntPtr webView, string script, IntPtr cancellable, IntPtr callback, IntPtr userData)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        return LoadFunction<IntPtr>(methodName, webView, script, cancellable, callback, userData);
+        return LoadFunction<IntPtr, WebViewRunJs>(methodName, webView, script, cancellable, callback, userData);
     }
 
+    private delegate void ContextMenuRemoveAll(IntPtr menu);
     protected virtual void webkit_context_menu_remove_all(IntPtr menu)
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        LoadFunction(methodName, menu);
+        LoadFunction<ContextMenuRemoveAll>(methodName, menu);
     }
 
     #endregion
