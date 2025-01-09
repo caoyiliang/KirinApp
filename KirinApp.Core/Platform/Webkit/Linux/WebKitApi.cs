@@ -1,4 +1,5 @@
-﻿using KirinAppCore.Interface;
+﻿using System.Linq.Expressions;
+using KirinAppCore.Interface;
 using KirinAppCore.Model;
 using KirinAppCore.Platform.Webkit.Linux;
 using Microsoft.AspNetCore.Components;
@@ -25,16 +26,19 @@ internal class WebKit(string libName) : IWebKit
             {
                 throw new Exception($"Failed to load library that is '{libName}'.");
             }
+
             return handle;
         }
     }
 
     #region api
+
     [DllImport("libdl.so.2", SetLastError = true)]
     private static extern IntPtr dlopen(string filename, int flags);
 
     [DllImport("libdl.so.2", SetLastError = true)]
     private static extern IntPtr dlsym(IntPtr handle, string symbol);
+
     protected void LoadFunction(string functionName, params object[] parameters)
     {
         IntPtr funcAddress = dlsym(LibPtr, functionName);
@@ -50,6 +54,7 @@ internal class WebKit(string libName) : IWebKit
         // 调用函数
         functionDelegate.DynamicInvoke(parameters);
     }
+
     protected TResult LoadFunction<TResult>(string functionName, params object[] parameters)
     {
         IntPtr funcAddress = dlsym(LibPtr, functionName);
@@ -58,13 +63,30 @@ internal class WebKit(string libName) : IWebKit
             throw new Exception($"Failed to get function address for {functionName}");
         }
 
-        // 创建委托类型
-        var delegateType = typeof(Func<,>).MakeGenericType(typeof(TResult), typeof(object[]));
-        var functionDelegate = Marshal.GetDelegateForFunctionPointer(funcAddress, delegateType);
+        // 将函数指针转换为委托
+        var delegateType = typeof(Action<object[]>);
+        var functionDelegate = Marshal.GetDelegateForFunctionPointer(funcAddress,delegateType);
 
         // 调用函数并返回结果
-        return (TResult)functionDelegate.DynamicInvoke(parameters)!;
+        return (TResult)((Delegate)(object)functionDelegate).DynamicInvoke(parameters);
     }
+    
+    protected TResult LoadFunction<TResult, TDelegate>(string functionName, params object[] parameters)
+    {
+        IntPtr funcAddress = dlsym(LibPtr, functionName);
+        if (funcAddress == IntPtr.Zero)
+        {
+            throw new Exception($"Failed to get function address for {functionName}");
+        }
+
+        // 将函数指针转换为委托
+        var functionDelegate = Marshal.GetDelegateForFunctionPointer<TDelegate>(funcAddress);
+
+        // 调用函数并返回结果
+        return (TResult)((Delegate)(object)functionDelegate).DynamicInvoke(parameters);
+    }
+
+    private delegate void WebViewLoadUri(IntPtr webView, string uri);
 
     protected virtual void webkit_web_view_load_uri(IntPtr webView, string uri)
     {
@@ -80,11 +102,14 @@ internal class WebKit(string libName) : IWebKit
         string methodName = method.Name;
         return LoadFunction<IntPtr>(methodName, source, injectionTime, injectionFlags, whitelist, blacklist);
     }
+
+    private delegate IntPtr UserContentManager();
+
     protected virtual IntPtr webkit_user_content_manager_new()
     {
         MethodBase method = MethodBase.GetCurrentMethod()!;
         string methodName = method.Name;
-        return LoadFunction<IntPtr>(methodName);
+        return LoadFunction<IntPtr,UserContentManager>(methodName);
     }
 
 
@@ -233,14 +258,14 @@ internal class WebKit(string libName) : IWebKit
             if (window != null)
                 Window = window;
 
-            var contentManager = LoadFunction<IntPtr>("webkit_user_content_manager_new");
-            Handle = LoadFunction<IntPtr>("webkit_web_view_new_with_user_content_manager", contentManager);
+            var contentManager = webkit_user_content_manager_new();
+            Handle = webkit_web_view_new_with_user_content_manager(contentManager);
             GtkApi.gtk_container_add(Window!.Handle, Handle);
 
             if (Config.Debug)
             {
-                IntPtr settings = LoadFunction<IntPtr>("webkit_web_view_get_settings", Handle);
-                LoadFunction("webkit_settings_set_enable_developer_extras", settings, true);
+                IntPtr settings = webkit_web_view_get_settings(Handle);
+                webkit_settings_set_enable_developer_extras(settings, true);
                 webkit_settings_set_enable_developer_extras(settings, true);
             }
             else
@@ -251,8 +276,8 @@ internal class WebKit(string libName) : IWebKit
                 IntPtr settings = webkit_web_view_get_settings(Handle);
                 webkit_settings_set_enable_developer_extras(settings, false);
                 GtkApi.g_signal_connect_data(Handle, "context-menu",
-                                Marshal.GetFunctionPointerForDelegate(new ContextMenuCallbackDelegate(ContextMenuCallback)),
-                                IntPtr.Zero, IntPtr.Zero, 0);
+                    Marshal.GetFunctionPointerForDelegate(new ContextMenuCallbackDelegate(ContextMenuCallback)),
+                    IntPtr.Zero, IntPtr.Zero, 0);
             }
 
             if (Config.AppType != WebAppType.Http)
@@ -268,10 +293,10 @@ internal class WebKit(string libName) : IWebKit
                 {
                     if (Config.BlazorComponent == null) throw new Exception("Blazor component not found!");
                     _ = dispatcher.InvokeAsync(async () =>
-                                        {
-                                            await WebManager.AddRootComponentAsync(Config.BlazorComponent!, Config.BlazorSelector,
-                                                ParameterView.Empty);
-                                        });
+                    {
+                        await WebManager.AddRootComponentAsync(Config.BlazorComponent!, Config.BlazorSelector,
+                            ParameterView.Empty);
+                    });
                 }
 
                 uriSchemeCallback = UriSchemeCallback;
