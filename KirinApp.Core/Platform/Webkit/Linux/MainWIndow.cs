@@ -459,14 +459,13 @@ internal class MainWIndow : IWindow
         }
     }
 
-    public override async Task ExecuteJavaScript(string js, Action<string>? handlResult = null)
+    public override void ExecuteJavaScript(string js, Action<string>? handlResult = null)
     {
-        await Task.Run(async () =>
+        Task.Run(() =>
         {
             while (webKit == null)
-                await Task.Delay(10);
-            await Task.Delay(100);
-            await Task.Delay(100);
+                Task.Delay(50);
+            Task.Delay(50);
             Invoke(() =>
             {
                 var res = webKit!.ExecuteJavaScript(js);
@@ -475,10 +474,10 @@ internal class MainWIndow : IWindow
         });
     }
 
-    public override async Task InjectJsObject(string name, object obj)
+    public override void InjectJsObject(string name, object obj)
     {
         string js = $"window.external.{name} = {JsonConvert.SerializeObject(obj)}";
-        await ExecuteJavaScript(js);
+        ExecuteJavaScript(js);
     }
 
     public override void OpenDevTool()
@@ -486,8 +485,8 @@ internal class MainWIndow : IWindow
         Task.Run(() =>
         {
             while (webKit == null)
-                Thread.Sleep(10);
-            Thread.Sleep(10);
+                Thread.Sleep(50);
+            Thread.Sleep(50);
             Invoke(() => webKit.OpenDevTool());
         });
     }
@@ -502,8 +501,8 @@ internal class MainWIndow : IWindow
         Task.Run(() =>
         {
             while (webKit == null)
-                Thread.Sleep(10);
-            Thread.Sleep(10);
+                Thread.Sleep(50);
+            Thread.Sleep(50);
             Invoke(() => webKit.Reload());
         });
     }

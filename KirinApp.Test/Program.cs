@@ -29,7 +29,7 @@ class Program
             //     age = 18,
             //     sex = "男"
             // });
-            kirinApp.SetTopMost(true);
+            //kirinApp.SetTopMost(true);
         };
         kirinApp.Created += async (_, _) =>
         {
@@ -39,7 +39,7 @@ class Program
         kirinApp.OnCreate += (_, _) => { Console.WriteLine(000); };
         kirinApp.OnClose += (_, _) => { return true; };
         kirinApp.PositionChange += (s, e) => { Console.WriteLine(e.X + ":" + e.Y); };
-        kirinApp.WebMessageReceived += (_, e) =>
+        kirinApp.WebMessageReceived +=async (_, e) =>
         {
             Console.WriteLine(e.Message);
             kirinApp.SendWebMessage("你发给我的消息是：" + e.Message);
@@ -49,7 +49,12 @@ class Program
                 age = 18,
                 sex = "男"
             });
-            kirinApp.OpenDirectory();
+            var res =await kirinApp.ExecuteJavaScript<int>("1+1");
+
+        };
+        kirinApp.WebMessageReceived += (_, e) =>
+        {
+            Console.WriteLine(e);
         };
         kirinApp.Run();
     }

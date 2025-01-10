@@ -590,13 +590,13 @@ internal class MainWIndow : IWindow
         }
     }
 
-    public override async Task ExecuteJavaScript(string js, Action<string>? handlResult = null)
+    public override void ExecuteJavaScript(string js, Action<string>? handlResult = null)
     {
-        await Task.Run(async () =>
+        Task.Run(() =>
         {
             while (CoreWebCon == null)
-                await Task.Delay(10);
-            await Task.Delay(100);
+                Task.Delay(50);
+            Task.Delay(50);
             IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(new Action(async () =>
             {
                 var res = await CoreWebCon.CoreWebView2.ExecuteScriptAsync(js);
@@ -607,10 +607,10 @@ internal class MainWIndow : IWindow
         });
     }
 
-    public override async Task InjectJsObject(string name, object obj)
+    public override void InjectJsObject(string name, object obj)
     {
         string js = $"window.external.{name} = {JsonConvert.SerializeObject(obj)}";
-        await ExecuteJavaScript(js);
+        ExecuteJavaScript(js);
     }
 
     public override void OpenDevTool()
@@ -618,8 +618,8 @@ internal class MainWIndow : IWindow
         Task.Run(() =>
         {
             while (CoreWebCon == null)
-                Thread.Sleep(10);
-            Thread.Sleep(100);
+                Thread.Sleep(50);
+            Thread.Sleep(50);
             IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(() => CoreWebCon!.CoreWebView2.OpenDevToolsWindow());
             Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
         });

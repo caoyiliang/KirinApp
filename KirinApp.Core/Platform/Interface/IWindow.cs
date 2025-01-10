@@ -282,7 +282,7 @@ internal abstract class IWindow
     /// </summary>
     /// <param name="js"></param>
     /// <returns></returns>
-    public abstract Task ExecuteJavaScript(string js, Action<string>? handlResult = null);
+    public abstract void ExecuteJavaScript(string js, Action<string>? handlResult = null);
 
     /// <summary>
     /// 注入js对象
@@ -290,7 +290,7 @@ internal abstract class IWindow
     /// <param name="name"></param>
     /// <param name="obj"></param>
     /// <returns></returns>
-    public abstract Task InjectJsObject(string name, object obj);
+    public abstract void InjectJsObject(string name, object obj);
 
     /// <summary>
     /// 重新渲染

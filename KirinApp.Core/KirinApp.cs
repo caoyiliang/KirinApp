@@ -492,13 +492,12 @@ public class KirinApp
     public MsgResult ShowDialog(string title, string message, MsgBtns btns = MsgBtns.OK) =>
         Window.ShowDialog(title, message, btns);
 
-    public async Task ExecuteJavaScript(string js, Action<string>? handlResult = null) =>
-        await Window.ExecuteJavaScript(js, handlResult);
+    public void ExecuteJavaScript(string js, Action<string>? handlResult = null) => Window.ExecuteJavaScript(js, handlResult);
 
-    public async Task<T> ExecuteJavaScript<T>(string js, Action<string> handlResult)
+    public async Task<T> ExecuteJavaScript<T>(string js)
     {
         var tcs = new TaskCompletionSource<T>();
-        await Window.ExecuteJavaScript(js, (data) =>
+        Window.ExecuteJavaScript(js, (data) =>
         {
             try
             {
@@ -514,7 +513,7 @@ public class KirinApp
         return await tcs.Task;
     }
 
-    public async Task InjectJsObject(string name, object obj) => await Window.InjectJsObject(name, obj);
+    public void InjectJsObject(string name, object obj) => Window.InjectJsObject(name, obj);
     public void OpenDevTool() => Window.OpenDevTool();
     public void Reload() => Window.Reload();
     public void SendWebMessage(string msg) => Window.SendWebMessage(msg);
