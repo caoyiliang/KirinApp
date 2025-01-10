@@ -39,18 +39,17 @@ class Program
         kirinApp.OnCreate += (_, _) => { Console.WriteLine(000); };
         kirinApp.OnClose += (_, _) => { return true; };
         kirinApp.PositionChange += (s, e) => { Console.WriteLine(e.X + ":" + e.Y); };
-        kirinApp.WebMessageReceived += async (_, e) =>
+        kirinApp.WebMessageReceived += (_, e) =>
         {
             Console.WriteLine(e.Message);
             kirinApp.SendWebMessage("你发给我的消息是：" + e.Message);
-            await kirinApp.InjectJsObject("UserInfo", new
+            kirinApp.InjectJsObject("UserInfo", new
             {
                 userName = "admin",
                 age = 18,
                 sex = "男"
             });
-            kirinApp.SetTopMost(false);
-            kirinApp.OpenDirectory("F:\\壁纸");
+            kirinApp.OpenDirectory();
         };
         kirinApp.Run();
     }
