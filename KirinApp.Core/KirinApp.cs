@@ -411,10 +411,6 @@ public class KirinApp
     {
         Config.AppType = WebAppType.RawString;
         Config.RawString = rawString;
-
-        //重新获取依赖注入
-        InitPlateform();
-        RegistResource();
         ServiceProvide = serviceCollection.BuildServiceProvider();
         return this;
     }
@@ -423,10 +419,6 @@ public class KirinApp
     {
         Config.AppType = WebAppType.Static;
         Config.Url = path;
-
-        //重新获取依赖注入
-        InitPlateform();
-        RegistResource();
         ServiceProvide = serviceCollection.BuildServiceProvider();
         return this;
     }
@@ -435,10 +427,6 @@ public class KirinApp
     {
         Config.AppType = WebAppType.Http;
         Config.Url = url;
-
-        //重新获取依赖注入
-        InitPlateform();
-        RegistResource();
         ServiceProvide = serviceCollection.BuildServiceProvider();
         return this;
     }
@@ -449,10 +437,6 @@ public class KirinApp
         if (!selector.Contains("#")) selector = "#" + selector;
         Config.BlazorSelector = selector;
         Config.BlazorComponent = typeof(T);
-
-        //重新获取依赖注入
-        InitPlateform();
-        RegistResource();
         ServiceProvide = serviceCollection.BuildServiceProvider();
         return this;
     }

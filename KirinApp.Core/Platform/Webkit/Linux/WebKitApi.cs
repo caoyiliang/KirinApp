@@ -334,7 +334,8 @@ internal class WebKit(string libName) : IWebKit
 
     public virtual void Reload()
     {
-        InitWebControl();
+        if (Config.AppType != WebAppType.Http) WebManager!.Navigate("/");
+        else webkit_web_view_load_uri(Handle, Config.Url!);
     }
 
     public virtual void Navigate(string url)

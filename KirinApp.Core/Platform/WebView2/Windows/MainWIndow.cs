@@ -632,17 +632,8 @@ internal class MainWIndow : IWindow
 
     public override void Reload()
     {
-        Task.Run(() =>
-        {
-            IntPtr actionPtr = Marshal.GetFunctionPointerForDelegate(() =>
-            {
-                ResourceRequest();
-                CoreWebCon?.CoreWebView2.Reload();
-            });
-            if (Config.AppType == WebAppType.Http)
-                actionPtr = Marshal.GetFunctionPointerForDelegate(() => CoreWebCon!.CoreWebView2.Navigate(Config.Url));
-            Win32Api.PostMessage(Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
-        });
+        if (Config.AppType != WebAppType.Http) WebManager!.Navigate("/");
+        else CoreWebCon!.CoreWebView2.Navigate(Config.Url);
     }
 
     public override void Navigate(string url)
