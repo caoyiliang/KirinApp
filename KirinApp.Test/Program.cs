@@ -39,17 +39,9 @@ class Program
         kirinApp.OnCreate += (_, _) => { Console.WriteLine(000); };
         kirinApp.OnClose += (_, _) => { return true; };
         kirinApp.PositionChange += (s, e) => { Console.WriteLine(e.X + ":" + e.Y); };
-        kirinApp.WebMessageReceived +=async (_, e) =>
+        kirinApp.WebMessageReceived += (_, e) =>
         {
-            Console.WriteLine(e.Message);
-            kirinApp.SendWebMessage("你发给我的消息是：" + e.Message);
-            kirinApp.InjectJsObject("UserInfo", new
-            {
-                userName = "admin",
-                age = 18,
-                sex = "男"
-            });
-            var res =await kirinApp.ExecuteJavaScript<int>("1+1");
+            kirinApp.LoadRawString("234234");
 
         };
         kirinApp.WebMessageReceived += (_, e) =>
