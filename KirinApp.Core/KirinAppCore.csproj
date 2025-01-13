@@ -11,7 +11,6 @@
   <ItemGroup>
     <None Remove="wwwroot\blazorindex.html" />
     <None Remove="wwwroot\edge.document.js" />
-    <None Remove="wwwroot\libmacOSLibrary.dylib" />
     <None Remove="wwwroot\webkit.document.js" />
   </ItemGroup>
 
@@ -22,7 +21,6 @@
     <EmbeddedResource Include="wwwroot\edge.document.js">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="wwwroot\libmacOSLibrary.dylib" />
     <EmbeddedResource Include="wwwroot\webkit.document.js">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
