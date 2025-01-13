@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using KirinAppCore.Plateform.WebView2.Windows.Models;
 using Newtonsoft.Json;
+using System;
 
 namespace KirinAppCore.Plateform.WebView2.Windows;
 
@@ -632,7 +633,22 @@ internal class MainWIndow : IWindow
 
     public override void Reload()
     {
-        if (Config.AppType != WebAppType.Http) WebManager!.Navigate("/");
+        ResourceRequest();
+        if (Config.AppType == WebAppType.Blazor)
+        {
+            var url = "http://localhost/blazorindex.html";
+            SchemeConfig = new Uri(url).ParseScheme();
+            var dispatcher = new WebDispatcher(this);
+            WebManager = new WebManager(this, dispatcher, ServiceProvide!.GetRequiredService<JSComponentConfigurationStore>(), SchemeConfig);
+            if (Config.BlazorComponent == null) throw new Exception("Blazor component not found!");
+            _ = dispatcher.InvokeAsync(async () =>
+            {
+                await WebManager.AddRootComponentAsync(Config.BlazorComponent!, Config.BlazorSelector,
+                    ParameterView.Empty);
+            });
+            WebManager!.Navigate("/");
+        }
+        else if (Config.AppType != WebAppType.Http) WebManager!.Navigate("/");
         else CoreWebCon!.CoreWebView2.Navigate(Config.Url);
     }
 

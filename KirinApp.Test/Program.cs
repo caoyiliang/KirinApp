@@ -41,8 +41,8 @@ class Program
         kirinApp.PositionChange += (s, e) => { Console.WriteLine(e.X + ":" + e.Y); };
         kirinApp.WebMessageReceived += (_, e) =>
         {
-            kirinApp.LoadRawString("234234");
-
+            if (e.Message.Contains("blazor"))
+                kirinApp.LoadBlazor<App>();
         };
         kirinApp.WebMessageReceived += (_, e) =>
         {

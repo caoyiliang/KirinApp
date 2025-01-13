@@ -123,7 +123,7 @@ public class KirinApp
         //else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         //    serviceCollection.AddSingleton<IWindow, KirinAppCore.Plateform.Webkit.MacOS.MainWIndow>();
 
-        if (Config.AppType != WebAppType.Http)
+        if (Config.AppType == WebAppType.Blazor)
         {
             serviceCollection.AddSingleton<JSComponentConfigurationStore>();
             serviceCollection.AddBlazorWebView();
@@ -411,7 +411,6 @@ public class KirinApp
     {
         Config.AppType = WebAppType.RawString;
         Config.RawString = rawString;
-        ServiceProvide = serviceCollection.BuildServiceProvider();
         return this;
     }
 
@@ -419,7 +418,6 @@ public class KirinApp
     {
         Config.AppType = WebAppType.Static;
         Config.Url = path;
-        ServiceProvide = serviceCollection.BuildServiceProvider();
         return this;
     }
 
@@ -427,7 +425,6 @@ public class KirinApp
     {
         Config.AppType = WebAppType.Http;
         Config.Url = url;
-        ServiceProvide = serviceCollection.BuildServiceProvider();
         return this;
     }
 
@@ -437,7 +434,8 @@ public class KirinApp
         if (!selector.Contains("#")) selector = "#" + selector;
         Config.BlazorSelector = selector;
         Config.BlazorComponent = typeof(T);
-        ServiceProvide = serviceCollection.BuildServiceProvider();
+        serviceCollection.AddSingleton<JSComponentConfigurationStore>();
+        serviceCollection.AddBlazorWebView();
         return this;
     }
 
