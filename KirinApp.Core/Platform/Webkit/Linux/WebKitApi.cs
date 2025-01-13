@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 using KirinAppCore.Interface;
 using KirinAppCore.Model;
-using KirinAppCore.Platform.Webkit.Linux;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,8 +11,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using System.Reflection.Metadata;
+using KirinAppCore.Platform.Linux;
 
-namespace KirinAppCore.Plateform.Webkit.Linux;
+namespace KirinAppCore.Plateform.Linux;
 
 internal class WebKit(string libName) : IWebKit
 {

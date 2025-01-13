@@ -1,4 +1,4 @@
-﻿namespace KirinAppCore.Plateform.Webkit.MacOS;
+﻿namespace KirinAppCore.Plateform.MacOS;
 
 /// <summary>
 /// Windows实现类

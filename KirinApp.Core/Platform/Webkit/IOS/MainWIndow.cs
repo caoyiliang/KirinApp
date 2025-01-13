@@ -1,4 +1,4 @@
-﻿namespace KirinAppCore.Plateform.Webkit.IOS;
+﻿namespace KirinAppCore.Plateform.IOS;
 
 /// <summary>
 /// Windows实现类

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KirinAppCore.Plateform.WebView2.Windows.Models;
+namespace KirinAppCore.Plateform.Windows;
 
 
 [Flags]

@@ -1,4 +1,4 @@
-﻿namespace KirinAppCore.Plateform.WebView2.Android;
+﻿namespace KirinAppCore.Plateform.Android;
 
 /// <summary>
 /// Windows实现类

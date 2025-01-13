@@ -7,7 +7,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KirinAppCore.Plateform.WebView2.Windows.Models;
+namespace KirinAppCore.Plateform.Windows;
+
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
 internal struct WNDCLASS
 {

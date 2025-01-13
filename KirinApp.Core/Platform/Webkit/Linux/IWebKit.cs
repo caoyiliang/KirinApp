@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KirinAppCore.Platform.Webkit.Linux;
+namespace KirinAppCore.Platform.Linux;
 
 internal interface IWebKit
 {

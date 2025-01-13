@@ -11,11 +11,11 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
-using KirinAppCore.Plateform.WebView2.Windows.Models;
+using KirinAppCore.Plateform.Windows;
 using Newtonsoft.Json;
 using System;
 
-namespace KirinAppCore.Plateform.WebView2.Windows;
+namespace KirinAppCore.Plateform.Windows;
 
 /// <summary>
 /// Windows实现类

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KirinAppCore.Plateform.Webkit.Linux.Models;
+namespace KirinAppCore.Plateform.Linux;
 
 [StructLayout(LayoutKind.Sequential)]
 public struct GdkRGBA

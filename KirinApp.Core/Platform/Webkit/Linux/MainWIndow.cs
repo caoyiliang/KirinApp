@@ -3,12 +3,11 @@ using KirinAppCore.Interface;
 using Microsoft.Extensions.DependencyInjection;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using KirinAppCore.Plateform.Webkit.Linux.Models;
-using KirinAppCore.Platform.Webkit.Linux;
+using KirinAppCore.Platform.Linux;
 using Newtonsoft.Json;
 using KirinAppCore.Plateform.WebView2.Windows;
 
-namespace KirinAppCore.Plateform.Webkit.Linux;
+namespace KirinAppCore.Plateform.Linux;
 
 /// <summary>
 /// Windows实现类

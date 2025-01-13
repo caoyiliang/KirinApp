@@ -1,5 +1,5 @@
 ﻿using KirinAppCore.Model;
-using KirinAppCore.Plateform.WebView2.Windows.Models;
+using KirinAppCore.Plateform.Windows;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KirinAppCore.Plateform.WebView2.Windows;
+namespace KirinAppCore.Plateform.Windows;
 
 internal static class Win32Api
 {
