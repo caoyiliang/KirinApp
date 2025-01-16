@@ -1,23 +1,14 @@
 ﻿using KirinAppCore.Interface;
 using KirinAppCore.Model;
-using KirinAppCore.Plateform.Webkit.Linux;
-using KirinAppCore.Plateform.WebView2.Windows;
-using KirinAppCore.Platform.Webkit.Linux;
+using KirinAppCore.Plateform.Linux;
+using KirinAppCore.Plateform.Windows;
+using KirinAppCore.Platform.Linux;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Web.WebView2.Core;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using static KirinAppCore.Interface.IWindow;
 
 namespace KirinAppCore;
 
@@ -33,7 +24,9 @@ public class KirinApp
     public event EventHandler<EventArgs>? Created;
     public event EventHandler<EventArgs>? Loaded;
     public event NetClosingDelegate? OnClose;
+
     public delegate bool? NetClosingDelegate(object sender, EventArgs e);
+
     public event EventHandler<WebMessageEvent>? WebMessageReceived;
     public event EventHandler<SizeChangeEventArgs>? SizeChange;
     public event EventHandler<PositionChangeEventArgs>? PositionChange;
@@ -42,6 +35,7 @@ public class KirinApp
     /// 主显示器
     /// </summary>
     public Model.Monitor MainMonitor => Window.MainMonitor;
+
     public OSPlatform OS { get; private set; } = OSPlatform.Windows;
     public OperatingSystem OsVersion { get; private set; } = Environment.OSVersion;
 
@@ -55,6 +49,7 @@ public class KirinApp
 
         Window.SetScreenInfo();
     }
+
     public KirinApp(WinConfig winConfig, KirinApp? parent = null)
     {
         Config = winConfig;
@@ -103,16 +98,18 @@ public class KirinApp
                 Window.MainLoop();
             });
             Win32Api.PostMessage(Utils.Wnds[0].Window.Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
-        };
+        }
+
+        ;
     }
 
     private void InitPlateform()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            serviceCollection.AddSingleton<IWindow, KirinAppCore.Plateform.WebView2.Windows.MainWIndow>();
+            serviceCollection.AddSingleton<IWindow, Plateform.Windows.MainWIndow>();
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            serviceCollection.AddSingleton<IWindow, KirinAppCore.Plateform.Webkit.Linux.MainWIndow>();
+            serviceCollection.AddSingleton<IWindow, Plateform.Linux.MainWIndow>();
             //检测注入libwebkit库
             if (Utils.LinuxLibInstall("libwebkit2gtk-4.0"))
                 serviceCollection.AddSingleton<IWebKit, WebKit40>();
@@ -123,11 +120,8 @@ public class KirinApp
         //else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         //    serviceCollection.AddSingleton<IWindow, KirinAppCore.Plateform.Webkit.MacOS.MainWIndow>();
 
-        if (Config.AppType == WebAppType.Blazor)
-        {
-            serviceCollection.AddSingleton<JSComponentConfigurationStore>();
-            serviceCollection.AddBlazorWebView();
-        }
+        serviceCollection.AddSingleton<JSComponentConfigurationStore>();
+        serviceCollection.AddBlazorWebView();
     }
 
     private void RegistResource()
@@ -468,13 +462,17 @@ public class KirinApp
     public (bool selected, DirectoryInfo? dir) OpenDirectory(string initialDir = "") =>
         Window.OpenDirectory(initialDir);
 
-    public (bool selected, FileInfo? file) OpenFile(string filePath = "", Dictionary<string, string>? fileTypeFilter = null) => Window.OpenFile(filePath, fileTypeFilter);
-    public (bool selected, List<FileInfo>? files) OpenFiles(string filePath = "", Dictionary<string, string>? fileTypeFilter = null) => Window.OpenFiles(filePath, fileTypeFilter);
+    public (bool selected, FileInfo? file) OpenFile(string filePath = "",
+        Dictionary<string, string>? fileTypeFilter = null) => Window.OpenFile(filePath, fileTypeFilter);
+
+    public (bool selected, List<FileInfo>? files) OpenFiles(string filePath = "",
+        Dictionary<string, string>? fileTypeFilter = null) => Window.OpenFiles(filePath, fileTypeFilter);
 
     public MsgResult ShowDialog(string title, string message, MsgBtns btns = MsgBtns.OK) =>
         Window.ShowDialog(title, message, btns);
 
-    public void ExecuteJavaScript(string js, Action<string>? handlResult = null) => Window.ExecuteJavaScript(js, handlResult);
+    public void ExecuteJavaScript(string js, Action<string>? handlResult = null) =>
+        Window.ExecuteJavaScript(js, handlResult);
 
     public async Task<T> ExecuteJavaScript<T>(string js)
     {

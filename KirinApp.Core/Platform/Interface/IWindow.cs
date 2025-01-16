@@ -1,17 +1,6 @@
 ﻿using KirinAppCore.Model;
-using KirinAppCore.Plateform.Webkit.Linux.Models;
-using KirinAppCore.Plateform.WebView2.Windows;
-using KirinAppCore.Plateform.WebView2.Windows.Models;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Web.WebView2.Core;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KirinAppCore.Interface;
 

@@ -5,7 +5,6 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using KirinAppCore.Platform.Linux;
 using Newtonsoft.Json;
-using KirinAppCore.Plateform.WebView2.Windows;
 
 namespace KirinAppCore.Plateform.Linux;
 
@@ -212,7 +211,7 @@ internal class MainWIndow : IWindow
 
     public override void TopMost(bool top)
     {
-        GtkApi.gtk_window_set_keep_above(Handle, true);
+        GtkApi.gtk_window_set_keep_above(Handle, top);
     }
 
     public override void Normal()
