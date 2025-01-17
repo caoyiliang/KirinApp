@@ -71,7 +71,42 @@ class Program
     }
 }
 ```
+### API
+此框架不内嵌api接口，需要自己实现（配置和新建的webapi一样）,参考如下
+```C#
+public static WebApplication InitAPI()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.Services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());//AddApplicationPart(Assembly.GetExecutingAssembly())是为了解决不在api项目调用启用api服务会获取不到接口
 
+        //自行按照需求增加配置
+        var app = builder.Build();
+
+        //自定义异常捕获中间件
+        app.UseMiddleware<ExceptionMiddleware>();
+
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            //设置不限制content-type
+            ServeUnknownFileTypes = true
+        });
+        //跨域请求设置，此方法允许所有接口跨域
+        app.UseCors(builder => builder
+            //允许任何来源
+            .AllowAnyOrigin()
+             //所有请求方法
+             .AllowAnyMethod()
+             //所有请求头
+             .AllowAnyHeader());
+        //将请求与端点匹配，匹配路由
+        app.UseRouting();
+
+        app.MapControllers();
+
+        return app;
+    }
+InitApI().Run();//InitApI().RunAsync();
+```
 ### 注
  - 暂时不支持macos系统，后续添加；
  - 框架还不是非常完善，功能有可能欠缺，会不断修复和开发新功能；
