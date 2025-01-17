@@ -9,10 +9,10 @@ class Program
     {
         WinConfig winConfig = new WinConfig()
         {
-            AppName = "KirinApp",
+            AppName = "Test",
             Height = 600,
             Width = 800,
-            AppType = WebAppType.Static,//Static和http加载url，RawString加载RawString
+            AppType = WebAppType.Static,
             BlazorComponent = typeof(App),
             Url = "Index.html",
             RawString = "<span style='color:red'>这个是字符串</span>",
