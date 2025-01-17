@@ -6,15 +6,17 @@
 
 ### 安装
 1、nuget搜索kirinApp，下载即可。
+
 2、克隆此仓库，引用项目KirinAppCore
 
 ### 创建应用
 1、下载安装`.net 8.0`
+
 2、创建一个基于.net8的控制台项目，右键属性，把应用程序-常规-输出类型修改为Windows应用程序。如果要用blazor支持，还需要右键项目，编辑项目文件，第一行的`<Project Sdk="Microsoft.NET.Sdk">`改为`<Project Sdk="Microsoft.NET.Sdk.Razor">`
-3、创建窗体
-    代码块
-    ``` CSharp
-    using KirinAppCore;
+
+3、创建窗体 ***如果涉及更新UI请勿在异步或者非主线程中更新***
+``` C#
+using KirinAppCore;
 using KirinAppCore.Model;
 using KirinAppCore.Test;
 
@@ -29,9 +31,10 @@ class Program
             Height = 600,
             Width = 800,
             AppType = WebAppType.Static,//Static和http加载url，RawString加载RawString
-            BlazorComponent = typeof(App),
-            Url = "Index.html",
-            RawString = "<span style='color:red'>这个是字符串</span>",
+            BlazorComponent = typeof(App),//AppType类型是blazor，必须设置
+            BlazorSelector = "#app",//可选，默认是#app，如果你修改了组件入口id，则必须设置
+            Url = "Index.html",//AppType类型是Static或者http必须设置，如果是http则是一个完整的uri地址，如果是Static则是相对路径（相对于软件根目录）
+            RawString = "<span style='color:red'>这个是字符串</span>",AppType类型RawString
             Icon = "logo.ico",
             Debug = true,
         };
@@ -67,4 +70,11 @@ class Program
         kirinApp.Run();
     }
 }
-    ```
+```
+
+### 注
+ - 暂时不支持macos系统，后续添加；
+ - 框架还不是非常程序，功能有可能欠缺，会不断修复和开发新功能；
+ - 使用过程中如果有bug，请提交issue；
+ - 欢迎大家提交代码参与开发；
+ - 如果可以，请点亮star；
