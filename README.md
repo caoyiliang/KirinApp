@@ -112,6 +112,12 @@ InitApI().Run();//InitApI().RunAsync();
  - 欢迎大家提交代码参与开发；
  - 如果可以，请点亮star；
 
+### 开发计划
+***由于是新框架，bug可能不少，所以以修复bug为主，开发新功能为辅，所以新功能会很慢***
+ - MacOS支持
+ - 系统托盘支持
+ - 系统级消息气泡通知
+
 ### 图片展示
 ##### 静态资源
 ![image](https://github.com/user-attachments/assets/00a70b0c-a4e9-43f5-afc4-9aa9e2541f40)
