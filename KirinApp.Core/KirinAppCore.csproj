@@ -6,6 +6,15 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+   <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Description>跨平台，轻量的桌面程序开发框架，支持任何前端框架，包括Blazor</Description>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageId>KirinApp</PackageId>
+    <Authors>子墨Jaffoo</Authors>
+    <Product>KirinApp</Product>
+    <PackageReleaseNotes>第一个测试版本</PackageReleaseNotes>
+    <Version>0.0.1-bate</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +33,17 @@
     <EmbeddedResource Include="wwwroot\webkit.document.js">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

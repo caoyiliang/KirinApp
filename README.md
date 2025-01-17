@@ -1,4 +1,20 @@
-﻿using KirinAppCore;
+### 这是什么
+这是一个基于.NET的桌面应用开发框架，你可以使用任何前端框架(vue，react，angular，blazor等)配合.NET来开发你的桌面应用。
+
+### 优点
+支持多平台，支持多前端框架，打包体积小，最小不到5m，启动速度快。
+
+### 安装
+1、nuget搜索kirinApp，下载即可。
+2、克隆此仓库，引用项目KirinAppCore
+
+### 创建应用
+1、下载安装`.net 8.0`
+2、创建一个基于.net8的控制台项目，右键属性，把应用程序-常规-输出类型修改为Windows应用程序。如果要用blazor支持，还需要右键项目，编辑项目文件，第一行的`<Project Sdk="Microsoft.NET.Sdk">`改为`<Project Sdk="Microsoft.NET.Sdk.Razor">`
+3、创建窗体
+    代码块
+    ``` CSharp
+    using KirinAppCore;
 using KirinAppCore.Model;
 using KirinAppCore.Test;
 
@@ -51,3 +67,4 @@ class Program
         kirinApp.Run();
     }
 }
+    ```
