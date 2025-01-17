@@ -90,7 +90,6 @@ public static WebApplication InitAPI()
             //设置不限制content-type
             ServeUnknownFileTypes = true
         });
-        //跨域请求设置，此方法允许所有接口跨域
         app.UseCors(builder => builder
             //允许任何来源
             .AllowAnyOrigin()
@@ -98,7 +97,6 @@ public static WebApplication InitAPI()
              .AllowAnyMethod()
              //所有请求头
              .AllowAnyHeader());
-        //将请求与端点匹配，匹配路由
         app.UseRouting();
 
         app.MapControllers();
