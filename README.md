@@ -78,3 +78,17 @@ class Program
  - 使用过程中如果有bug，请提交issue；
  - 欢迎大家提交代码参与开发；
  - 如果可以，请点亮star；
+
+### 图片展示
+##### 静态资源
+![image](https://github.com/user-attachments/assets/00a70b0c-a4e9-43f5-afc4-9aa9e2541f40)
+##### 网页
+![image](https://github.com/user-attachments/assets/7393136f-69d5-49e6-a451-a84ef7027fac)
+##### blazor
+![image](https://github.com/user-attachments/assets/f7ed8d1b-7125-412f-9ecb-2eb141f0b10a)
+##### 字符串
+![image](https://github.com/user-attachments/assets/0c9ab315-a68e-4a63-9f41-5030d600aac9)
+
+
+
+
