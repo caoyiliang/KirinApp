@@ -35,8 +35,8 @@ public class KirinApp
     /// 主显示器
     /// </summary>
     public Model.Monitor MainMonitor => Window.MainMonitor;
-
     public OSPlatform OS { get; private set; } = OSPlatform.Windows;
+    public bool IsMainThread => Environment.CurrentManagedThreadId == Utils.MainThreadId;
     public OperatingSystem OsVersion { get; private set; } = Environment.OSVersion;
 
     public KirinApp(KirinApp? parent = null)
@@ -71,7 +71,6 @@ public class KirinApp
         Window.SizeChangeEvent += (s, e) => SizeChange?.Invoke(s, e);
         Window.PositionChangeEvent += (s, e) => PositionChange?.Invoke(s, e);
     }
-
 
     public void Run()
     {
