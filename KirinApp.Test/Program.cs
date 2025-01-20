@@ -46,7 +46,8 @@ class Program
         };
         kirinApp.WebMessageReceived += (_, e) =>
         {
-            Console.WriteLine(e);
+            var res = FileManage.OpenFile();
+            Console.WriteLine(res.file.Name);
         };
         kirinApp.Run();
     }

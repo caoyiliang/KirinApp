@@ -14,7 +14,7 @@
     <Authors>子墨Jaffoo</Authors>
     <Product>KirinApp</Product>
     <PackageReleaseNotes>第一个测试版本</PackageReleaseNotes>
-    <Version>0.0.1-bate</Version>
+    <Version>0.0.1-bate.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

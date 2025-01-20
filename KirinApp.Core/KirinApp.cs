@@ -44,6 +44,7 @@ public class KirinApp
         InitPlateform();
         RegistResource();
         ServiceProvide = serviceCollection.BuildServiceProvider();
+        Utils.Service = ServiceProvide;
         Window = ServiceProvide.GetRequiredService<IWindow>();
         Window.ParentWindows = parent;
 
@@ -56,6 +57,7 @@ public class KirinApp
         InitPlateform();
         RegistResource();
         ServiceProvide = serviceCollection.BuildServiceProvider();
+        Utils.Service = ServiceProvide;
         Window = ServiceProvide.GetRequiredService<IWindow>();
         Window.ParentWindows = parent;
 
@@ -201,7 +203,7 @@ public class KirinApp
         set => Config.Chromeless = value;
     }
 
-    public KirinApp IsChromeless(bool b = true)
+    public KirinApp SetChromeless(bool b = true)
     {
         Config.Chromeless = b;
         return this;
@@ -213,7 +215,7 @@ public class KirinApp
         set => Config.Debug = value;
     }
 
-    public KirinApp IsDebug(bool b = true)
+    public KirinApp SetDebug(bool b = true)
     {
         Config.Debug = b;
         return this;
@@ -300,22 +302,10 @@ public class KirinApp
         set => Config.BlazorComponent = value;
     }
 
-    public KirinApp SetBlazor<T>() where T : class
-    {
-        Config.BlazorComponent = typeof(T);
-        return this;
-    }
-
     public string? RawString
     {
         get => Config.RawString;
         set => Config.RawString = value;
-    }
-
-    public KirinApp SetRawString(string rawString)
-    {
-        Config.RawString = rawString;
-        return this;
     }
 
     public int MinimumWidth
@@ -393,33 +383,31 @@ public class KirinApp
         return this;
     }
 
-    public KirinApp UseRawString(string rawString)
+    public KirinApp SetRawString(string rawString)
     {
         Config.AppType = WebAppType.RawString;
         Config.RawString = rawString;
         return this;
     }
 
-    public KirinApp UseStatic(string path)
+    public KirinApp SetStatic(string path)
     {
         Config.AppType = WebAppType.Static;
         Config.Url = path;
         return this;
     }
 
-    public KirinApp UseHttp(string url)
+    public KirinApp SetHttp(string url)
     {
         Config.AppType = WebAppType.Http;
         Config.Url = url;
         return this;
     }
 
-    public KirinApp UseBlazor<T>() where T : class
+    public KirinApp SetBlazor<T>() where T : class
     {
         Config.AppType = WebAppType.Blazor;
         Config.BlazorComponent = typeof(T);
-        serviceCollection.AddSingleton<JSComponentConfigurationStore>();
-        serviceCollection.AddBlazorWebView();
         return this;
     }
 
@@ -427,25 +415,25 @@ public class KirinApp
 
     public void LoadStatic(string path)
     {
-        UseStatic(path);
+        SetStatic(path);
         Reload();
     }
 
     public void LoadUrl(string url)
     {
-        UseHttp(url);
+        SetHttp(url);
         Reload();
     }
 
     public void LoadRawString(string content)
     {
-        UseRawString(content);
+        SetRawString(content);
         Reload();
     }
 
     public void LoadBlazor<T>() where T : class
     {
-        UseBlazor<T>();
+        SetBlazor<T>();
         Reload();
     }
 
@@ -489,13 +477,14 @@ public class KirinApp
     public void SendWebMessage(string msg) => Window.SendWebMessage(msg);
     public void Hide() => Window.Hide();
     public void Show() => Window.Show();
-    public void Close() => Window.Close();
+    public void Exit() => Window.Close();
     public void Change(int width, int height) => Window.Change(width, height);
     public void Change(Size size) => Window.Change(size);
-    public void Exit() => Environment.Exit(0);
     public void Focus() => Window.Focus();
     public void MoveTo(int x, int y) => Window.MoveTo(x, y);
     public void Minimize() => Window.Minimize();
     public void Maximize() => Window.Maximize();
     public void Normal() => Window.Normal();
+    public void Invoke(Action action) => Window.Invoke(action);
+    public async Task InvokeAsync(Func<Task> action) => await Window.InvokeAsync(action);
 }

@@ -1,4 +1,5 @@
 ﻿using KirinAppCore.Model;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace KirinAppCore;
 internal static class Utils
 {
     internal static int MainThreadId = 0;
-
+    internal static ServiceProvider? Service = null;
     internal static List<KirinApp> Wnds = new();
     internal static SchemeConfig ParseScheme(this Uri uri)
     {
