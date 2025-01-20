@@ -300,16 +300,9 @@ public class KirinApp
         set => Config.BlazorComponent = value;
     }
 
-    public string BlazorSelector
-    {
-        get => Config.BlazorSelector;
-        set => Config.BlazorSelector = value;
-    }
-
-    public KirinApp SetBlazor<T>(string blazorSelector = "#app") where T : class
+    public KirinApp SetBlazor<T>() where T : class
     {
         Config.BlazorComponent = typeof(T);
-        Config.BlazorSelector += blazorSelector;
         return this;
     }
 
@@ -421,11 +414,9 @@ public class KirinApp
         return this;
     }
 
-    public KirinApp UseBlazor<T>(string selector = "#app") where T : class
+    public KirinApp UseBlazor<T>() where T : class
     {
         Config.AppType = WebAppType.Blazor;
-        if (!selector.Contains("#")) selector = "#" + selector;
-        Config.BlazorSelector = selector;
         Config.BlazorComponent = typeof(T);
         serviceCollection.AddSingleton<JSComponentConfigurationStore>();
         serviceCollection.AddBlazorWebView();
@@ -452,9 +443,9 @@ public class KirinApp
         Reload();
     }
 
-    public void LoadBlazor<T>(string selector = "#app") where T : class
+    public void LoadBlazor<T>() where T : class
     {
-        UseBlazor<T>(selector);
+        UseBlazor<T>();
         Reload();
     }
 

@@ -120,7 +120,7 @@ public class WinConfig
     /// <summary>
     /// blazor选择器
     /// </summary>
-    public string BlazorSelector { get; set; } = "#app";
+    internal string BlazorSelector => "#app";
 
     /// <summary>
     /// 置顶
