@@ -4,6 +4,8 @@
 ### 优点
 支持多平台(Windows，linux，macos)，支持多前端框架(vue，react，angular，blazor等)，打包体积小，最小不到5m，启动速度快。
 
+# [说明文档](https://jaffoo.github.io/KirinApp/doc/)
+
 ### 注
  - 暂时不支持macos系统，后续添加；
  - 框架还不是非常完善，功能有可能欠缺，会不断修复和开发新功能；
@@ -20,5 +22,3 @@
 ![image](https://github.com/user-attachments/assets/f7ed8d1b-7125-412f-9ecb-2eb141f0b10a)
 ##### 字符串
 ![image](https://github.com/user-attachments/assets/0c9ab315-a68e-4a63-9f41-5030d600aac9)
-
-# [说明文档](https://jaffoo.github.io/KirinApp/doc/)
