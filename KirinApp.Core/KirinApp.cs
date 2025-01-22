@@ -482,8 +482,8 @@ public class KirinApp
     public void Change(Size size) => Window.Change(size);
     public void Focus() => Window.Focus();
     public void MoveTo(int x, int y) => Window.MoveTo(x, y);
-    public void Minimize() => Window.Minimize();
-    public void Maximize() => Window.Maximize();
+    public void Minimize(bool minimize = true) => Window.Minimize(minimize);
+    public void Maximize(bool maximize = true) => Window.Maximize(maximize);
     public void Normal() => Window.Normal();
     public void Invoke(Action action) => Window.Invoke(action);
     public async Task InvokeAsync(Func<Task> action) => await Window.InvokeAsync(action);

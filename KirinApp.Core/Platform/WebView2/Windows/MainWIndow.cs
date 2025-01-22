@@ -251,6 +251,7 @@ internal class MainWIndow : IWindow
 
     public override void Normal()
     {
+        Win32Api.ShowWindow(Handle, SW.NORMAL);
         Move(Config.Left, Config.Top);
         Change(Config.Width, Config.Height);
         Show();
@@ -281,14 +282,32 @@ internal class MainWIndow : IWindow
         return rect;
     }
 
-    public override void Maximize()
+    public override void Maximize(bool maximize = true)
     {
-        if (Win32Api.ShowWindow(Handle, SW.MAXIMIZE)) State = WindowState.Maximize;
+        if (maximize)
+        {
+            Win32Api.ShowWindow(Handle, SW.MAXIMIZE);
+            State = WindowState.Maximize;
+        }
+        else
+        {
+            Win32Api.ShowWindow(Handle, SW.NORMAL);
+            State = WindowState.Normal;
+        }
     }
 
-    public override void Minimize()
+    public override void Minimize(bool minimize = true)
     {
-        if (Win32Api.ShowWindow(Handle, SW.MINIMIZE)) State = WindowState.Minimize;
+        if (minimize)
+        {
+            Win32Api.ShowWindow(Handle, SW.MINIMIZE);
+            State = WindowState.Minimize;
+        }
+        else
+        {
+            Win32Api.ShowWindow(Handle, SW.NORMAL);
+            State = WindowState.Normal;
+        }
     }
 
     public override void SizeChange(IntPtr handle, int width, int height)
@@ -545,7 +564,9 @@ internal class MainWIndow : IWindow
                             var cmd = jobject["cmd"]!.ToString();
                             switch (cmd)
                             {
+                                case "unMax": Maximize(false); break;
                                 case "max": Maximize(); break;
+                                case "unMin": Minimize(false); break;
                                 case "min": Minimize(); break;
                                 case "hide": Hide(); break;
                                 case "show": Show(); break;

@@ -7,8 +7,16 @@ window.external = {
             callback(e.data)
         });
     },
+    unMax: () => {
+        var obj = { cmd: 'unMax' }
+        window.chrome.webview.postMessage(JSON.stringify(obj));
+    },
     max: () => {
         var obj = { cmd: 'max' }
+        window.chrome.webview.postMessage(JSON.stringify(obj));
+    },
+    unMin: () => {
+        var obj = { cmd: 'unMin' }
         window.chrome.webview.postMessage(JSON.stringify(obj));
     },
     min: () => {

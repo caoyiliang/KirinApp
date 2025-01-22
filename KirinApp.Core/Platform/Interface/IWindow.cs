@@ -172,12 +172,12 @@ internal abstract class IWindow
     /// <summary>
     /// 最小化
     /// </summary>
-    public abstract void Minimize();
+    public abstract void Minimize(bool minimize = true);
 
     /// <summary>
     /// 最大化
     /// </summary>
-    public abstract void Maximize();
+    public abstract void Maximize(bool maximize = true);
 
     /// <summary>
     /// 显示对话框

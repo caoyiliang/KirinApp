@@ -9,8 +9,16 @@ window.external = {
     receiveMessage: function (callback) {
         window.__receiveMessageCallbacks.push(callback);
     },
+    unMax: () => {
+        var obj = { cmd: 'unMax' }
+        window.webkit.messageHandlers.KirinApp.postMessage(JSON.stringify(obj));
+    },
     max: () => {
         var obj = { cmd: 'max' }
+        window.webkit.messageHandlers.KirinApp.postMessage(JSON.stringify(obj));
+    },
+    unMin: () => {
+        var obj = { cmd: 'unMin' }
         window.webkit.messageHandlers.KirinApp.postMessage(JSON.stringify(obj));
     },
     min: () => {

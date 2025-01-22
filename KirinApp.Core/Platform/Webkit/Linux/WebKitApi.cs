@@ -405,8 +405,10 @@ internal class WebKit(string libName) : IWebKit
                     var cmd = jobject["cmd"]!.ToString();
                     switch (cmd)
                     {
+                        case "unMax": Window!.Maximize(false); break;
                         case "max": Window!.Maximize(); break;
                         case "min": Window!.Minimize(); break;
+                        case "unMin": Window!.Minimize(false); break;
                         case "hide": Window!.Hide(); break;
                         case "show": Window!.Show(); break;
                         case "focus": Window!.Focus(); break;

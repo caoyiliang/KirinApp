@@ -53,3 +53,12 @@ public struct GdkEventConfigure
     public int border_width;
     public int send_event;
 }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct GdkEventWindowMove
+{
+    public IntPtr type;
+    public IntPtr window;
+    public int x;
+    public int y;
+}

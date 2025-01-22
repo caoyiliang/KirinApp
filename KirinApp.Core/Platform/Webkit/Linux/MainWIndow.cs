@@ -112,6 +112,7 @@ internal class MainWIndow : IWindow
             _onWindowConfigureDelegate = new(OnWindowConfigure);
             GtkApi.g_signal_connect_data(Handle, "configure-event",
                 Marshal.GetFunctionPointerForDelegate(_onWindowConfigureDelegate), IntPtr.Zero, IntPtr.Zero, 0);
+            
             _onWindowCloseDelegate = new(OnWindowClose);
             GtkApi.g_signal_connect_data(Handle, "delete-event",
                 Marshal.GetFunctionPointerForDelegate(_onWindowCloseDelegate), IntPtr.Zero, IntPtr.Zero, 0);
@@ -164,18 +165,28 @@ internal class MainWIndow : IWindow
             SizeChangeEvent?.Invoke(widget, new SizeChangeEventArgs() { Width = lastWidth, Height = lastHeight });
             SizeChange(Handle, lastWidth, lastHeight);
         }
-        else if (configureEvent.x != lastX || configureEvent.y != lastY)
-        {
-            lastY = configureEvent.y;
-            lastX = configureEvent.x;
-            PositionChangeEvent?.Invoke(widget, new PositionChangeEventArgs() { X = lastX, Y = lastY });
-        }
+
         else
         {
             Console.WriteLine("其他事件");
         }
 
         return false;
+    }
+
+    private bool OnWindowMove(IntPtr widget, IntPtr eventPtr, IntPtr data)
+    {
+        GdkEventWindowMove moveEvent = Marshal.PtrToStructure<GdkEventWindowMove>(eventPtr);
+        // 检查位置变化
+        if (moveEvent.x != lastX || moveEvent.y != lastY)
+        {
+            lastX = moveEvent.x;
+            lastY = moveEvent.y;
+
+            Console.WriteLine($"Window moved to: X={lastX}, Y={lastY}");
+        }
+
+        return false; // 返回 false 以允许其他处理
     }
 
     public override void Show()
@@ -236,16 +247,32 @@ internal class MainWIndow : IWindow
         return rect;
     }
 
-    public override void Maximize()
+    public override void Maximize(bool maximize = true)
     {
-        GtkApi.gtk_window_maximize(Handle);
-        State = WindowState.Maximize;
+        if (maximize)
+        {
+            GtkApi.gtk_window_maximize(Handle);
+            State = WindowState.Maximize;
+        }
+        else
+        {
+            GtkApi.gtk_window_unmaximize(Handle);
+            State = WindowState.Normal;
+        }
     }
 
-    public override void Minimize()
+    public override void Minimize(bool minimize = true)
     {
-        GtkApi.gtk_window_iconify(Handle);
-        State = WindowState.Minimize;
+        if (minimize)
+        {
+            GtkApi.gtk_window_iconify(Handle);
+            State = WindowState.Minimize;
+        }
+        else
+        {
+            GtkApi.gtk_window_deiconify(Handle);
+            State = WindowState.Normal;
+        }
     }
 
     private void CheckInitialDir(ref string initialDir)

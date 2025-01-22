@@ -105,7 +105,13 @@ internal class GtkApi
     internal static extern void gtk_window_maximize(IntPtr window);
 
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void gtk_window_unmaximize(IntPtr window);
+
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void gtk_window_iconify(IntPtr window);
+
+    [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void gtk_window_deiconify(IntPtr window);
 
     [DllImport(GtkLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern uint gdk_threads_add_idle(IntPtr function, IntPtr data);
