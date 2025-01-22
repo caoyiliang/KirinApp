@@ -174,21 +174,6 @@ internal class MainWIndow : IWindow
         return false;
     }
 
-    private bool OnWindowMove(IntPtr widget, IntPtr eventPtr, IntPtr data)
-    {
-        GdkEventWindowMove moveEvent = Marshal.PtrToStructure<GdkEventWindowMove>(eventPtr);
-        // 检查位置变化
-        if (moveEvent.x != lastX || moveEvent.y != lastY)
-        {
-            lastX = moveEvent.x;
-            lastY = moveEvent.y;
-
-            Console.WriteLine($"Window moved to: X={lastX}, Y={lastY}");
-        }
-
-        return false; // 返回 false 以允许其他处理
-    }
-
     public override void Show()
     {
         GtkApi.gtk_widget_show_all(Handle);
