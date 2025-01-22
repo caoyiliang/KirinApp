@@ -165,7 +165,12 @@ internal class MainWIndow : IWindow
             SizeChangeEvent?.Invoke(widget, new SizeChangeEventArgs() { Width = lastWidth, Height = lastHeight });
             SizeChange(Handle, lastWidth, lastHeight);
         }
-
+        else if (configureEvent.x != lastX || configureEvent.y != lastY)
+        {
+            lastY = configureEvent.y;
+            lastX = configureEvent.x;
+            PositionChangeEvent?.Invoke(widget, new PositionChangeEventArgs() { X = lastX, Y = lastY });
+        }
         else
         {
             Console.WriteLine("其他事件");
