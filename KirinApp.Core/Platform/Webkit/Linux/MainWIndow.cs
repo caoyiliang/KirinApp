@@ -291,13 +291,14 @@ internal class MainWIndow : IWindow
             "取消", ResponseType.Cancel);
         GtkApi.gtk_file_chooser_set_current_folder(fileChooser, initialDir);
 
-        foreach (var filter in fileTypeFilter!)
-        {
-            var item = GtkApi.gtk_file_filter_new();
-            GtkApi.gtk_file_filter_add_pattern(item, Marshal.StringToHGlobalAnsi(filter.Value));
-            GtkApi.gtk_file_filter_set_name(item, Marshal.StringToHGlobalAnsi(filter.Key));
-            GtkApi.gtk_file_chooser_add_filter(fileChooser, item);
-        }
+        if (fileTypeFilter != null)
+            foreach (var filter in fileTypeFilter!)
+            {
+                var item = GtkApi.gtk_file_filter_new();
+                GtkApi.gtk_file_filter_add_pattern(item, Marshal.StringToHGlobalAnsi(filter.Value));
+                GtkApi.gtk_file_filter_set_name(item, Marshal.StringToHGlobalAnsi(filter.Key));
+                GtkApi.gtk_file_chooser_add_filter(fileChooser, item);
+            }
 
         if (GtkApi.gtk_dialog_run(fileChooser) == (int)ResponseType.Accept)
         {
@@ -322,13 +323,14 @@ internal class MainWIndow : IWindow
         GtkApi.gtk_file_chooser_set_current_folder(fileChooser, initialDir);
         GtkApi.gtk_file_chooser_set_do_overwrite_confirmation(fileChooser, true);
 
-        foreach (var filter in fileTypeFilter!)
-        {
-            var item = GtkApi.gtk_file_filter_new();
-            GtkApi.gtk_file_filter_add_pattern(item, Marshal.StringToHGlobalAnsi(filter.Value));
-            GtkApi.gtk_file_filter_set_name(item, Marshal.StringToHGlobalAnsi(filter.Key));
-            GtkApi.gtk_file_chooser_add_filter(fileChooser, item);
-        }
+        if (fileTypeFilter != null)
+            foreach (var filter in fileTypeFilter!)
+            {
+                var item = GtkApi.gtk_file_filter_new();
+                GtkApi.gtk_file_filter_add_pattern(item, Marshal.StringToHGlobalAnsi(filter.Value));
+                GtkApi.gtk_file_filter_set_name(item, Marshal.StringToHGlobalAnsi(filter.Key));
+                GtkApi.gtk_file_chooser_add_filter(fileChooser, item);
+            }
 
         if (GtkApi.gtk_dialog_run(fileChooser) == (int)ResponseType.Accept)
         {

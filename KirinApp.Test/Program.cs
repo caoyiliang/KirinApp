@@ -10,8 +10,8 @@ class Program
         WinConfig winConfig = new WinConfig()
         {
             AppName = "Test",
-            Height = 600,
-            Width = 800,
+            Height = 800,
+            Width = 1000,
             AppType = WebAppType.Static,
             BlazorComponent = typeof(App),
             Url = "Index.html",
@@ -47,7 +47,9 @@ class Program
         kirinApp.WebMessageReceived += (_, e) =>
         {
             var res = FileManage.OpenFile();
-            Console.WriteLine(res.file.Name);
+            if (res.selected)
+                Console.WriteLine(res.file?.Name);
+            else Console.WriteLine("未选择文件");
         };
         kirinApp.Run();
     }
