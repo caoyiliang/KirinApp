@@ -74,7 +74,7 @@ public class KirinApp
         Window.PositionChangeEvent += (s, e) => PositionChange?.Invoke(s, e);
     }
 
-    public void Run()
+    public KirinApp Run()
     {
         if (Utils.MainThreadId == 0)
             Utils.MainThreadId = Environment.CurrentManagedThreadId;
@@ -99,9 +99,8 @@ public class KirinApp
                 Window.MainLoop();
             });
             Win32Api.PostMessage(Utils.Wnds[0].Window.Handle, (uint)WindowMessage.DIY_FUN, actionPtr, IntPtr.Zero);
-        }
-
-        ;
+        };
+        return this;
     }
 
     private void InitPlateform()
@@ -292,7 +291,6 @@ public class KirinApp
     public KirinApp SetUrl(string url)
     {
         Config.Url = url;
-        Reload();
         return this;
     }
 

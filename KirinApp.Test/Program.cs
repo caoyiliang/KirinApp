@@ -1,9 +1,13 @@
 ﻿using KirinAppCore;
 using KirinAppCore.Model;
 using KirinAppCore.Test;
+using Microsoft.Web.WebView2.Core;
+using System.Timers;
 
+namespace KirinAppCore.Test;
 class Program
 {
+    public static KirinApp Kirin;
     [STAThread]
     static void Main()
     {
@@ -12,14 +16,14 @@ class Program
             AppName = "Test",
             Height = 800,
             Width = 1000,
-            AppType = WebAppType.Static,
+            AppType = WebAppType.Blazor,
             BlazorComponent = typeof(App),
             Url = "Index.html",
             RawString = "<span style='color:red'>这个是字符串</span>",
             Icon = "logo.ico",
             Debug = true,
         };
-        var kirinApp = new KirinApp(winConfig);
+        var kirinApp = Kirin = new KirinApp(winConfig);
         kirinApp.Loaded += (_, _) =>
         {
             Console.WriteLine(333);
@@ -42,14 +46,27 @@ class Program
         kirinApp.WebMessageReceived += (_, e) =>
         {
             if (e.Message.Contains("blazor"))
+            {
                 kirinApp.LoadBlazor<App>();
+
+            }
+            if (e.Message.Contains("reload")) kirinApp.Reload();
+            if (e.Message.Contains("static")) kirinApp.LoadStatic("index.html");
+            if (e.Message.Contains("string"))
+            {
+                kirinApp.LoadRawString("你好");
+                Task.Run(async () =>
+                {
+                   await Task.Delay(3000); 
+                    kirinApp.LoadStatic("index.html");
+                    //kirinApp.LoadStatic("index.html")
+                });
+
+            }
         };
         kirinApp.WebMessageReceived += (_, e) =>
         {
-            var res = FileManage.OpenFile();
-            if (res.selected)
-                Console.WriteLine(res.file?.Name);
-            else Console.WriteLine("未选择文件");
+            //kirinApp.Reload();
         };
         kirinApp.Run();
     }

@@ -553,45 +553,10 @@ internal class MainWIndow : IWindow
                             ParameterView.Empty);
                     });
                 }
-                CoreWebCon.CoreWebView2.WebMessageReceived += (s, e) =>
-                {
-                    WebManager.OnMessageReceived(e.Source, e.TryGetWebMessageAsString());
-                    try
-                    {
-                        var jobject = JObject.Parse(e.TryGetWebMessageAsString());
-                        if (jobject.ContainsKey("cmd"))
-                        {
-                            var cmd = jobject["cmd"]!.ToString();
-                            switch (cmd)
-                            {
-                                case "unMax": Maximize(false); break;
-                                case "max": Maximize(); break;
-                                case "unMin": Minimize(false); break;
-                                case "min": Minimize(); break;
-                                case "hide": Hide(); break;
-                                case "show": Show(); break;
-                                case "focus": Focus(); break;
-                                case "close": Close(); break;
-                                case "change": Change(jobject["data"]!["width"]!.ToString().ToInt(), jobject["data"]!["height"]!.ToString().ToInt()); break;
-                                case "normal": Normal(); break;
-                                case "move": Move(jobject["data"]!["x"]!.ToString().ToInt(), jobject["data"]!["y"]!.ToString().ToInt()); break;
-                                case "moveTo": MoveTo(jobject["data"]!["x"]!.ToString().ToInt(), jobject["data"]!["y"]!.ToString().ToInt()); break;
-                                default:
-                                    break;
-                            }
-                        }
-                        return;
-                    }
-                    catch { }
-                    WebMessageEvent msg = new WebMessageEvent()
-                    {
-                        Message = e.TryGetWebMessageAsString()
-                    };
-                    WebMessageReceived?.Invoke(s, msg);
-                };
+
                 CoreWebCon.CoreWebView2.AddWebResourceRequestedFilter($"{SchemeConfig.AppOrigin}*",
                     CoreWebView2WebResourceContext.All);
-
+                RegistMsgRecieveEvent();
                 ResourceRequest();
 
                 var assembly = Assembly.GetExecutingAssembly();
@@ -654,23 +619,33 @@ internal class MainWIndow : IWindow
 
     public override void Reload()
     {
-        ResourceRequest();
-        if (Config.AppType == WebAppType.Blazor)
+        if (Config.AppType != WebAppType.Http)
         {
-            var url = "http://localhost/blazorindex.html";
+            var url = $"http://localhost/";
+            if (Config.AppType == WebAppType.Static) url += Config.Url;
+            if (Config.AppType == WebAppType.Blazor) url += "blazorindex.html";
+
             SchemeConfig = new Uri(url).ParseScheme();
             var dispatcher = new WebDispatcher(this);
             WebManager = new WebManager(this, dispatcher, ServiceProvide!.GetRequiredService<JSComponentConfigurationStore>(), SchemeConfig);
-            if (Config.BlazorComponent == null) throw new Exception("Blazor component not found!");
-            _ = dispatcher.InvokeAsync(async () =>
+            if (Config.AppType == WebAppType.Blazor)
             {
-                await WebManager.AddRootComponentAsync(Config.BlazorComponent!, Config.BlazorSelector,
-                    ParameterView.Empty);
-            });
-            WebManager!.Navigate("/");
+                if (Config.BlazorComponent == null) throw new Exception("Blazor component not found!");
+                _ = dispatcher.InvokeAsync(async () =>
+                {
+                    await WebManager.AddRootComponentAsync(Config.BlazorComponent!, Config.BlazorSelector,
+                        ParameterView.Empty);
+                });
+            }
+            RegistMsgRecieveEvent();
+            ResourceRequest();
+
+            WebManager.Navigate("/");
         }
-        else if (Config.AppType != WebAppType.Http) WebManager!.Navigate("/");
-        else CoreWebCon!.CoreWebView2.Navigate(Config.Url);
+        if (Config.AppType == WebAppType.Http)
+        {
+            CoreWebCon!.CoreWebView2.Navigate(Config.Url);
+        }
     }
 
     public override void Navigate(string url)
@@ -678,9 +653,58 @@ internal class MainWIndow : IWindow
         CoreWebCon!.CoreWebView2.Navigate(url);
     }
 
+    private bool MsgReciveEvent = false;
+    private void RegistMsgRecieveEvent()
+    {
+        if (MsgReciveEvent) return;
+        if (CoreWebCon == null) return;
+        MsgReciveEvent = true;
+        CoreWebCon.CoreWebView2.WebMessageReceived += (s, e) =>
+        {
+            if (WebManager != null)
+                WebManager.OnMessageReceived(e.Source, e.TryGetWebMessageAsString());
+            try
+            {
+                var jobject = JObject.Parse(e.TryGetWebMessageAsString());
+                if (jobject.ContainsKey("cmd"))
+                {
+                    var cmd = jobject["cmd"]!.ToString();
+                    switch (cmd)
+                    {
+                        case "unMax": Maximize(false); break;
+                        case "max": Maximize(); break;
+                        case "unMin": Minimize(false); break;
+                        case "min": Minimize(); break;
+                        case "hide": Hide(); break;
+                        case "show": Show(); break;
+                        case "focus": Focus(); break;
+                        case "close": Close(); break;
+                        case "change": Change(jobject["data"]!["width"]!.ToString().ToInt(), jobject["data"]!["height"]!.ToString().ToInt()); break;
+                        case "normal": Normal(); break;
+                        case "move": Move(jobject["data"]!["x"]!.ToString().ToInt(), jobject["data"]!["y"]!.ToString().ToInt()); break;
+                        case "moveTo": MoveTo(jobject["data"]!["x"]!.ToString().ToInt(), jobject["data"]!["y"]!.ToString().ToInt()); break;
+                        default:
+                            break;
+                    }
+                }
+                return;
+            }
+            catch { }
+            WebMessageEvent msg = new WebMessageEvent()
+            {
+                Message = e.TryGetWebMessageAsString()
+            };
+            WebMessageReceived?.Invoke(s, msg);
+        };
+    }
+
+    private bool ResourceRegist = false;
     private void ResourceRequest()
     {
-        CoreWebCon!.CoreWebView2.WebResourceRequested += (s, e) =>
+        if (ResourceRegist) return;
+        if (CoreWebCon == null) return;
+        ResourceRegist = true;
+        CoreWebCon.CoreWebView2.WebResourceRequested += (s, e) =>
         {
             if (Config.AppType == WebAppType.RawString)
             {
