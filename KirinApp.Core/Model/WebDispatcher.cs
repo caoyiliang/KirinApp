@@ -21,26 +21,20 @@ internal class WebDispatcher : Dispatcher
     {
         try
         {
-            await Task.Delay(1);
-            if (CheckAccess())
-                workItem();
-            else
-                window.Invoke(workItem);
+            window.Invoke(workItem);
         }
         catch (Exception)
         {
             throw;
         }
+        await Task.CompletedTask;
     }
 
     public override async Task InvokeAsync(Func<Task> workItem)
     {
         try
         {
-            if (CheckAccess())
-                await workItem();
-            else
-                await window.InvokeAsync(workItem);
+            await window.InvokeAsync(workItem);
         }
         catch (Exception)
         {

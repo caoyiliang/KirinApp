@@ -16,7 +16,7 @@ class Program
             AppName = "Test",
             Height = 800,
             Width = 1000,
-            AppType = WebAppType.Blazor,
+            AppType = WebAppType.Static,
             BlazorComponent = typeof(App),
             Url = "Index.html",
             RawString = "<span style='color:red'>这个是字符串</span>",

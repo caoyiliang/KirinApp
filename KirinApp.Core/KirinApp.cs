@@ -9,6 +9,7 @@ using Microsoft.Extensions.FileProviders;
 using Newtonsoft.Json;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Components.WebView;
 
 namespace KirinAppCore;
 
