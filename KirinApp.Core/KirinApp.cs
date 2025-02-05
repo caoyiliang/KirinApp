@@ -120,6 +120,10 @@ public class KirinApp
         }
         //else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         //    serviceCollection.AddSingleton<IWindow, KirinAppCore.Plateform.Webkit.MacOS.MainWIndow>();
+        else
+        {
+            throw new Exception("不支持的操作系统！");
+        }
 
         serviceCollection.AddSingleton<JSComponentConfigurationStore>();
         serviceCollection.AddBlazorWebView();
