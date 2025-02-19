@@ -39,7 +39,7 @@ public class KirinApp
     public OSPlatform OS { get; private set; } = OSPlatform.Windows;
     public bool IsMainThread => Environment.CurrentManagedThreadId == Utils.MainThreadId;
     public OperatingSystem OsVersion { get; private set; } = Environment.OSVersion;
-
+    public WindowState WindowState => Window.State;
     public KirinApp(KirinApp? parent = null)
     {
         InitPlateform();
