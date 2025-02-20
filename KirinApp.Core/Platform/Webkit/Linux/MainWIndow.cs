@@ -410,11 +410,6 @@ internal class MainWIndow : IWindow
 
     #region Webkit方法
 
-    public override bool CheckAccess()
-    {
-        return Environment.CurrentManagedThreadId == Utils.MainThreadId;
-    }
-
     private delegate bool GdkIdleFunc(IntPtr data);
 
     private class InvokeWaitInfo

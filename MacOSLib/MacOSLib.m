@@ -38,8 +38,15 @@ void ChangeSize(void* windowHandle, int width, int height);
 void TopMost(void* windowHandle, int topMost);
 void Minimize(void* windowHandle);
 void Maximize(void* windowHandle);
+void Restore(void* windowHandle);
 
-MsgResult ShowDialog(const char *title, const char *message, MsgBtns btn, MessageType messageType, const char *iconName)
+MsgResult ShowDialog(const char *title, const char *message, MsgBtns btn, MessageType messageType, const char *iconName);
+void OpenFileDialog(void* windowHandle, char* outputPath, size_t maxPathLength);
+void OpenMultipleFileDialog(void* windowHandle, char** outputPaths, size_t maxPaths, size_t maxPathLength);
+void OpenFolderDialog(void* windowHandle, char* outputPath, size_t maxPathLength);
+void GetScreenSize(int* width, int* height);
+void Invoke(void (^block)(void));
+
 #ifdef __cplusplus
 }
 #endif
@@ -155,6 +162,13 @@ void Maximize(void* windowHandle) {
     }
 }
 
+void Restore(void* windowHandle) {
+    NSWindow *window = (__bridge NSWindow *)windowHandle;
+    if (window) {
+        [window makeKeyAndOrderFront:nil]; // 恢复并显示窗口
+    }
+}
+
 void RunLoop() {
     [[NSApplication sharedApplication] run]; // 启动事件循环
 }
@@ -223,5 +237,99 @@ MsgResult ShowDialog(const char *title, const char *message, MsgBtns btn, Messag
                 return Cancel; // “取消”
         }
         return OK;
+    }
+}
+
+// 单选文件选择器
+void OpenFileDialog(void* windowHandle, char* outputPath, size_t maxPathLength) {
+    NSWindow *window = (__bridge NSWindow *)windowHandle;
+
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    [openPanel setAllowsMultipleSelection:NO]; // 不允许多选
+    [openPanel setCanChooseDirectories:NO]; // 不允许选择目录
+
+    // 显示文件选择器并处理用户选择的文件
+    [openPanel beginSheetModalForWindow:window completionHandler:^(NSModalResponse result) {
+        if (result == NSModalResponseOK) {
+            NSArray *urls = [openPanel URLs]; // 获取选择的文件URL
+            if (urls.count > 0) {
+                NSURL *selectedFileURL = urls[0];
+                NSString *filePath = selectedFileURL.path;
+
+                // 将文件路径复制到输出参数
+                strncpy(outputPath, [filePath UTF8String], maxPathLength - 1);
+                outputPath[maxPathLength - 1] = '\0'; // 确保字符串以 null 结尾
+            }
+        }
+    }];
+}
+
+// 多选文件选择器
+void OpenMultipleFileDialog(void* windowHandle, char** outputPaths, size_t maxPaths, size_t maxPathLength) {
+    NSWindow *window = (__bridge NSWindow *)windowHandle;
+
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    [openPanel setAllowsMultipleSelection:YES]; // 允许多选
+    [openPanel setCanChooseDirectories:NO]; // 不允许选择目录
+
+    // 显示文件选择器并处理用户选择的文件
+    [openPanel beginSheetModalForWindow:window completionHandler:^(NSModalResponse result) {
+        if (result == NSModalResponseOK) {
+            NSArray *urls = [openPanel URLs]; // 获取选择的文件URL
+            size_t count = MIN(urls.count, maxPaths); // 确保不超过最大路径数
+
+            for (size_t i = 0; i < count; i++) {
+                NSURL *selectedFileURL = urls[i];
+                NSString *filePath = selectedFileURL.path;
+
+                // 将文件路径复制到输出参数
+                strncpy(outputPaths[i], [filePath UTF8String], maxPathLength - 1);
+                outputPaths[i][maxPathLength - 1] = '\0'; // 确保字符串以 null 结尾
+            }
+        }
+    }];
+}
+
+void OpenFolderDialog(void* windowHandle, char* outputPath, size_t maxPathLength) {
+    NSWindow *window = (__bridge NSWindow *)windowHandle;
+
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    [openPanel setAllowsMultipleSelection:NO]; // 不允许多选
+    [openPanel setCanChooseFiles:NO]; // 不允许选择文件
+    [openPanel setCanChooseDirectories:YES]; // 允许选择目录
+
+    // 显示文件选择器并处理用户选择的文件夹
+    [openPanel beginSheetModalForWindow:window completionHandler:^(NSModalResponse result) {
+        if (result == NSModalResponseOK) {
+            NSArray *urls = [openPanel URLs]; // 获取选择的文件夹URL
+            if (urls.count > 0) {
+                NSURL *selectedFolderURL = urls[0];
+                NSString *folderPath = selectedFolderURL.path;
+
+                // 将文件夹路径复制到输出参数
+                strncpy(outputPath, [folderPath UTF8String], maxPathLength - 1);
+                outputPath[maxPathLength - 1] = '\0'; // 确保字符串以 null 结尾
+            }
+        }
+    }];
+}
+
+void GetScreenSize(int* width, int* height) {
+    NSRect screenFrame = [[NSScreen mainScreen] frame];
+    if (width != NULL) {
+        *width = screenFrame.size.width;
+    }
+    if (height != NULL) {
+        *height = screenFrame.size.height;
+    }
+}
+
+void Invoke(void (^block)(void)) {
+    if ([NSThread isMainThread]) {
+        // 如果当前已经在主线程上，直接执行
+        block();
+    } else {
+        // 否则，调度到主线程
+        dispatch_async(dispatch_get_main_queue(), block);
     }
 }

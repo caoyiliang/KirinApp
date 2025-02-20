@@ -482,10 +482,6 @@ internal class MainWIndow : IWindow
     #endregion
 
     #region WebView2方法
-    public override bool CheckAccess()
-    {
-        return Environment.CurrentManagedThreadId == Utils.MainThreadId;
-    }
 
     public override async Task InvokeAsync(Func<Task> workItem)
     {

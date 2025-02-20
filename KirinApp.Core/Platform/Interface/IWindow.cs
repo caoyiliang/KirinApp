@@ -244,7 +244,7 @@ internal abstract class IWindow
     /// 线程检测
     /// </summary>
     /// <returns></returns>
-    public abstract bool CheckAccess();
+    public virtual bool CheckAccess() => Environment.CurrentManagedThreadId == Utils.MainThreadId;
 
     /// <summary>
     /// 执行
