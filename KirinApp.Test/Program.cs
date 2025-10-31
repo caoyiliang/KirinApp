@@ -13,6 +13,7 @@ class Program
     {
         WinConfig winConfig = new WinConfig()
         {
+            Chromeless = true,
             AppName = "Test",
             Height = 800,
             Width = 1000,
@@ -57,7 +58,7 @@ class Program
                 kirinApp.LoadRawString("你好");
                 Task.Run(async () =>
                 {
-                   await Task.Delay(3000); 
+                    await Task.Delay(3000);
                     kirinApp.LoadStatic("index.html");
                     //kirinApp.LoadStatic("index.html")
                 });

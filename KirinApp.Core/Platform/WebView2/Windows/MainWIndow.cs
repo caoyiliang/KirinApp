@@ -81,7 +81,7 @@ internal class MainWIndow : IWindow
             }
             WindowStyle windowStyle;
             if (Config.Chromeless)
-                windowStyle = WindowStyle.POPUPWINDOW | WindowStyle.CLIPCHILDREN | WindowStyle.CLIPSIBLINGS | WindowStyle.THICKFRAME | WindowStyle.MINIMIZEBOX | WindowStyle.MAXIMIZEBOX;
+                windowStyle = WindowStyle.POPUP | WindowStyle.VISIBLE;
             else
                 windowStyle = WindowStyle.OVERLAPPEDWINDOW | WindowStyle.CLIPCHILDREN | WindowStyle.CLIPSIBLINGS;
             if (!Config.ResizeAble || Config.MaximumSize != null || Config.MaximumWidth > 0 || Config.MinimumHeigh > 0)
